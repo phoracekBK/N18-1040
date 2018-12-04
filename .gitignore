@@ -1,0 +1,7 @@
+*.swp
+*.o
+test
+*.a
+*.csv
+.src
+bin
