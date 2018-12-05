@@ -45,8 +45,12 @@
 
 /**
 ** @todo
+** interconnect error and status labes with the multilanguage system
 ** create documentation of new code
 ** do handling of pci camera system - not defined
+** modify text labels of the status and error states, move it to multi_lang system
+** modify command line interface - run function
+** reaction to MB0 and MB1 mode state 
 */
 
 
@@ -55,7 +59,6 @@
 
 
 #define PCI_COMM FALSE
-
 
 /**
 ** @ingroup InternalStates
@@ -296,8 +299,6 @@
 
 #define MACHINE_STATE_WAIT_FOR_PRINT_FINISH 15
 
-#define MACHINE_STATE_WAIT_FOR_CONFIRMATION 16
-
 
 
 #define MACHINE_ERR_NO_ERROR 0
@@ -326,7 +327,6 @@
 #define MACHINE_ERR_LOW_PRINT_QUALITY 23
 #define MACHINE_ERR_GIS_DISCONNECTED 24
 #define MACHINE_ERR_CSV_SHEET_NUM 25
-#define MACHINE_ERR_SHEET_FEEDER_REDIRECTION 26
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
 
@@ -412,14 +412,6 @@ enum _gui_params_list_
 	PAR_MAX_REJECTED_SHEET_SEQ,
 
 	PAR_LIST_N
-};
-
-enum _sheet_source_
-{
-	SSOURCE_MAIN=0,
-	SSOURCE_COMPANION,
-
-	SSOURCE_N
 };
 
 
@@ -519,9 +511,6 @@ struct _core_
 	uint32_t rejected_sheet_for_stop;
 	uint32_t max_stacked_sheets;
 
-	uint8_t companion_sheet_source;
-	bool sheet_source_confirmation;
-	bool print_confirmation_req;
 
 	/* printing counters */
 	uint32_t feeded_main_sheet_counter;
@@ -617,12 +606,6 @@ struct _io_card_
 	comedi_t *ref_a2;
 
 	uint8_t *** io_ref;
-
-	unsigned int A1_in;
-	unsigned int A1_out;
-	unsigned int A2_in;
-	unsigned int A2_out;
-
 #if IO_CARD_SIMAULATION_EN == TRUE
 	pthread_t simulation_thread;
 #endif
@@ -873,8 +856,6 @@ uint8_t core_pci_disconnect(core * this);
 
 void core_set_max_stacked_sheets(core * this, int sheet_val);
 void core_set_max_rejected_sheet_seq(core * this, int sheet_val);
-void core_set_companion_sheet_source(core * this, uint8_t source);
-void core_set_sheet_source_confirmation(core * this, bool confirm);
 
 uint8_t core_set_q_main_hotfolder_path(core * this, const char * path);
 uint8_t core_set_q_feedback_hotfolder_path(core * this, const char * path);
@@ -898,7 +879,6 @@ uint8_t core_print_pause(core * this);
 uint8_t core_print_continue(core * this);
 uint8_t core_print_cancel(core * this);
 uint8_t core_print_reset_error(core * this);
-void core_sheet_source_confirmation(core * this);
 
 /* error messages return and translations  */
 char* core_machine_get_state_str(core * this);
@@ -947,7 +927,7 @@ uint8_t io_card_get_input(io_card * this, int card, int addr);
 uint8_t io_card_get_output(io_card * this, int card, int addr);
 void io_card_set_output(io_card * this, int card, int addr, uint8_t val);
 uint8_t io_card_get_bit_value(io_card * this, int card, int bit1, int bit2, int bit3);
-void io_card_finalize(io_card * this);
+
 
 q_job * q_job_new(char* name, uint32_t order, char flag);
 q_job * q_job_copy(q_job * job);
@@ -1173,12 +1153,6 @@ void core_default_config(core * this)
 	this->rejected_sheet_for_stop = 10;
 	this->max_stacked_sheets = 2500;
 	
-
-
-	core_set_companion_sheet_source(this,  SSOURCE_COMPANION);
-	core_set_sheet_source_confirmation(this, false);
-
-
 	//core_pci_load_tcp_port(this);
 	//core_pci_load_ip_addr(this);
 
@@ -1255,6 +1229,7 @@ void core_safety_system_in(core * this)
 		core_set_machine_error(this, MACHINE_ERR_FEEDER_JAM);
 	}
 	
+
 	if((roundf(c_freq_measure_current(this->ti_freq, io_card_get_input(this->io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc)))) >= 2.0)
 	{
 		core_set_machine_error(this, MACHINE_ERR_TI);
@@ -1264,6 +1239,7 @@ void core_safety_system_in(core * this)
 	{
 		core_set_machine_error(this, MACHINE_ERR_TA);
 	}
+
 
 	/* network connection checking */
 	if(core_iij_is_connected(this) == STATUS_CLIENT_CONNECTED)
@@ -1911,21 +1887,13 @@ void core_machine_state_read_csv_line(core * this)
 				sheet_index[exp] = 0;	
 				job_info_add_sheet_record(this->info, sheet_index);
 
-				if((job->flag == 'k') || ((job->flag == 'p') && (this->sheet_source_confirmation == false) && (this->companion_sheet_source == SSOURCE_MAIN))) 
+				if(job->flag == 'k')
 				{
 					this->machine_state = MACHINE_STATE_PRINT_MAIN;
 				}
-				else if((job->flag == 'p') && (this->companion_sheet_source == SSOURCE_COMPANION))
+				else if(job->flag == 'p')
 				{
 					this->machine_state = MACHINE_STATE_PRINT_COMPANION;
-				}
-				else if((job->flag == 'p') && (this->companion_sheet_source == SSOURCE_MAIN) && (this->sheet_source_confirmation == true))
-				{
-					this->machine_state = MACHINE_STATE_WAIT_FOR_CONFIRMATION;
-				}
-				else
-				{
-					core_set_machine_error(this, MACHINE_ERR_SHEET_FEEDER_REDIRECTION);
 				}
 			}
 			else
@@ -1939,16 +1907,6 @@ void core_machine_state_read_csv_line(core * this)
 		}
 	}
 }
-
-void core_machine_state_wait_for_confirmation(core * this)
-{
-	if(this->print_confirmation_req == true)
-	{
-		this->machine_state = MACHINE_STATE_PRINT_MAIN;
-		this->print_confirmation_req = false;
-	}
-}
-
 
 void core_machine_state_print_main(core * this)
 {
@@ -2152,7 +2110,6 @@ void core_machine_state_finish(core * this)
 	this->rj_trig = 0;					
 	this->ti_trig = 0;
 	
-	this->print_confirmation_req = false;
 
 	if(this->machine_state == MACHINE_STATE_JOB_FINISH)
 	{
@@ -2325,11 +2282,6 @@ void * core_machine_handler(void * param)
 			core_machine_state_read_csv_line(this);
 		}
 
-		if(this->machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION)
-		{
-			core_machine_state_wait_for_confirmation(this);
-		}
-
 		if(this->machine_state == MACHINE_STATE_PRINT_COMPANION)
 		{
 			core_machine_state_print_companion(this);
@@ -2451,18 +2403,6 @@ core * core_new()
 
 		this->timer = c_freq_millis();
 
-
-		this->feeded_main_sheet_counter = 0;
-		this->feeded_companion_sheet_counter = 0;
-		this->stacked_sheet_counter = 0;
-		this->rejected_sheet_counter = 0;
-		this->rejected_sheet_seq_counter = 0;
-		this->tab_insert_counter = 0;
-		this->inspected_sheet_counter = 0;
-
-		
-		this->print_confirmation_req = false;
-
 		/* GIS printer status */
 		this->print_controller_status = c_string_new_with_init("Unknown");
 	
@@ -2474,9 +2414,9 @@ core * core_new()
 
 		if(config_read_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH) != CONFIG_TRUE)
 		{
+			core_default_config(this);
 			c_log_add_record_with_cmd(this->log, "Konfigurace systému nebyla úspěšně načtena: %s", config_error_text(&(this->cfg_ref)));
 			c_log_add_record_with_cmd(this->log, "Vytvářím výchozí konfiguraci.");
-			core_default_config(this);
 		}
 	
 		c_log_add_record_with_cmd(this->log, "Konfigurace načtena");
@@ -2541,33 +2481,10 @@ void core_finalize(core * this)
 {
 	comm_tcp_finalize(this->iij_tcp_ref);
 	//comm_tcp_finalize(this->pci_tcp_ref);
-	
+
 	//config_write_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH);
 	config_destroy(&(this->cfg_ref));
 
-
-	array_list_destructor(&(this->job_list));
-	array_list_destructor(&(this->job_list_pre));
-
-	c_string_finalize(&(this->q_hotfolder_main_path));
-	c_string_finalize(&(this->q_hotfolder_feedback_path));
-	c_string_finalize(&(this->q_hotfolder_backup_path));
-	c_string_finalize(&(this->pci_hotfolder_in_path));
-	c_string_finalize(&(this->pci_hotfolder_out_path));
-	c_string_finalize(&(this->gis_hotfolder_path));
-	c_string_finalize(&(this->job_log_path));
-
-	c_string_finalize(&(this->printed_job_name));
-
-	c_string_finalize(&(this->print_controller_status));
-
-	c_freq_finalize(this->ti_freq);
-	c_freq_finalize(this->ta_freq);
-
-	job_info_finalize(this->info);
-
-	io_card_finalize(this->io_card_ref);
-		
 	c_log_add_record_with_cmd(this->log, "Jádro úspěšně ukončeno.");
 	c_log_finalize(this->log);
 
@@ -2703,39 +2620,6 @@ void core_set_max_rejected_sheet_seq(core * this, int sheet_val)
 	this->rejected_sheet_for_stop = sheet_val;
 	c_log_add_record_with_cmd(this->log, "Nastaven počet vadně vyhodnocených archů pro zastavení tisku : %d", sheet_val);
 }
-
-void core_set_companion_sheet_source(core * this, uint8_t source)
-{
-	if(source >= 0 && source < SSOURCE_N)
-	{
-		this->companion_sheet_source = source;
-
-		char * sheet_src_str = NULL;
-
-		switch(source)
-		{
-			case SSOURCE_MAIN:
-				sheet_src_str = "Hlavní nakladač";
-			break;
-			case SSOURCE_COMPANION:
-				sheet_src_str = "Nakladač prokladových archů";
-			break;
-		}
-
-		c_log_add_record_with_cmd(this->log, "Nastaven zdroj pro prokladový arch: %s", sheet_src_str);
-	}
-	else
-	{
-		c_log_add_record_with_cmd(this->log, "Neúspěšný pokus o nastavení nového zdroje pro prokladové archy: %d", source);
-	}
-}
-
-void core_set_sheet_source_confirmation(core * this, bool confirm)
-{
-	this->sheet_source_confirmation = confirm;
-	c_log_add_record_with_cmd(this->log, "Potvrzování naložení prokladového archu z hlavního nakladače: %s", confirm == true ? "Aktivováno" : "Deaktivováno");
-}
-
 
 uint8_t core_set_q_main_hotfolder_path(core * this, const char * path)
 {
@@ -2998,12 +2882,6 @@ uint8_t core_print_cancel(core * this)
 	}
 
 	return res;
-}
-
-
-void core_sheet_source_confirmation(core * this)
-{
-	this->print_confirmation_req = true;
 }
 
 uint8_t core_print_reset_error(core * this)
@@ -3285,10 +3163,6 @@ job_info * job_info_new(char * csv_address)
 	this->csv_content = c_string_new();
 	this->job_list = array_list_new();
 	this->csv_name = c_string_new();
-
-
-	this->total_sheet_number = 0;
-	this->total_stemps_number = 0;
 
 	return this;
 }
@@ -3675,10 +3549,23 @@ io_card * io_card_new()
 
 	if(((this->ref_a1 != NULL) && (this->ref_a2 != NULL)) || (IO_SIMULATION == TRUE))
 	{
-		this->A1_in = 0;
-		this->A1_out = 0;
-		this->A2_in = 0;
-		this->A2_out = 0;	
+		/* create pointer to cards */
+		this->io_ref = (uint8_t***) malloc(sizeof(uint8_t**)*IO_CARD_SIZE);
+
+		/* create pointer to card channels */
+		this->io_ref[IO_CARD_A1] = (uint8_t**) malloc(sizeof(uint8_t*)*IO_CARD_CHANNEL_SIZE);
+		this->io_ref[IO_CARD_A2] = (uint8_t**) malloc(sizeof(uint8_t*)*IO_CARD_CHANNEL_SIZE);
+
+		/* create pointer to card input and outputs */
+		this->io_ref[IO_CARD_A1][IO_CARD_CHANNEL_INPUT] = (uint8_t*) malloc(sizeof(uint8_t)*(A1_IN_SIZE/8));
+		this->io_ref[IO_CARD_A1][IO_CARD_CHANNEL_OUTPUT] = (uint8_t*) malloc(sizeof(uint8_t)*(A1_OUT_SIZE/8));
+		this->io_ref[IO_CARD_A2][IO_CARD_CHANNEL_INPUT] = (uint8_t*) malloc(sizeof(uint8_t)*(A2_IN_SIZE/8));
+		this->io_ref[IO_CARD_A2][IO_CARD_CHANNEL_OUTPUT] = (uint8_t*) malloc(sizeof(uint8_t)*(A2_OUT_SIZE/8));
+		
+		memset(this->io_ref[IO_CARD_A1][IO_CARD_CHANNEL_INPUT], 0, (A1_IN_SIZE/8));
+		memset(this->io_ref[IO_CARD_A1][IO_CARD_CHANNEL_OUTPUT], 0, (A1_OUT_SIZE/8));
+		memset(this->io_ref[IO_CARD_A2][IO_CARD_CHANNEL_INPUT], 0, (A2_IN_SIZE/8));
+		memset(this->io_ref[IO_CARD_A2][IO_CARD_CHANNEL_OUTPUT], 0, (A2_OUT_SIZE/8));
 
 		return this;
 	}
@@ -3692,12 +3579,12 @@ io_card * io_card_new()
 
 void io_card_sync_inputs(io_card * this)
 {
-	if(comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_INPUT, 0x0, &this->A1_in, 0) < 0)
+	if(comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_INPUT, 0x0, (unsigned int*) this->io_ref[IO_CARD_A1][IO_CARD_CHANNEL_INPUT], 0) < 0)
 	{
 		fputs("Can't read inputs from card A1!\n", stderr);
 	}
 
-	if(comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_INPUT, 0x0, &this->A2_in, 0) < 0)
+	if(comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_INPUT, 0x0, (unsigned int*) this->io_ref[IO_CARD_A2][IO_CARD_CHANNEL_INPUT], 0) < 0)
 	{
 		fputs("Can't read inputs from card A2!\n", stderr);
 	} 
@@ -3705,12 +3592,12 @@ void io_card_sync_inputs(io_card * this)
 
 void io_card_sync_outputs(io_card * this)
 {
-	if(comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, &this->A1_out, 0) < 0)
+	if(comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, (unsigned int*) this->io_ref[IO_CARD_A1][IO_CARD_CHANNEL_OUTPUT], 0) < 0)
 	{
 		fputs("Can't write utputs to card A1!\n", stderr);
 	}
 
-	if(comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, &this->A2_out, 0) < 0)
+	if(comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, (unsigned int*) this->io_ref[IO_CARD_A2][IO_CARD_CHANNEL_OUTPUT], 0) < 0)
 	{
 		fputs("Can't write utputs to card A2!\n", stderr);
 	}
@@ -3718,45 +3605,25 @@ void io_card_sync_outputs(io_card * this)
 
 uint8_t io_card_get_output(io_card * this, int card, int addr)
 {
-	if(card == IO_CARD_A1)
-	{
-		return ((this->A1_out & SO(addr)) > 0 ? 1 : 0);
-	}
-	else
-	{
-		return ((this->A2_out & SO(addr)) > 0 ? 1 : 0);
-	}
+	return ((((this->io_ref[card][IO_CARD_CHANNEL_OUTPUT][(addr/8)]) & SO(addr%8)) > 0) ? 1 : 0);
 }
 
 
 uint8_t io_card_get_input(io_card * this, int card, int addr)
 {
 	/* reverse logic 0 = 1 */
-	if(card == IO_CARD_A1)
-	{
-		return ((this->A1_in & SO(addr)) > 0 ? 0 : 1);
-	}
-	else
-	{
-		return ((this->A2_in & SO(addr)) > 0 ? 0 : 1);
-	}
+	return ((((this->io_ref[card][IO_CARD_CHANNEL_INPUT][(addr/8)]) & SO(addr%8)) > 0) ? 0 : 1);
 }
 
 void io_card_set_output(io_card * this, int card, int addr, uint8_t val)
 {
-	if(card == IO_CARD_A1)
+	if(val)
 	{
-		if(val > 0)
-			this->A1_out |= SO(addr);
-		else
-			this->A1_out &= SZ(addr);
+		(this->io_ref[card][IO_CARD_CHANNEL_OUTPUT][(addr/8)]) |= SO(addr%8);
 	}
 	else
 	{
-		if(val > 0)
-			this->A2_out |= SO(addr);
-		else
-			this->A2_out &= SZ(addr);
+		this->io_ref[card][IO_CARD_CHANNEL_OUTPUT][(addr/8)] &= SZ(addr%8);
 	}
 }
 
@@ -3775,14 +3642,6 @@ uint8_t io_card_get_bit_value(io_card * this, int card, int bit1, int bit2, int 
 		bit_val += 4;
 
 	return bit_val;
-}
-
-void io_card_finalize(io_card * this)
-{
-	comedi_close(this->ref_a1);
-	comedi_close(this->ref_a2);
-
-	free(this);
 }
 
 /************************************************************** end of section with io_card functions definitions *****************
@@ -4627,10 +4486,9 @@ gboolean gui_cyclic_interupt(gpointer param)
 
 	this->blink = !this->blink;
 
-	//const char * visible_page = gtk_stack_get_visible_child_name (GTK_STACK(this->page_stack));
+	const char * visible_page = gtk_stack_get_visible_child_name (GTK_STACK(this->page_stack));
 	
 	char buffer[512];
-	memset(buffer, 0, sizeof(char)*512);
 	
 	for(int i = 0; i< GC_LBL_N; i++)
 	{
@@ -6100,7 +5958,7 @@ void gtk_info_window_finalize()
 
 int main(int argv, char ** argc)
 {	
-	core * core_instance = core_new();	
+	core * core_instance = core_new();
 
 	/* choose the control interface for working */
 	if ((argv > 1) && (strcmp(argc[1], "--no-gui") == 0))

@@ -183,6 +183,18 @@ struct _lang_
 	const char * hot_report_csv_fs_label;
 
 	const char * rep_csv_log_column_file_name;
+
+	const char * g_status_gis_lbl;
+	const char * g_status_machine_lbl;
+	const char * g_cnt_main_feed_lbl;
+	const char * g_cnt_companion_feed_lbl;
+	const char * g_cnt_rejected_lbl;
+	const char * g_cnt_stakced_lbl;
+	const char * g_cnt_rejected_seq_lbl;
+	const char * g_cnt_tab_insert_blb;
+
+	const char * par_max_stacked_sheet_lbl;
+	const char * par_rejected_sheet_seq_lbl;
 };
 typedef struct _lang_ lang;
 
@@ -229,7 +241,7 @@ const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
 				"Podavač prokladových archů hlásí chybu!",
 				"Nesoulad počítadel!",
 				"Nízká kvalita tisku! Zkontrolujte tiskové hlavy.",
-				"Počítač GISu odpojen!",
+				"Počítač GISu neodpovídá!",
 				"Neznámá chyba!",
 
 				"Jazyk rozhraní:",
@@ -256,7 +268,19 @@ const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
 				"Výstupní kamerový hotfolder:",
 				"Hotfolder pro GIS:",
 				"Adresář pro reporty:",
-				"Reportové csv"},
+				"Reportové csv",
+				
+				"GIS status:",
+				"Status stroje:",
+				"Naložené archy:",
+				"Naložené prokladové archy:",
+				"Vadné archy:",
+				"Vyložené archy:",
+				"Sekvence vadných archů:"
+				"Nastřelovací proužky:",
+				
+				"Maximum archů ve vykladači:",
+                                "Maximální sekvence vadných archů:"},
 
 				/* english language label */
 				{"English", 							/* lang_name */
@@ -301,7 +325,7 @@ const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
 				"Companion sheet feeder error!",
 				"Counters mismatch!",
 				"Low print quality! Check print heads.",
-				"GIS computer disconnected!",
+				"GIS computer not responding!",
 				"Unknown error!",
 
 				"Interface language:",
@@ -328,7 +352,19 @@ const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
 				"Camera output hotfolder:",
 				"GIS hotfolder:",
 				"Report directory:",
-				"Report csv"}};							
+				"Report csv",
+
+				"GIS status:",
+				"Machine status",
+				"Feeded sheets:",
+				"Feeded companion sheets:",
+				"Rejected sheets:",
+				"Stacked sheets:",
+				"Rejected sheets sequence:"
+				"Tab inserts:",
+
+				"Maximum number of sheets in the stecker:",
+	                        "Maximum number of rejected sheets in sequence:"}};							
 
 
 

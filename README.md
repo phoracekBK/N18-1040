@@ -1,23 +1,29 @@
 
 
 TODO:
+* Upravit kartu tiskové paramtry a přidat nastavení pro volby zdroje prokladového archu
+* Upravit kartu řídícího rozhraní pro potvrzení nabraní prokladového archu z hlavního nakladače
 * Vytvořit automatizované unit testy pro krytické funkce a vyladit jádro
 * Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job
 * Upravit řídící panel pro zobrazení pouze jednoho jobu připraveného k tisku
-* Zobrazit na řídícím panelu hodnotu počítadel
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
 * Napojit konfiguraci do jádra
 * Odstranit ze zdrojových kódů nepotřebný kód z části rozhraní příkazové řádky
 * Zpomalit tisk pokus se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 * Kontrola síťového spojení s počítačem quadient
 * kontrola síťového spojení s počítačem pci
-* Vytvořit kartu pro nastavení parametrů tisku
-* Vytvořit kartu s hlavním řídícím panelem
+
 
 
 DONE:
 
+* Zobrazit na řídícím panelu hodnotu počítadel
+* Přidat nastavitelnou možnost výběru archu pro prokladový list buď ze separator sheet feeder nebo s main feeder
+* Přidat nastavitelnou možnost pro potvrzení nabrání archu na prokladový list z main feeder (možnost ručního vložení správného archu)
+* Přidán sledovací prvek pro úniky paměti, log je vždy ukládán do souboru v adresáři "$HOME/host-bk/bin/valgrind_log.txt"
 * Doplnit infromace o jobu - celkový počet kolků, celkový počet archů v Jobu
+* Vytvořit kartu pro nastavení parametrů tisku
+* Vytvořit kartu s hlavním řídícím panelem
 * Přidat do řídícího panelu seznam reportovacích csv, které jsou při kliknutí zobrazeny v interním editoru
 * Vytvořit kartu pro nastavení hotfolderů
 * Vytvořit dialog pro výběr adresářové cesty pro nastavení cesty k hotfolderům
