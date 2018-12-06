@@ -358,6 +358,7 @@ enum _gui_control_btn_
 	GC_BTN_CONTINUE,
 	GC_BTN_CANCEL,
 	GC_BTN_ERROR_RESET,
+	GC_BTN_FEED,
 	GC_BTN_DELETE_JOB,
 
 	GC_BTN_N
@@ -507,7 +508,7 @@ struct _core_
 	int32_t printed_job_index;
 	int error_code;
 
-	bool feed_sheet;
+	uint8_t feed_sheet;
 
 	/* control signals to machine handler */
 	bool machine_pause_req;
@@ -747,6 +748,15 @@ struct _gui_print_params_page_
 	GtkWidget ** par_lbl;
 	GtkWidget ** par_entry;
 	
+
+	GtkWidget * sheet_source_lbl;
+	GtkWidget * print_confirm_lbl;
+	GtkWidget * sheet_source_combo;
+	GtkWidget * print_confirm_switch;
+
+	GtkWidget * print_mode_lbl;
+	GtkWidget * print_mode_combo;
+
 	settings_button * btn_return;
 	gui_base * gui_base_ref;
 };
@@ -988,6 +998,7 @@ void gui_control_page_delete_columns(GtkWidget * list);
 void gui_control_page_load_report_csv_list(gui_control_page * this);
 void gui_control_page_open_report_csv (GtkTreeView *tree_view, gpointer param);
 
+void gui_control_page_btn_feed_sheet_callback(GtkWidget * widget, gpointer param);
 void gui_control_page_btn_print_callback(GtkButton *button, gpointer param);
 void gui_control_page_btn_cancel_callback(GtkButton *button, gpointer param);
 void gui_control_page_btn_reset_callback(GtkButton *button, gpointer param);
@@ -1023,10 +1034,11 @@ void gui_hotfolder_page_select_report_path_callback(GtkWidget * widget, gpointer
 
 
 gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref);
+void gui_print_params_page_language(gui_print_params_page * this);
 void gui_print_params_page_max_stacked_sheet_callback (GtkWidget *widget, GdkEvent  *event, gpointer   param);
 void gui_print_params_set_max_rejected_sheet_seq(GtkWidget *widget, GdkEvent  *event, gpointer param);
-
-
+void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer param);
+gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widget, gboolean state, gpointer param);
 
 gui_lang_page * gui_lang_page_new(gui_base * gui_base_ref);
 
@@ -1058,33 +1070,40 @@ void * core_gis_runtime_state_reading(void * param)
 		if(state_msg != NULL)
 		{
 			timer = c_freq_millis();
-			if(*state_msg == 'I')
+
+			while(*state_msg != 0)
 			{
-				int msg_id = core_gis_load_status_id(&state_msg);
-
-				state_msg++;
-				if(*state_msg == 'S')
+				if(*state_msg == 'I')
 				{
-					if(id == -1)
+					int msg_id = core_gis_load_status_id(&state_msg);
+					state_msg++;
+		
+					if(*state_msg == 'S')
 					{
-						id = msg_id;
-					}
+						if(id == -1)
+							id = msg_id;
 
-					if(msg_id == id)
-					{
-						core_parse_gis_status(this, state_msg);
-					}
+						if(msg_id == id)
+						{
+							core_parse_gis_status(this, state_msg);
+							break;
+						}
+					}			
+				}
+				else
+				{	
+					while(*state_msg != '\n'){state_msg++;}
+					state_msg++;
 				}
 			}
 		}
-
+#if 0
 		if((timer+60000) <= c_freq_millis())
-		{
 			core_iij_disconnect(this);
-		}
+#endif
 	}
 	
-	c_string_set_string(this->print_controller_status, "Unknown");
+	c_string_set_string(this->print_controller_status, "Unknown state");
 	
 	return NULL;
 }
@@ -1109,7 +1128,7 @@ void core_parse_gis_status(core * this, char * status_str)
 	status_str = status_str+2;
 	c_string_clear(this->print_controller_status);
 
-	while(*status_str != ',')
+	while((*status_str != ',') && (*status_str != 0) && (*status_str != '\n'))
 	{
 		c_string_add_char(this->print_controller_status, *status_str);
 		status_str++;
@@ -1281,8 +1300,10 @@ void core_safety_system_in(core * this)
 
 void core_safety_system_out(core * this)
 {
-	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_14_RESERVE, 1);
-
+/*
+	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, 1);
+	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, 1);
+*/
 	core_set_machine_mode(this);
 	
 	/* switch off outputs if the error ocures */
@@ -1294,18 +1315,27 @@ void core_safety_system_out(core * this)
 	}
 	else
 	{
-		/* counters */
-		core_machine_stacker_counter(this);
-		core_machine_tab_insert_counter(this);
-		core_machine_reject_counter(this);
-		core_machine_camera_counter(this);
-		core_counter_check_sum(this);
+		if((this->machine_state != MACHINE_STATE_NEXT) && (this->machine_state != MACHINE_STATE_WAIT) && (this->machine_state != MACHINE_STATE_PREPARE))
+		{
+			/* counters */
+			core_machine_stacker_counter(this);
+			core_machine_tab_insert_counter(this);
+			core_machine_reject_counter(this);
+			core_machine_camera_counter(this);
+
+			if((this->machine_state != MACHINE_STATE_PRINT_BREAK) && (this->machine_state != MACHINE_STATE_CLEAR_HOT_FOLDER) && 
+				(this->machine_state != MACHINE_STATE_JOB_FINISH) && (this->machine_state != MACHINE_STATE_CLEAR_TO_FINISH) && 
+				(this->machine_state != MACHINE_STATE_PRINT_FINISH))
+			{
+				core_counter_check_sum(this);	
+			}
+		}
 	}
 }
 
 void core_printer_abbort_print(core * this)
 {
-	comm_tcp_transaction(this->iij_tcp_ref, "P,A\n", CLI_IO_BUFFER_SIZE);
+	comm_tcp_transaction(this->iij_tcp_ref, "P,A\nP,A\n", CLI_IO_BUFFER_SIZE);
 }
 
 void core_clear_hotfolder_base(core * this, q_job * job)
@@ -1956,27 +1986,42 @@ void core_machine_state_print_main(core * this)
 
 	/* gremser machine control */
 	feeder_status = io_card_get_bit_value(this->io_card_ref, IO_CARD_A1, A1_IN_11_FN0, A1_IN_12_FN1, A1_IN_5_FN2); 
-		
-	if((this->feed_sheet == false) && (feeder_status == MACHINE_FN_READY_TO_FEED))
+	
+	/* wait for feeder ready */	
+	if((this->feed_sheet == 0) && (feeder_status == MACHINE_FN_READY_TO_FEED))
 	{
-		this->feed_sheet = true;
+		this->feed_sheet = 1;
 		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_7_XBF, 1);
 		this->io_card_ref->timer = c_freq_millis();
 	}
-
-	if((this->feed_sheet == true))
+	else if(this->feed_sheet == 1)
 	{
-		if(((this->io_card_ref->timer+MACHINE_XBF_INTERVAL) <= c_freq_millis()) || (feeder_status == MACHINE_FN_FEEDING))
+		/* feed one sheet */
+		if(((this->io_card_ref->timer+MACHINE_XBF_INTERVAL) <= c_freq_millis()))
 		{
 			io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_7_XBF, 0);
+			//this->feed_sheet = 2;
+			this->feed_sheet = 3;	//only for testing skip the point 2
 		}
 
+		if((feeder_status == MACHINE_FN_FEEDING))
+		{
+			io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_7_XBF, 0);
+			this->feed_sheet = 3;
+		}
+	}
+	else if(this->feed_sheet == 2)
+	{
 		if(feeder_status == MACHINE_FN_FEEDING)
 		{
-			this->feed_sheet = false;
-			this->feeded_main_sheet_counter++;
-			this->machine_state = MACHINE_STATE_READ_CSV_LINE;
+			this->feed_sheet = 3;
 		}
+	}
+	else if((this->feed_sheet == 3) && (feeder_status == MACHINE_FN_READY_TO_FEED))
+	{
+		this->feed_sheet = 0;
+		this->feeded_main_sheet_counter++;
+		this->machine_state = MACHINE_STATE_READ_CSV_LINE;
 	}
 
 	/* feedeng error handling */
@@ -1985,13 +2030,42 @@ void core_machine_state_print_main(core * this)
 
 void core_machine_state_print_companion(core * this)
 {
-	if(io_card_get_input(this->io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc))
+	/* check the state of companion feeder, TI_incyc must be in false state */
+	if((this->feed_sheet == 0) && (io_card_get_input(this->io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc) == 0))
 	{
+		/* set output TI_ins to true state */
 		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_9_TI_ins, 1);
+		this->timer = c_freq_millis();
+		this->feed_sheet = 1;
 	}
-	else
+	else if(this->feed_sheet == 1)
+	{	
+		/* wait for TI_incyc true state or given time */
+		if(((this->io_card_ref->timer+MACHINE_XBF_INTERVAL) <= c_freq_millis()))
+		{
+			io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_9_TI_ins, 0);
+			//this->feed_sheet = 2;
+			this->feed_sheet = 3; // only for testing
+		}
+
+		if(io_card_get_input(this->io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc) > 0)
+		{
+			io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_9_TI_ins, 0);
+			this->feed_sheet = 3;
+		}
+	}
+	else if(this->feed_sheet == 2)
+	{	
+		/* wait for TI_incyc true state */
+		if(io_card_get_input(this->io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc) > 0)
+		{
+			this->feed_sheet = 3;
+		}
+	}
+	else if((this->feed_sheet == 3) && (io_card_get_input(this->io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc) == 0))
 	{
-		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_9_TI_ins, 0);
+		/* wait for TI_incyc true state, incremet the counter state and go to READ_CSV_LINE state */	
+		this->feed_sheet = 0;
 		this->feeded_companion_sheet_counter++;
 		this->machine_state = MACHINE_STATE_READ_CSV_LINE;
 	}
@@ -2145,7 +2219,7 @@ void core_machine_state_finish(core * this)
 	this->printed_job_index = -1;
 	this->bkcore_csv_pos = 0;
 
-	this->feed_sheet = false;
+	this->feed_sheet = 0;
 
 	this->sn_trig = 0;					
 	this->camera_trig = 0;					
@@ -2416,6 +2490,10 @@ core * core_new()
 	{
 		pthread_mutex_init(&(this->mutex), NULL);
 
+
+		this->iij_tcp_ref = comm_tcp_new();
+		//this->pci_tcp_ref = comm_tcp_new();
+
 		this->ti_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 		this->ta_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 
@@ -2438,8 +2516,6 @@ core * core_new()
 		this->job_list_changed = 0;
 		this->printed_job_index = -1;
 
-		this->iij_tcp_ref = comm_tcp_new();
-		//this->pci_tcp_ref = comm_tcp_new();
 
 		this->q_hotfolder_main_path = c_string_new();
 		this->q_hotfolder_feedback_path = c_string_new();
@@ -3015,7 +3091,7 @@ uint8_t core_print_reset_error(core * this)
 	this->machine_print_req = false;
 	this->machine_pause_req = false;
 
-	while((this->machine_state == MACHINE_STATE_ERROR) && (ttl < 5))
+	while((this->machine_state == MACHINE_STATE_ERROR) && (ttl < 2))
 	{
 		this->machine_error_reset_req = true;
 		usleep(HOT_FOLDER_READING_INTERVAL);
@@ -3424,7 +3500,7 @@ comm_tcp * comm_tcp_new()
 
 	/* initialization of the socket data */
 	this->io_buffer = (char*) malloc(sizeof(char)*COMM_TCP_IO_BUFFER_SIZE);
-	memset(this->io_buffer, '\0', COMM_TCP_IO_BUFFER_SIZE);
+	memset(this->io_buffer, 0, COMM_TCP_IO_BUFFER_SIZE);
 	memset(&(this->serv_addr), '0', sizeof(this->serv_addr));
 	this->sockfd = 0;
 
@@ -3464,7 +3540,7 @@ uint8_t comm_tcp_connect(comm_tcp * client)
         	fputs("setsockopt failed\n", stderr);
 
 	/* tcp socket connect */
-	if( connect(client->sockfd, (struct sockaddr *) &(client->serv_addr), sizeof(client->serv_addr)) < 0)
+	if(connect(client->sockfd, (struct sockaddr *) &(client->serv_addr), sizeof(client->serv_addr)) < 0)
 	{
 		close(client->sockfd);
 		client->sockfd = 0;
@@ -3477,7 +3553,7 @@ uint8_t comm_tcp_connect(comm_tcp * client)
 
 uint8_t comm_tcp_is_connected(comm_tcp * client)
 {
-	int error_code;
+	int error_code = -1;
 	int error_code_size = sizeof(error_code);
 	getsockopt(client->sockfd, SOL_SOCKET, SO_ERROR, &error_code, (socklen_t*) &error_code_size);
 
@@ -4613,7 +4689,7 @@ gui * gui_new(core * core_ref)
 	gui_pack(this);	
 
 	/* cyclic interupt for continues reading of core status */
-	g_timeout_add(1000, gui_cyclic_interupt, this);
+	g_timeout_add(HOT_FOLDER_READING_INTERVAL/1000, gui_cyclic_interupt, this);
 
 	gtk_widget_show_all(GTK_WIDGET(this->main_win));
 
@@ -4676,6 +4752,20 @@ gboolean gui_cyclic_interupt(gpointer param)
 		gtk_label_set_text(GTK_LABEL(this->control_page->lbl[i]), buffer);
 	}
 	
+
+
+	bool pause_en = (this->core_ref->machine_state != MACHINE_STATE_WAIT) && (this->core_ref->machine_state != MACHINE_STATE_NEXT) && 
+						(this->core_ref->machine_state != MACHINE_STATE_ERROR) && (this->core_ref->machine_state != MACHINE_STATE_PAUSE) && 
+						(this->core_ref->machine_state != MACHINE_STATE_READY_TO_START) && (this->core_ref->machine_state != MACHINE_STATE_WAIT_FOR_CONFIRMATION);
+
+	
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PAUSE]), pause_en);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CONTINUE]), this->core_ref->machine_state == MACHINE_STATE_PAUSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), this->core_ref->machine_state == MACHINE_STATE_WAIT);
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CANCEL]), (this->core_ref->machine_state != MACHINE_STATE_WAIT) && (this->core_ref->machine_state != MACHINE_STATE_ERROR));
+	gtk_widget_set_visible(GTK_WIDGET(this->control_page->btn[GC_BTN_FEED]), this->core_ref->machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION);
 
 	/* set status of network control widget depend on network connection state */
 	gboolean conn = ((core_iij_is_connected(this->core_ref) == STATUS_CLIENT_CONNECTED) ? FALSE : TRUE);
@@ -4778,19 +4868,7 @@ void gui_set_language(gui * this)
 	gtk_label_set_text(GTK_LABEL(this->network_page->iij_ip_addr_corect_label), NULL);
 
 
-	for(int i=0; i< PAR_LIST_N; i++)
-	{
-		switch(i)
-		{
-			case PAR_MAX_STACKED_SHEETS:
-				gtk_label_set_text(GTK_LABEL(this->print_params_page->par_lbl[i]), multi_lang[this->core_ref->lang_index].par_max_stacked_sheet_lbl);
-			break;
-			case PAR_MAX_REJECTED_SHEET_SEQ:
-				gtk_label_set_text(GTK_LABEL(this->print_params_page->par_lbl[i]), multi_lang[this->core_ref->lang_index].par_rejected_sheet_seq_lbl);
-			break;
-		}
-	}
-
+	gui_print_params_page_language(this->print_params_page);
 
 	for(int i = 0;i< HOT_LIST_N; i++)
 	{
@@ -4911,6 +4989,7 @@ void gui_signals(gui * this)
 	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_ERROR_RESET]), "clicked", G_CALLBACK(gui_control_page_btn_reset_callback), this->control_page);
 	g_signal_connect(G_OBJECT(this->control_page->btn_settings), "clicked", G_CALLBACK(gui_control_page_btn_go_to_settings_callback), this);
 	g_signal_connect(G_OBJECT(this->control_page->job_report_list), "cursor-changed", G_CALLBACK(gui_control_page_open_report_csv), this);
+	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_FEED]), "clicked", G_CALLBACK(gui_control_page_btn_feed_sheet_callback), this->core_ref);
 
 
 	g_signal_connect(G_OBJECT(settings_button_get_instance(this->settings_page->btn[S_BTN_IO_VISION])), 
@@ -4941,6 +5020,10 @@ void gui_signals(gui * this)
 
 	g_signal_connect(G_OBJECT(this->print_params_page->par_entry[PAR_MAX_STACKED_SHEETS]), "key-release-event", G_CALLBACK(gui_print_params_page_max_stacked_sheet_callback), this->print_params_page);
 	g_signal_connect(G_OBJECT(this->print_params_page->par_entry[PAR_MAX_REJECTED_SHEET_SEQ]), "key-release-event", G_CALLBACK(gui_print_params_set_max_rejected_sheet_seq), this->print_params_page);
+	g_signal_connect(G_OBJECT(this->print_params_page->sheet_source_combo), "changed", G_CALLBACK(gui_print_params_set_sheet_source_callback), this->print_params_page);
+	g_signal_connect(G_OBJECT(this->print_params_page->print_confirm_switch), "state_set", G_CALLBACK(gui_print_params_set_print_confirmation_state_callback), this->print_params_page);
+
+
 
 
 }
@@ -5099,6 +5182,8 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 			this->btn[i] = gtk_button_new_with_label("reset");
 		else if(i == GC_BTN_DELETE_JOB)
 			this->btn[i] = gtk_button_new_with_label ("Delete");
+		else if(i == GC_BTN_FEED)
+			this->btn[i] = gtk_button_new_with_label ("Feed");
 
 		gtk_widget_set_size_request(GTK_WIDGET(this->btn[i]), 75,70);
 
@@ -5118,23 +5203,13 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 void gui_control_page_btn_cancel_callback(GtkButton *button, gpointer param)
 {
 	gui_control_page * this = (gui_control_page*) param;
-	if(core_print_cancel(this->gui_base_ref->core_ref) == 0)
-	{
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PAUSE]), FALSE);
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_CONTINUE]), FALSE);
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PRINT]), TRUE);
-	}
+	core_print_cancel(this->gui_base_ref->core_ref);
 }
 
 void gui_control_page_btn_reset_callback(GtkButton *button, gpointer param)
 {
 	gui_control_page * this = (gui_control_page*) param;
-	if(core_print_reset_error(this->gui_base_ref->core_ref) == 0)
-	{
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PAUSE]), FALSE);
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_CONTINUE]), FALSE);
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PRINT]), TRUE);
-	}
+	core_print_reset_error(this->gui_base_ref->core_ref);
 }
 
 void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer param)
@@ -5151,11 +5226,7 @@ void gui_control_page_btn_pause_callback(GtkButton *button, gpointer param)
 	if(this->gui_base_ref->core_ref->machine_state != MACHINE_STATE_ERROR)
 	{
 		/* set pause */
-		if(core_print_pause(this->gui_base_ref->core_ref) == 0)
-		{
-			gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PAUSE]), FALSE);
-			gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_CONTINUE]), TRUE);
-		}
+		core_print_pause(this->gui_base_ref->core_ref);
 	}
 }
 
@@ -5304,6 +5375,14 @@ void gui_control_page_load_report_csv_list(gui_control_page * this)
 	gtk_tree_view_set_model(GTK_TREE_VIEW(this->job_report_list), GTK_TREE_MODEL(this->job_report_list_store));
 	g_object_unref(G_OBJECT(this->job_report_list_store));
 }
+
+void gui_control_page_btn_feed_sheet_callback(GtkWidget * widget, gpointer param)
+{
+	core * this = param;
+	if(this->machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION)
+		core_sheet_source_confirmation(this);
+}
+
 
 void gui_control_page_open_report_csv (GtkTreeView *tree_view, gpointer param)
 {
@@ -5840,10 +5919,13 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 	
 	this->gui_base_ref = gui_base_ref;
 
-	this->page = gtk_fixed_new();
-	gtk_widget_set_size_request(GTK_WIDGET(this->page), gui_base_ref->work_area_geometry.width, gui_base_ref->work_area_geometry.height);
+	int width = gui_base_ref->work_area_geometry.width;
+	int height = gui_base_ref->work_area_geometry.height;
 
-	this->btn_return = settings_button_new(settings_btn_fg_s, fg, bg, fg, gui_base_ref->work_area_geometry.width/2, 50);
+	this->page = gtk_fixed_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->page), width, height);
+
+	this->btn_return = settings_button_new(settings_btn_fg_s, fg, bg, fg,width/2, 50);
 	settings_button_set_font_size(this->btn_return, 18);
 	settings_button_set_selected(this->btn_return, 1);
 
@@ -5852,8 +5934,9 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 	this->par_entry = (GtkWidget **) malloc(sizeof(GtkWidget *)*PAR_LIST_N);
 
 	char buf[32];
+	int i;
 
-	for(int i = 0; i < PAR_LIST_N; i++)
+	for(i = 0; i < PAR_LIST_N; i++)
 	{
 		this->par_lbl[i] = gtk_label_new(NULL);
 
@@ -5872,16 +5955,81 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 
 		gtk_entry_set_text(GTK_ENTRY(this->par_entry[i]), buf);	
 
-		gtk_fixed_put(GTK_FIXED(this->page), this->par_lbl[i], gui_base_ref->work_area_geometry.width/4, 250+80+(50*i));
-		gtk_fixed_put(GTK_FIXED(this->page), this->par_entry[i], (gui_base_ref->work_area_geometry.width/4*3)-300, 250+80+(50*i));
+		gtk_fixed_put(GTK_FIXED(this->page), this->par_lbl[i], width/4, 250+80+(50*i));
+		gtk_fixed_put(GTK_FIXED(this->page), this->par_entry[i], (width/4*3)-300, 250+80+(50*i));
 	}	
 
+	this->sheet_source_lbl = gtk_label_new(NULL);
+
+	this->print_confirm_lbl = gtk_label_new(NULL);
+
+	this->sheet_source_combo = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->sheet_source_combo), 300, 35);
+
+	this->print_confirm_switch = gtk_switch_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->print_confirm_switch), 100,35);
+	gtk_switch_set_active(GTK_SWITCH(this->print_confirm_switch), this->gui_base_ref->core_ref->sheet_source_confirmation);
+
+
+	this->print_mode_lbl = gtk_label_new(NULL);
+	this->print_mode_combo = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->print_mode_combo), 300, 35);
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_lbl, width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_combo, width/4*3-300, 250+80+(50*i));
+	i++;
+	gtk_fixed_put(GTK_FIXED(this->page), this->print_confirm_lbl, width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->print_confirm_switch, width/4*3-300, 250+80+(50*i));
+	i++;
+	gtk_fixed_put(GTK_FIXED(this->page), this->print_mode_lbl, width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->print_mode_combo, width/4*3-300, 250+80+(50*i));
 
 	gtk_fixed_put(GTK_FIXED(this->page), settings_button_get_instance(this->btn_return), 
 		gui_base_ref->work_area_geometry.width/4, 250);
 
 	return this;
 }
+
+void gui_print_params_page_language(gui_print_params_page * this)
+{
+	int lang_index = this->gui_base_ref->core_ref->lang_index;
+
+	for(int i=0; i< PAR_LIST_N; i++)
+	{
+		switch(i)
+		{
+			case PAR_MAX_STACKED_SHEETS:
+				gtk_label_set_text(GTK_LABEL(this->par_lbl[i]), multi_lang[lang_index].par_max_stacked_sheet_lbl);
+			break;
+			case PAR_MAX_REJECTED_SHEET_SEQ:
+				gtk_label_set_text(GTK_LABEL(this->par_lbl[i]), multi_lang[lang_index].par_rejected_sheet_seq_lbl);
+			break;
+		}
+	}
+
+	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang[lang_index].par_sheet_source_main);
+	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang[lang_index].par_sheet_source_companion);
+	
+	gtk_combo_box_set_active(GTK_COMBO_BOX(this->sheet_source_combo), this->gui_base_ref->core_ref->companion_sheet_source);
+	
+	gtk_label_set_text(GTK_LABEL(this->sheet_source_lbl), multi_lang[lang_index].par_sheet_source_lbl);
+	gtk_label_set_text(GTK_LABEL(this->print_confirm_lbl), multi_lang[lang_index].par_print_confirm_lbl);
+}
+
+
+void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer param)
+{
+	gui_print_params_page * this = (gui_print_params_page*) param;
+	core_set_companion_sheet_source(this->gui_base_ref->core_ref, gtk_combo_box_get_active (widget));
+}
+
+gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widget, gboolean state, gpointer param)
+{
+	gui_print_params_page * this = (gui_print_params_page*) param;
+	core_set_sheet_source_confirmation(this->gui_base_ref->core_ref, state);
+	return TRUE;
+}
+
 
 void gui_print_params_set_max_rejected_sheet_seq(GtkWidget *widget, GdkEvent  *event, gpointer param)
 {

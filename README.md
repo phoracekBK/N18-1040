@@ -1,8 +1,10 @@
 
 
 TODO:
+* Vytvořit skript pro spouštění GIS serveru a bufferovací aplikace
+* Nastavení režimu stroje, nesmí být změněn při tisku
+* Na základě nastaveného režimu ošetřit posílání pdf a csv do subsystémů
 * Upravit kartu tiskové paramtry a přidat nastavení pro volby zdroje prokladového archu
-* Upravit kartu řídícího rozhraní pro potvrzení nabraní prokladového archu z hlavního nakladače
 * Vytvořit automatizované unit testy pro krytické funkce a vyladit jádro
 * Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job
 * Upravit řídící panel pro zobrazení pouze jednoho jobu připraveného k tisku
@@ -17,6 +19,8 @@ TODO:
 
 DONE:
 
+* Upravit kartu řídícího rozhraní pro potvrzení nabraní prokladového archu z hlavního nakladače
+* Zrychlit odezvu resetu
 * Zobrazit na řídícím panelu hodnotu počítadel
 * Přidat nastavitelnou možnost výběru archu pro prokladový list buď ze separator sheet feeder nebo s main feeder
 * Přidat nastavitelnou možnost pro potvrzení nabrání archu na prokladový list z main feeder (možnost ručního vložení správného archu)

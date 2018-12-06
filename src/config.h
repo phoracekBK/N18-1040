@@ -52,9 +52,9 @@
 #define PROGRAM_ICON_PATH "./icons/icon.png"
 
 /** @ingroup configuration Interval for content reading of quadient hot folder */
-#define HOT_FOLDER_READING_INTERVAL 1000000 
+#define HOT_FOLDER_READING_INTERVAL 500000 // 500ms
 
-#define MACHINE_CYCLE_TIMING 100000//5000
+#define MACHINE_CYCLE_TIMING 5000 //5ms
 
 #define MACHINE_XBF_INTERVAL 100 //ms
 
@@ -195,6 +195,10 @@ struct _lang_
 
 	const char * par_max_stacked_sheet_lbl;
 	const char * par_rejected_sheet_seq_lbl;
+	const char * par_sheet_source_lbl;
+	const char * par_print_confirm_lbl;
+	const char * par_sheet_source_main;
+	const char * par_sheet_source_companion;
 };
 typedef struct _lang_ lang;
 
@@ -280,7 +284,14 @@ const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
 				"Nastřelovací proužky:",
 				
 				"Maximum archů ve vykladači:",
-                                "Maximální sekvence vadných archů:"},
+                                "Maximální sekvence vadných archů:",
+				"Nakladač pro prokladový arch:",
+				"Potvrzení naložení archu z hlavního nakladače:",
+				"Hlavní nakladač",
+				"Prokladový nakladač"},
+
+
+
 
 				/* english language label */
 				{"English", 							/* lang_name */
@@ -364,13 +375,10 @@ const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
 				"Tab inserts:",
 
 				"Maximum number of sheets in the stecker:",
-	                        "Maximum number of rejected sheets in sequence:"}};							
-
-
-
-
-
-
-
+	                        "Maximum number of rejected sheets in sequence:",
+				"Feeder for companion sheet:",
+				"Confirmation feeding from main feeder:",
+				"Main feeder",
+				"Companion feeder"}};
 
 #endif
