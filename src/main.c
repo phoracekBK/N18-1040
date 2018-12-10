@@ -70,6 +70,32 @@
 #define VERSION "0.7"
 
 
+#define CFG_GROUP_NETWORK "network"
+#define CFG_GROUP_LANGUAGE "language"	
+#define CFG_GROUP_PRINT_PARAMS "print_params"
+#define CFG_GROUP_HOTFOLDER "hotfolder"
+
+#define CFG_HOT_QUADIENT_MAIN "q_hot_main"
+#define CFG_HOT_QUADIENT_FEEDBACK "q_hot_feedback"
+#define CFG_HOT_QUADIENT_BACKUP "q_hot_backup"
+#define CFG_HOT_GIS "gis_hot"
+#define CFG_HOT_PCI_IN "pci_hot_in"
+#define CFG_HOT_PCI_OUT "pci_hot_out"
+#define CFG_HOT_REP_CSV "rep_hot"
+
+#define CFG_PP_SHEET_FOR_STOP "max_rj_sheet_sq"
+#define CFG_PP_MAX_SHEET_IN_STACKER "max_st_sheet"
+#define CFG_PP_COMPAION_SHEET_SOURCE "companion_sheet_source"
+#define CFG_PP_SHEET_SOURCE_CONFIRMATION "sheet_source_confirmation"
+#define CFG_PP_NON_STACKED_SHEET_LIMIT "non_stacked_sheet_limit"
+#define CFG_PP_NON_REVIDED_SHEET_LIMIT "non_revided_sheet_limit"
+#define CFG_PP_GR_MACHINE_MODE "gr_machine_mode"
+
+#define CFG_LANG_INDEX "lang_index"
+
+#define CFG_NETWORK_GIS_TCP_PORT "gis_tcp_port"
+#define CFG_NETWORK_GIS_IP_ADDRESS "gis_ip_address"
+
 /**
 ** @ingroup Cli
 ** Macro defines the size of input buffer created at the start of the application, used for 
@@ -330,6 +356,15 @@
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
 
+enum _gremser_print_mode_
+{
+	GR_SETUP=0,
+	GR_PRINT,
+	GR_INSPECTION,
+	GR_PRINT_INSPECTION,
+
+	GR_MODE_N
+};
 
 
 enum _gui_job_list_items_
@@ -536,6 +571,8 @@ struct _core_
 	int32_t non_stacked_upper_limit;
 	int32_t non_revided_upper_limit;
 	
+	uint8_t machine_mode;
+	uint8_t machine_mode_pre;
 
 	c_string * print_controller_status;
 
@@ -578,7 +615,7 @@ struct _job_info_
 	uint32_t total_sheet_number;
 	uint32_t total_stemps_number;
 
-
+	uint32_t printed_sheet_number;
 
 	/* 
 	** contents list of array_lists contents list of array_list variables contains arrays of info_struct variables
@@ -804,15 +841,15 @@ struct _gui_base_
 	/******************* Static function declarations section - core internal functions *****************************************************************/
 uint8_t core_iij_try_connect(core * this);
 uint8_t core_pci_try_connect(core * this);
-uint8_t core_pci_load_tcp_port(core * this);
-uint8_t core_pci_load_ip_addr(core * this);
-uint8_t core_iij_load_tcp_port(core * this);
-uint8_t core_iij_load_ip_addr(core * this);
+
 void core_default_config(core * this);
+uint8_t core_load_config(core* this);
+void core_update_config(core * this, char * group_name, char * var_name, int type, void * data, char * log_msg_ok, char* log_msg_fail);
+void core_initialize_variables(core * this);
+
 void core_safety_system_in(core * this);
 void core_safety_system_out(core * this);
 void core_printer_abbort_print(core * this);
-void core_finalize(core * this);
 void core_set_machine_error(core * this, uint8_t error_code);
 
 int8_t core_csv_analyze(core * this);
@@ -844,9 +881,9 @@ void core_machine_state_save_q_csv(core * this);
 void core_machine_wait_for_print_finish(core * this);
 void core_machine_state_finish(core * this);
 void core_machine_state_print_break(core * this);
-void core_stacker_error_handler(core * this, uint8_t stacker_status);
+void core_stacker_error_handler(core * this);
 void core_feeder_error_handler(core * this, uint8_t feeder_status);
-void core_set_machine_mode(core * this);
+void core_machine_mode_control(core * this);
 void core_machine_stacker_counter(core * this);
 void core_machine_tab_insert_counter(core * this);
 void core_counter_check_sum(core * this);
@@ -862,9 +899,12 @@ void core_parse_gis_status(core * this, char * status_str);
 	/******************* Local function declarations section - core punlic interface *****************************************************************/
 
 core * core_new();
+void core_finalize(core * this);
 
-uint8_t core_set_interface_language(core * this, uint8_t lang_index);
-	
+uint8_t core_set_interface_language(core * this, int lang_index);
+void core_refresh_dir_list(core * this);
+void core_set_machine_mode(core * this, int mode);
+
 uint8_t core_iij_set_ip_addr(core * this, char * ip_addr);
 uint8_t core_iij_set_tcp_port(core * this, int port);
 char * core_iij_get_ip_addr(core * this);
@@ -883,7 +923,7 @@ uint8_t core_pci_disconnect(core * this);
 
 void core_set_max_stacked_sheets(core * this, int sheet_val);
 void core_set_max_rejected_sheet_seq(core * this, int sheet_val);
-void core_set_companion_sheet_source(core * this, uint8_t source);
+void core_set_companion_sheet_source(core * this, int source);
 void core_set_sheet_source_confirmation(core * this, bool confirm);
 
 uint8_t core_set_q_main_hotfolder_path(core * this, const char * path);
@@ -924,10 +964,12 @@ uint8_t core_pci_status(core * this);
 
 job_info * job_info_new(char * csv_address);
 int job_info_get_job_index(job_info * this);
+int job_info_get_printed_sheet_number(job_info * this);
 void job_info_set_order_name(job_info * this, char* order_name);
 void job_info_clear(job_info * this);
 void info_struct_finalize(void * this);
 void job_info_add_job_record(job_info * this);
+void job_info_generate_missing_sheet_records(job_info * this);
 void job_info_add_sheet_record(job_info * this, char * sheet_order);
 void job_info_set_sheet_record_result(job_info * this, char * result, int index);
 int8_t job_info_generate_csv(job_info * this);
@@ -992,6 +1034,7 @@ void gui_pack(gui * this);
 char * gui_hotfolder_page_def_file_chooser(char * title);
 
 gui_control_page * gui_control_page_new(gui_base * gui_base_ref);
+void gui_control_page_language(gui_control_page * this);
 void gui_control_page_load_jobs(gui_control_page * this);
 GtkTreeViewColumn * gui_control_page_new_tree_column(char * label, int index);
 void gui_control_page_delete_columns(GtkWidget * list);
@@ -1008,6 +1051,7 @@ void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer pa
 
 
 gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref);
+void gui_settings_page_language(gui_settings_page * this);
 void gui_settings_page_btn_go_to_io_vision_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_btn_go_to_lang_settings_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_btn_go_to_print_params_settings_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
@@ -1021,9 +1065,11 @@ void gui_io_vision_draw_socket(cairo_t* cr, double x, double y, double w, double
 gboolean gui_io_vision_draw_event(GtkWidget * widget, cairo_t * cr, gpointer param);
 
 gui_network_page * gui_network_page_new(gui_base * gui_base_ref);
+void gui_network_page_language(gui_network_page * this);
 gboolean gui_setting_page_iij_network_control_callback(GtkSwitch *widget, gboolean state, gpointer param);
 
 gui_hotfolder_page * gui_hotfolder_page_new(gui_base * gui_base_ref);
+void gui_hotfolder_page_language(gui_hotfolder_page * this);
 void gui_hotfolder_page_select_q_main_path_callback(GtkWidget * widget, gpointer param);
 void gui_hotfolder_page_select_q_feedback_path_callback(GtkWidget * widget, gpointer parama);
 void gui_hotfolder_page_select_q_backup_path_callback(GtkWidget * widget, gpointer param);
@@ -1032,16 +1078,17 @@ void gui_hotfolder_page_select_pci_out_path_callback(GtkWidget * widget, gpointe
 void gui_hotfolder_page_select_gis_path_callback(GtkWidget * widget, gpointer param);
 void gui_hotfolder_page_select_report_path_callback(GtkWidget * widget, gpointer param);
 
-
 gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref);
 void gui_print_params_page_language(gui_print_params_page * this);
 void gui_print_params_page_max_stacked_sheet_callback (GtkWidget *widget, GdkEvent  *event, gpointer   param);
 void gui_print_params_set_max_rejected_sheet_seq(GtkWidget *widget, GdkEvent  *event, gpointer param);
 void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer param);
 gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widget, gboolean state, gpointer param);
+void gui_print_params_set_machine_mode_callback (GtkComboBox *widget, gpointer param);
+
 
 gui_lang_page * gui_lang_page_new(gui_base * gui_base_ref);
-
+void gui_lang_page_language(gui_lang_page * this);
 
 gui_info_window * gui_info_window_new(char * title, char * info_label, void (*callback)(void*), void * param);
 void gtk_info_window_finalize();
@@ -1092,8 +1139,10 @@ void * core_gis_runtime_state_reading(void * param)
 				}
 				else
 				{	
-					while(*state_msg != '\n'){state_msg++;}
-					state_msg++;
+					while((*state_msg != '\n') && (*state_msg != 0)){state_msg++;}
+
+					if(*state_msg != 0)
+						state_msg++;
 				}
 			}
 		}
@@ -1103,7 +1152,8 @@ void * core_gis_runtime_state_reading(void * param)
 #endif
 	}
 	
-	c_string_set_string(this->print_controller_status, "Unknown state");
+	c_string_set_string(this->print_controller_status, "Unknown");
+	core_iij_disconnect(this);
 	
 	return NULL;
 }
@@ -1159,60 +1209,295 @@ uint8_t core_pci_try_connect(core * this)
 	return comm_tcp_connect(this->pci_tcp_ref);
 }
 
-uint8_t core_pci_load_tcp_port(core * this)
+
+void core_update_config(core * this, char * group_name, char * var_name, int type, void * data, char * log_msg_ok, char* log_msg_fail)
 {
-	return comm_tcp_set_tcp_port(this->pci_tcp_ref, DEFAULT_TCP_PORT_PCI);
+	config_setting_t * root, *group, *settings;
+
+	root = config_root_setting(&(this->cfg_ref));
+	group = config_setting_get_member(root, group_name);
+
+	if(config_setting_remove(group, var_name) == CONFIG_TRUE)
+	{
+		settings = config_setting_add(group, var_name, type);
+
+		if(type == CONFIG_TYPE_INT)
+			config_setting_set_int(settings, *((int*) data));
+		else if(type == CONFIG_TYPE_STRING)
+			config_setting_set_string(settings, (char*) data);
+		else if(type == CONFIG_TYPE_BOOL)
+			config_setting_set_bool(settings, *((int*) data));
+
+		config_write_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH);
+		c_log_add_record_with_cmd(this->log, log_msg_ok);
+	}
+	else
+	{
+		c_log_add_record_with_cmd(this->log, "%s: %s",log_msg_fail, config_error_text(&(this->cfg_ref)));
+	}
 }
 
-uint8_t core_pci_load_ip_addr(core * this)
+uint8_t core_load_config(core* this)
 {
-	return comm_tcp_set_ip_addr(this->pci_tcp_ref,  DEFAULT_IP_ADDRESS_PCI);
+	config_setting_t * settings;
+	const char * setting_val_str;
+	int setting_val_int;
+	
+	/* load hotfolder settings */
+	settings = config_lookup(&(this->cfg_ref), CFG_GROUP_HOTFOLDER);
+	if(settings == NULL)
+		return 1;
+	
+	if(config_setting_lookup_string(settings, CFG_HOT_QUADIENT_MAIN, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->q_hotfolder_main_path, (char*) setting_val_str);
+	else
+		return 2;
+
+	if(config_setting_lookup_string(settings, CFG_HOT_QUADIENT_BACKUP, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->q_hotfolder_backup_path, (char*) setting_val_str);
+	else
+		return 3;
+	
+	if(config_setting_lookup_string(settings, CFG_HOT_QUADIENT_FEEDBACK, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->q_hotfolder_feedback_path, (char*) setting_val_str);
+	else
+		return 4;
+
+	if(config_setting_lookup_string(settings, CFG_HOT_PCI_IN, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->pci_hotfolder_in_path, (char*) setting_val_str);
+	else
+		return 5;
+
+	if(config_setting_lookup_string(settings, CFG_HOT_PCI_OUT, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->pci_hotfolder_out_path, (char*) setting_val_str);
+	else
+		return 6;
+
+	if(config_setting_lookup_string(settings, CFG_HOT_GIS, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->gis_hotfolder_path, (char*) setting_val_str);
+	else
+		return 7;
+	
+	if(config_setting_lookup_string(settings, CFG_HOT_REP_CSV, &setting_val_str) == CONFIG_TRUE)
+		c_string_set_string(this->job_log_path, (char*) setting_val_str);
+	else
+		return 8;
+
+
+	/* load network settings */
+	settings = config_lookup(&(this->cfg_ref), CFG_GROUP_NETWORK);
+
+	if(config_setting_lookup_string(settings, CFG_NETWORK_GIS_IP_ADDRESS, &setting_val_str) == CONFIG_TRUE)
+		comm_tcp_set_ip_addr(this->iij_tcp_ref, (char*) setting_val_str);
+	else
+		return 9;
+	
+	if(config_setting_lookup_int(settings, CFG_NETWORK_GIS_TCP_PORT, &setting_val_int) == CONFIG_TRUE)
+		comm_tcp_set_tcp_port(this->iij_tcp_ref, setting_val_int);
+	else
+		return 10;
+	
+
+	/* load print params settings */
+	settings = config_lookup(&(this->cfg_ref), CFG_GROUP_PRINT_PARAMS);
+
+	if(config_setting_lookup_int(settings, CFG_PP_SHEET_FOR_STOP, &setting_val_int) == CONFIG_TRUE)
+		this->rejected_sheet_for_stop = setting_val_int;
+	else
+		return 11;
+
+	if(config_setting_lookup_int(settings, CFG_PP_MAX_SHEET_IN_STACKER, &setting_val_int) == CONFIG_TRUE)
+		this->max_stacked_sheets = setting_val_int;
+	else
+		return 12;
+
+
+
+	if(config_setting_lookup_int(settings, CFG_PP_COMPAION_SHEET_SOURCE, &setting_val_int) == CONFIG_TRUE)
+	{
+		if((setting_val_int) >= 0 && (setting_val_int < SSOURCE_N))
+			this->companion_sheet_source = setting_val_int;
+		else
+			return 13;
+	}
+	else
+		return 14;
+
+
+	if(config_setting_lookup_bool(settings, CFG_PP_SHEET_SOURCE_CONFIRMATION, &setting_val_int) == CONFIG_TRUE)
+		this->sheet_source_confirmation = setting_val_int;
+	else
+		return 15;
+	
+
+	if(config_setting_lookup_int(settings, CFG_PP_NON_STACKED_SHEET_LIMIT, &setting_val_int) == CONFIG_TRUE)
+		this->non_stacked_upper_limit = setting_val_int;
+	else
+		return 16;
+	
+
+	if(config_setting_lookup_int(settings, CFG_PP_NON_REVIDED_SHEET_LIMIT, &setting_val_int) == CONFIG_TRUE)
+		this->non_revided_upper_limit = setting_val_int;
+	else
+		return 17;
+
+	if(config_setting_lookup_int(settings, CFG_PP_GR_MACHINE_MODE, &setting_val_int) == CONFIG_TRUE)
+		this->machine_mode = setting_val_int;
+	else
+		return 18;
+
+	/* load language settings */
+	settings = config_lookup(&(this->cfg_ref), CFG_GROUP_LANGUAGE);
+
+	if(config_setting_lookup_int(settings, CFG_LANG_INDEX, &setting_val_int) == CONFIG_TRUE)
+		this->lang_index = setting_val_int;
+	else
+		return 19;
+
+
+	return 0;
 }
 
-uint8_t core_iij_load_tcp_port(core * this)
+
+void core_initialize_variables(core * this)
 {
-	return comm_tcp_set_tcp_port(this->iij_tcp_ref, DEFAULT_TCP_PORT_GIS);
+
+		/* machine handler status and control variables */
+		this->machine_state = MACHINE_STATE_PRINT_FINISH;
+		this->machine_state_pre = MACHINE_STATE_WAIT;
+		this->printed_job_name = c_string_new();
+		this->machine_pause_req = false;
+		this->machine_print_req = false;
+		this->machine_error_reset_req = false;
+		this->machine_cancel_req = false;
+
+		this->error_code = 0;
+
+		this->job_list = array_list_new();
+		this->job_list_pre = array_list_new();
+		this->job_list_changed = 0;
+
+
+		this->printed_job_index = -1;
+		this->bkcore_csv_pos = 0;
+
+		this->q_hotfolder_main_path = c_string_new();
+		this->q_hotfolder_feedback_path = c_string_new();
+		this->q_hotfolder_backup_path = c_string_new();
+		this->pci_hotfolder_in_path = c_string_new();
+		this->pci_hotfolder_out_path = c_string_new();
+		this->gis_hotfolder_path = c_string_new();
+		this->job_log_path = c_string_new();
+
+		this->timer = c_freq_millis();
+
+		this->feeded_main_sheet_counter = 0;
+		this->feeded_companion_sheet_counter = 0;
+		this->stacked_sheet_counter = 0;
+		this->rejected_sheet_counter = 0;
+		this->rejected_sheet_seq_counter = 0;
+		this->tab_insert_counter = 0;
+		this->inspected_sheet_counter = 0;
+
+	
+		this->machine_mode_pre = 0;	
+		this->print_confirmation_req = false;
+
+		/* GIS printer status */
+		this->print_controller_status = c_string_new_with_init("Unknown");
 }
 
-uint8_t core_iij_load_ip_addr(core * this)
-{
-	return comm_tcp_set_ip_addr(this->iij_tcp_ref,  DEFAULT_IP_ADDRESS_GIS);
-}
 
 void core_default_config(core * this)
 {
-	c_string_set_string(this->q_hotfolder_main_path, Q_HOT_FOLDER_ADDR);
-	c_string_set_string(this->q_hotfolder_feedback_path, Q_FEEDBACK_ADDR);
-	c_string_set_string(this->q_hotfolder_backup_path, Q_JOB_BACKUP);
-	c_string_set_string(this->pci_hotfolder_in_path, PCI_HOT_FOLDER_ADDR_IN);
-	c_string_set_string(this->pci_hotfolder_out_path, PCI_HOT_FOLDER_ADDR_OUT);
-	c_string_set_string(this->gis_hotfolder_path, GIS_HOT_FOLDER);
-	c_string_set_string(this->job_log_path, JOB_LOG);
+	config_setting_t *root, *hotfolder, *network, *print_params, *language, *settings;
 
+	/* create root settings */
+	root = config_root_setting(&(this->cfg_ref));
+
+	/* create groups */
+	hotfolder = config_setting_add(root, CFG_GROUP_HOTFOLDER, CONFIG_TYPE_GROUP);
+	network = config_setting_add(root, CFG_GROUP_NETWORK, CONFIG_TYPE_GROUP);
+	print_params = config_setting_add(root, CFG_GROUP_PRINT_PARAMS, CONFIG_TYPE_GROUP);
+	language = config_setting_add(root, CFG_GROUP_LANGUAGE, CONFIG_TYPE_GROUP);
+
+	
+	/* save hotfolder settings */
+	c_string_set_string(this->q_hotfolder_main_path, Q_HOT_FOLDER_ADDR);
+	settings = config_setting_add(hotfolder, CFG_HOT_QUADIENT_MAIN, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, Q_HOT_FOLDER_ADDR);
+
+	c_string_set_string(this->q_hotfolder_feedback_path, Q_FEEDBACK_ADDR);
+	settings = config_setting_add(hotfolder, CFG_HOT_QUADIENT_FEEDBACK, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, Q_FEEDBACK_ADDR);
+
+	c_string_set_string(this->q_hotfolder_backup_path, Q_JOB_BACKUP);
+	settings = config_setting_add(hotfolder, CFG_HOT_QUADIENT_BACKUP, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, Q_JOB_BACKUP);	
+
+	c_string_set_string(this->pci_hotfolder_in_path, PCI_HOT_FOLDER_ADDR_IN);
+	settings = config_setting_add(hotfolder, CFG_HOT_PCI_IN, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, PCI_HOT_FOLDER_ADDR_IN);
+
+	c_string_set_string(this->pci_hotfolder_out_path, PCI_HOT_FOLDER_ADDR_OUT);
+	settings = config_setting_add(hotfolder, CFG_HOT_PCI_OUT, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, PCI_HOT_FOLDER_ADDR_OUT);
+
+	c_string_set_string(this->gis_hotfolder_path, GIS_HOT_FOLDER);
+	settings = config_setting_add(hotfolder, CFG_HOT_GIS, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, GIS_HOT_FOLDER);
+
+	c_string_set_string(this->job_log_path, JOB_INFO_CSV_PATH);
+	settings = config_setting_add(hotfolder, CFG_HOT_REP_CSV, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, JOB_INFO_CSV_PATH);
+
+
+	/* save print parameters settings */
 	this->rejected_sheet_for_stop = 10;
+	settings = config_setting_add(print_params, CFG_PP_SHEET_FOR_STOP, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, this->rejected_sheet_for_stop);
+
 	this->max_stacked_sheets = 2500;
+	settings = config_setting_add(print_params, CFG_PP_MAX_SHEET_IN_STACKER, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, this->max_stacked_sheets);
+
+	core_set_companion_sheet_source(this,  SSOURCE_COMPANION);
+	settings = config_setting_add(print_params, CFG_PP_COMPAION_SHEET_SOURCE, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, SSOURCE_COMPANION);
+
+	core_set_sheet_source_confirmation(this, false);
+	settings = config_setting_add(print_params, CFG_PP_SHEET_SOURCE_CONFIRMATION, CONFIG_TYPE_BOOL);
+	config_setting_set_bool(settings, false);
+
+	this->non_stacked_upper_limit = 2;
+	settings = config_setting_add(print_params, CFG_PP_NON_STACKED_SHEET_LIMIT, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 2);
+
+	this->non_revided_upper_limit = 3;
+	settings = config_setting_add(print_params, CFG_PP_NON_REVIDED_SHEET_LIMIT, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 3);	
+
+	this->machine_mode = GR_PRINT_INSPECTION;
+	settings = config_setting_add(print_params, CFG_PP_GR_MACHINE_MODE, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, GR_PRINT_INSPECTION);	
+
+	/* save network settings */
+	comm_tcp_set_ip_addr(this->iij_tcp_ref,  DEFAULT_IP_ADDRESS_GIS);
+	settings = config_setting_add(network, CFG_NETWORK_GIS_IP_ADDRESS, CONFIG_TYPE_STRING);
+	config_setting_set_string(settings, DEFAULT_IP_ADDRESS_GIS);
+
+	comm_tcp_set_tcp_port(this->iij_tcp_ref, DEFAULT_TCP_PORT_GIS);
+	settings = config_setting_add(network, CFG_NETWORK_GIS_TCP_PORT, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, DEFAULT_TCP_PORT_GIS);
+
+	/* save language settings */
+	this->lang_index = lang_cz;
+	settings = config_setting_add(language, CFG_LANG_INDEX, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, lang_cz);
 	
 
 
-	core_set_companion_sheet_source(this,  SSOURCE_COMPANION);
-	core_set_sheet_source_confirmation(this, false);
-
-
-	//core_pci_load_tcp_port(this);
-	//core_pci_load_ip_addr(this);
-
-
-	this->non_stacked_upper_limit = 2;
-	this->non_revided_upper_limit = 3;
-
-
-	core_iij_load_tcp_port(this);
-	core_iij_load_ip_addr(this);
-
-	this->lang_index = lang_cz;
-
-
-	//config_write_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH);
+	config_write_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH);
 }
 
 void core_set_machine_error(core * this, uint8_t error_code)
@@ -1232,9 +1517,12 @@ void core_safety_system_in(core * this)
 		core_set_machine_error(this, MACHINE_ERR_E_STOP);
 	}
 
-	if((io_card_get_input(this->io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) > 0) || (io_card_get_input(this->io_card_ref,IO_CARD_A2, A2_IN_2_SN_full) > 0))
+	if(this->machine_state == MACHINE_STATE_READ_CSV_LINE)
 	{
-		this->machine_pause_req = true;
+		if((io_card_get_input(this->io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) > 0) || (io_card_get_input(this->io_card_ref,IO_CARD_A2, A2_IN_2_SN_full) > 0))
+		{
+			this->machine_pause_req = true;
+		}
 	}
 
 	/* activation of gremser machine */
@@ -1287,10 +1575,8 @@ void core_safety_system_in(core * this)
 	/* network connection checking */
 	if(core_iij_is_connected(this) == STATUS_CLIENT_CONNECTED)
 	{
-		/*
 		if(this->error_code == MACHINE_ERR_GIS_DISCONNECTED)
 			this->error_code = MACHINE_ERR_NO_ERROR;
-*/
 	}
 	else
 	{
@@ -1300,11 +1586,7 @@ void core_safety_system_in(core * this)
 
 void core_safety_system_out(core * this)
 {
-/*
-	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, 1);
-	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, 1);
-*/
-	core_set_machine_mode(this);
+	core_machine_mode_control(this);
 	
 	/* switch off outputs if the error ocures */
 	if(this->machine_state == MACHINE_STATE_ERROR)
@@ -1327,7 +1609,9 @@ void core_safety_system_out(core * this)
 				(this->machine_state != MACHINE_STATE_JOB_FINISH) && (this->machine_state != MACHINE_STATE_CLEAR_TO_FINISH) && 
 				(this->machine_state != MACHINE_STATE_PRINT_FINISH))
 			{
-				core_counter_check_sum(this);	
+				//core_counter_check_sum(this);		
+				core_stacker_error_handler(this);
+
 			}
 		}
 	}
@@ -1600,7 +1884,8 @@ uint8_t core_load_bkcore_csv(core * this)
 */
 void core_write_to_csv(c_string * feedback_csv, array_list * sheet_index_array, uint32_t index)
 {
-	c_string_add(feedback_csv, (char*) array_list_get(sheet_index_array, index));
+	info_struct* sheet_info = array_list_get(sheet_index_array, index);
+	c_string_add(feedback_csv, (char*) sheet_info->sheet_order);
 			
 	if(index+1 < array_list_size(sheet_index_array))
 	{
@@ -1627,17 +1912,22 @@ int8_t core_check_filename_param(char* filename, const char** params, int param_
 
 int32_t core_get_next_csv_line(char * csv_content, int32_t pos, char* buffer, int max)
 {
-	int32_t offset = pos;
-
-	while((csv_content[offset] != '\n') && (csv_content[offset] != '\r') && (csv_content[offset] != '\0') && ((offset - pos) < max))
+	if(max > 0)
 	{
-		buffer[offset - pos] = csv_content[offset];
-		offset ++;
-	}
-	
-	buffer[offset - pos] = 0;
+		int32_t offset = pos;
 
-	return offset;
+		while((csv_content[offset] != '\n') && (csv_content[offset] != '\0') && ((offset - pos) < max))
+		{
+			buffer[offset - pos] = csv_content[offset];
+			offset ++;
+		}
+		
+		buffer[offset - pos] = 0;
+
+		return offset;
+	}
+	else
+		return 0;
 }
 
 
@@ -1668,20 +1958,20 @@ void core_csv_compare(core * this, char * q_csv, char * c_csv)
 		if((q_csv[q_pos] == '\n'))
 		{
 			job_info_set_sheet_record_result(this->info, "PASS", index);
+
 			while(c_csv[c_pos] != q_csv[q_pos])
 			{
 				if(c_csv[c_pos] != 0)
 				{
 					c_pos++;
 				}
-				else
+					else
 				{
 					index++;
 					core_csv_fill_missing(this, this->feedback_csv, sheet_index_array, &index);
 					return;
 				}
 			}
-
 			index++;
 		}
 		
@@ -1710,6 +2000,7 @@ void core_csv_compare(core * this, char * q_csv, char * c_csv)
 
 				if(q_csv[q_pos] == 0)
 					return;
+
 			}	
 
 			index++;
@@ -1769,6 +2060,8 @@ int32_t core_save_response_csv(core * this, char * name)
 	if(this->feedback_csv != NULL)
 	{	
 		int32_t res = util_save_csv(c_string_get_char_array(this->q_hotfolder_feedback_path), name, c_string_get_char_array(this->feedback_csv));
+
+		util_save_csv("/home/stc", name, c_string_get_char_array(this->feedback_csv));
 		c_string_finalize(&(this->feedback_csv));
 
 		return res;
@@ -1806,8 +2099,11 @@ void core_feeder_error_handler(core * this, uint8_t feeder_status)
 	}
 }
 
-void core_stacker_error_handler(core * this, uint8_t stacker_status)
+void core_stacker_error_handler(core * this)
 {
+	uint8_t stacker_status = io_card_get_bit_value(this->io_card_ref, IO_CARD_A1, A1_IN_6_SN0, A1_IN_7_SN1, A1_IN_8_SN2); 
+
+
 	if((this->machine_state == MACHINE_STATE_PRINT_MAIN) || (this->machine_state == MACHINE_STATE_PRINT_COMPANION))
 	{
 		if(stacker_status == MACHINE_SN_OFF)
@@ -1837,19 +2133,47 @@ void core_stacker_error_handler(core * this, uint8_t stacker_status)
 	}
 }
 
-
-void core_set_machine_mode(core* this)
+/*
+** if the cur_machine_mode (status from inputs) is equal to local configured machine_mode, then
+** the output reflects inputs
+** if the cur_machine_mode not equals to local configured machine_mode, then could occur two situations
+** firest situation is cur_machine_mode is equal to machine_mode_pre, this means that machine mode was changed
+** from graphic interface, then must be changed states of outputs coresponds to given machine mode
+** secound situation is cur_machine_mode is not equal to machine_mode_pre, this means that machine mode was changed
+** from gremser machine, then must be changed configuration of machine mode in graphic interface
+*/
+void core_machine_mode_control(core* this)
 {
-	/* bude režim nastavizelný??? */
-	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_0_MBR0));
-	io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1));
+	int cur_machine_mode = io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) + 2*io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1);
+
+	if(cur_machine_mode != this->machine_mode)
+	{
+		if(cur_machine_mode == this->machine_mode_pre)
+		{
+			/* machine mode changed from gui interface, need change output values */
+			io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, this->machine_mode%2);
+			io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, (this->machine_mode/2)%2);	
+		}
+		else
+		{
+			/* machine mode changed from gremser machine, need adapt internal state */
+			this->machine_mode = cur_machine_mode;
+		}	
+	}
+	else
+	{
+		/* reflection input state to output */
+		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_0_MBR0));
+		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1));
+	}
+
+	this->machine_mode_pre = cur_machine_mode;
 }
 
 void core_machine_state_read_hotfolder(core * this)
 {
 	if(this->machine_print_req == false)
-		core_read_dir_content(this);
-		
+		core_read_dir_content(this);	
 	else if((this->machine_cancel_req) == true && (this->machine_state == MACHINE_STATE_NEXT))
 		this->machine_state = MACHINE_STATE_PRINT_BREAK;
 
@@ -1861,33 +2185,33 @@ void core_machine_state_read_hotfolder(core * this)
 			q_job * job = core_find_job(this, c_string_get_char_array(this->printed_job_name), &job_index);
 
 			if((job != NULL) && (job->bkcore_name != NULL))
-			{
-				if((job->pdf_name != NULL) && (job->camera_name != NULL))
-				{	
-					if(job->order == (job_info_get_job_index(this->info)+2))
+			{	
+				if(job->order == (job_info_get_job_index(this->info)+2))
+				{
+					if(job->flag == 'e')
 					{
-						if(this->machine_state == MACHINE_STATE_WAIT)
-						{
-							job_info_set_order_name(this->info, job->job_name);
-							job_info_generate_csv_name(this->info);
-						}
-
+						this->machine_state = MACHINE_STATE_PRINT_BREAK;
 						this->printed_job_index = job_index;
-
-						if(job->flag == 'e')
-						{
-							this->machine_state = MACHINE_STATE_PRINT_BREAK;
-						}
-						else
-						{
+					}
+					else
+					{
+						if((job->pdf_name != NULL) && (job->camera_name != NULL))
+						{	
+							if(this->machine_state == MACHINE_STATE_WAIT)
+							{
+								job_info_set_order_name(this->info, job->job_name);
+								job_info_generate_csv_name(this->info);
+							}
+	
+							this->printed_job_index = job_index;
 							job_info_add_job_record(this->info);
 							this->machine_state = MACHINE_STATE_PREPARE;
 						}
 					}
-					else
-					{
-						core_set_machine_error(this, MACHINE_ERR_JOB_ORDER_MISMATCH);
-					}
+				}
+				else
+				{
+					core_set_machine_error(this, MACHINE_ERR_JOB_ORDER_MISMATCH);
 				}
 			}
 		}
@@ -1920,43 +2244,37 @@ void core_machine_state_read_csv_line(core * this)
 	{
 		if(core_machine_slow_down(this) > 0)
 		{
+			/* load line from csv */
 			q_job * job = array_list_get(this->job_list, this->printed_job_index);
-			char bkcore_csv_line[512];
-			int32_t offset = core_get_next_csv_line(this->bkcore_csv_content, this->bkcore_csv_pos, bkcore_csv_line, 512);
-					
-			if(offset < this->bkcore_csv_size)
+		
+			/* process csv line */
+			if(this->bkcore_csv_pos < array_list_size(array_list_get(this->info->job_list, job_info_get_job_index(this->info))))
 			{
-				this->bkcore_csv_pos = offset+2;			
-					
-				/* parse firest n numeric characters from csv - sheet index and record it as the string */
-				int exp = 0;
-				char * sheet_index = (char*) malloc(sizeof(char)*6);
+				if(io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) == 0)
+					job_info_set_sheet_record_result(this->info, "PASS", this->bkcore_csv_pos);
 
-				while(isdigit(bkcore_csv_line[exp]))
-				{
-					sheet_index[exp] = bkcore_csv_line[exp];
-					exp++;
-				}	
-	
-				sheet_index[exp] = 0;	
-				job_info_add_sheet_record(this->info, sheet_index);
 
 				if((job->flag == 'k') || ((job->flag == 'p') && (this->sheet_source_confirmation == false) && (this->companion_sheet_source == SSOURCE_MAIN))) 
 				{
 					this->machine_state = MACHINE_STATE_PRINT_MAIN;
+					printf("go to print main\n");
 				}
 				else if((job->flag == 'p') && (this->companion_sheet_source == SSOURCE_COMPANION))
 				{
+					printf("go to print compation\n");
 					this->machine_state = MACHINE_STATE_PRINT_COMPANION;
 				}
 				else if((job->flag == 'p') && (this->companion_sheet_source == SSOURCE_MAIN) && (this->sheet_source_confirmation == true))
 				{
+					printf("go to wait for confirmation\n");
 					this->machine_state = MACHINE_STATE_WAIT_FOR_CONFIRMATION;
 				}
 				else
 				{
 					core_set_machine_error(this, MACHINE_ERR_SHEET_FEEDER_REDIRECTION);
 				}
+
+				this->bkcore_csv_pos++;
 			}
 			else
 			{
@@ -2097,6 +2415,14 @@ void core_machine_pause(core * this)
 
 void core_machine_state_clear_hotfolder(core * this)
 {
+	/* delete csv from camera hotfolder */
+	if((this->printed_job_index >= 0) && (io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0))
+	{
+		q_job * job = array_list_get(this->job_list, this->printed_job_index);
+		if(job != NULL)
+			util_delete_file(c_string_get_char_array(this->pci_hotfolder_out_path), job->camera_name);
+	}
+
 	if((c_string_get_char_array(this->printed_job_name) != NULL))
 		core_clear_hotfolder(this);
 
@@ -2112,53 +2438,79 @@ void core_machine_state_clear_hotfolder(core * this)
 
 void core_machine_state_prepare(core * this)
 {
+	/* load bkcore csv content */
 	if(core_load_bkcore_csv(this) == STATUS_SUCCESS)
 	{	
-		/* copy pdf to gis hotfolder or based on MB0 and MB1 inputs disable copy pdf file to gis hotfolder */
 		q_job * job = array_list_get(this->job_list, this->printed_job_index);
+		
+		uint8_t status = 0;
 
-		if(util_copy_file(c_string_get_char_array(this->q_hotfolder_main_path), c_string_get_char_array(this->gis_hotfolder_path), job->pdf_name) == 0)
-		{	
-			/* copy pdf to gis hotfolder or based on MB0 and MB1 inputs disable copy pdf file to pci hotfolder */
-			if(util_copy_file(c_string_get_char_array(this->q_hotfolder_main_path), c_string_get_char_array(this->pci_hotfolder_in_path), job->camera_name) == 0)
+		/* copy pdf to gis hotfolder or based on MB0 input status */
+		if(io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)
+			status = util_copy_file(c_string_get_char_array(this->q_hotfolder_main_path), c_string_get_char_array(this->gis_hotfolder_path), job->pdf_name);
+		
+		if(status == 0)
+		{
+			if(io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
+				status = util_copy_file(c_string_get_char_array(this->q_hotfolder_main_path), c_string_get_char_array(this->pci_hotfolder_in_path), job->camera_name);
+
+			if(status == 0)
 			{
 				this->machine_state = MACHINE_STATE_READY_TO_START;
 
-				/* load number of sheets and stemps */
-				int rows = 0;
-				
-				while(rows < 2)
-				{
-					if(*(this->bkcore_csv_content) == '\n')
-					{
-						rows ++;
-					}
+				/* prepare job info structure for current job */
+				int rows = 0, csv_line_index = 0, csv_pos = 0;
+				char sheet_index[255];
 
-					if(isdigit(*this->bkcore_csv_content))	
+				while(this->bkcore_csv_content[csv_pos] != 0)
+				{
+					if(isdigit(this->bkcore_csv_content[csv_pos]))	
 					{
-						if(rows == 0)
+						if((rows == 0) && (job->flag == 'k'))
 						{
-							this->info->total_stemps_number = this->info->total_stemps_number*10 + (*this->bkcore_csv_content-'0');
+							this->info->total_stemps_number = ((this->info->total_stemps_number*10) + (this->bkcore_csv_content[csv_pos]-'0'));
 						}	
-						else if(rows == 1)
+						else if((rows == 1) && (job->flag == 'k'))
 						{
 							if(job->order == 1)
-							{
-								this->info->total_sheet_number = this->info->total_stemps_number*10 + (*this->bkcore_csv_content-'0');					
-							}
+								this->info->total_sheet_number = ((this->info->total_sheet_number*10) + 
+												(this->bkcore_csv_content[csv_pos]-'0'));					
+						}
+						else
+						{
+							printf("%c", this->bkcore_csv_content[csv_pos]);
+							sheet_index[csv_line_index] = this->bkcore_csv_content[csv_pos];
+							csv_line_index++;
 						}
 					}
 
-					this->bkcore_csv_content++;
+					if((this->bkcore_csv_content[csv_pos]) == '\n')
+					{
+						if((rows > 1) || (job->flag != 'k'))
+						{	
+							sheet_index[csv_line_index] = 0;
+							job_info_add_sheet_record(this->info, sheet_index);
+							csv_line_index = 0;
+						}
+						
+						rows ++;
+					}
+
+					csv_pos++;
+				}
+
+				if(csv_line_index > 0)
+				{
+					printf("add sheet record\n");
+					sheet_index[csv_line_index] = 0;
+					job_info_add_sheet_record(this->info, sheet_index);
 				}
 			}
 			else
 				core_set_machine_error(this, MACHINE_ERR_CANT_COPY_CSV_TO_CAMERA);
-		}
+		}			
 		else
-		{
 			core_set_machine_error(this, MACHINE_ERR_CANT_COPY_PDF_TO_GIS);
-		}
 	}
 	else
 	{
@@ -2168,14 +2520,14 @@ void core_machine_state_prepare(core * this)
 
 void core_machine_state_ready_to_start(core * this)
 {
-	if(strcmp(c_string_get_char_array(this->print_controller_status), "Printing") == 0)
+	if((strcmp(c_string_get_char_array(this->print_controller_status), "Printing") == 0) || (io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) == 0))
 		this->machine_state = MACHINE_STATE_READ_CSV_LINE;
 }
 
 
 void core_machine_wait_for_print_finish(core * this)
 {
-	if((this->feeded_main_sheet_counter+this->feeded_companion_sheet_counter)  == (this->stacked_sheet_counter + this->rejected_sheet_counter))
+	//if((this->feeded_main_sheet_counter+this->feeded_companion_sheet_counter)  == (this->stacked_sheet_counter + this->rejected_sheet_counter))
 	{
 		this->timer = c_freq_millis();
 		this->machine_state = MACHINE_STATE_SAVE_Q_CSV;
@@ -2184,38 +2536,44 @@ void core_machine_wait_for_print_finish(core * this)
 
 void core_machine_state_save_q_csv(core * this)
 {
-	if((this->timer+TIME_DELAY_ON_JOB_END) >= c_freq_millis())
+	if((this->timer+TIME_DELAY_ON_JOB_END) < c_freq_millis())
 	{
 		q_job * job = array_list_get(this->job_list, this->printed_job_index);
-	
-		/* end job in Job */
-		if(core_csv_analyze(this) == STATUS_SUCCESS)
-		{	
-			if(core_save_response_csv(this, job->bkcore_name) >= 0)
+		
+		if(job != NULL)
+		{
+			/* if the camera is disabled don't do the camera and quadient csv analyzing */
+			if(io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
 			{
-				this->machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
+				/* end job in Job */
+				if(core_csv_analyze(this) == STATUS_SUCCESS)
+				{	 
+					if(core_save_response_csv(this, job->bkcore_name) >= 0)
+						this->machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
+					else
+						core_set_machine_error(this, MACHINE_ERR_CANT_SAVE_F_CSV);
+				}
+				else
+				{
+					core_set_machine_error(this, MACHINE_ERR_ANALYZE_CAMERA_CSV);
+				}
 			}
 			else
 			{
-				core_set_machine_error(this, MACHINE_ERR_CANT_SAVE_F_CSV);
+				/* save empty response csv */
+				util_save_csv(c_string_get_char_array(this->q_hotfolder_feedback_path), job->bkcore_name, "");
+				this->machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
 			}
 		}
 		else
 		{
-			core_set_machine_error(this, MACHINE_ERR_ANALYZE_CAMERA_CSV);
+			core_set_machine_error(this, MACHINE_ERR_CANT_SAVE_F_CSV);
 		}
 	}
 }
 
 void core_machine_state_finish(core * this)
 {	
-	/* delete csv from camera hotfolder */
-	if(this->printed_job_index >= 0)
-	{
-		q_job * job = array_list_get(this->job_list, this->printed_job_index);
-		util_delete_file(c_string_get_char_array(this->pci_hotfolder_out_path), job->camera_name);
-	}
-
 	this->printed_job_index = -1;
 	this->bkcore_csv_pos = 0;
 
@@ -2226,6 +2584,10 @@ void core_machine_state_finish(core * this)
 	this->rj_trig = 0;					
 	this->ti_trig = 0;
 	
+
+	this->machine_cancel_req = false;
+	this->machine_print_req = false;
+	this->machine_pause_req = false;
 	this->print_confirmation_req = false;
 
 	if(this->machine_state == MACHINE_STATE_JOB_FINISH)
@@ -2253,31 +2615,52 @@ void core_machine_state_finish(core * this)
 
 void core_machine_state_print_break(core * this)
 {
-	if(this->printed_job_index > 0)
+	if(this->printed_job_index >= 0)
 	{
 		q_job * job = array_list_get(this->job_list, this->printed_job_index);
 
-		/* wait for machine done the printing */
-		if((this->feeded_main_sheet_counter+this->feeded_companion_sheet_counter)  == (this->stacked_sheet_counter + this->rejected_sheet_counter))
+		if(job != NULL)
 		{
-			/* analyze the output csv */
-			if(job->flag != 'e')
-				core_csv_analyze(this);
+			/* wait for machine done the printing */
+			//if((this->feeded_main_sheet_counter+this->feeded_companion_sheet_counter)  == (this->stacked_sheet_counter + this->rejected_sheet_counter))
+			{
+				/* analyze the output csv */
+				if(job->flag != 'e')
+				{
+					if(io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
+					{
+						core_csv_analyze(this);
+						job_info_generate_missing_sheet_records(this->info);
+					}
 
-			/* save feedback csv file with 'e' flag */
-			char * const_char = "xxxx_e_bkcore.csv";
-			char * csv_name = (char*) malloc(sizeof(char)*(strlen(job->job_name)+strlen(const_char)+1));
+				}
 
-			sprintf(csv_name, "%s_%d_e_bkcore_.csv", job->job_name, job->order);
-			util_save_csv(c_string_get_char_array(this->q_hotfolder_feedback_path), csv_name, "");
-			free(csv_name);
+				/* save feedback csv file with 'e' flag */
+				char * const_char = "_xxxx_e_bkcore.csv";
+				char * csv_name = (char*) malloc(sizeof(char)*(strlen(job->job_name)+strlen(const_char)+1));
 
+				sprintf(csv_name, "%s_%d_e_bkcore_.csv", job->job_name, job->order);
+				util_save_csv(c_string_get_char_array(this->q_hotfolder_feedback_path), csv_name, "");
+
+				free(csv_name);
+		
+				if(io_card_get_input(this->io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)
+					core_printer_abbort_print(this);
+
+				/* end Job */
+				this->machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
+			}
+		}
+		else
+		{
+			this->machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
 		}
 	}
-
-	/* end Job */
-	this->machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
-
+	else
+	{
+		/* end Job */
+		this->machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
+	}
 }
 
 void core_machine_tab_insert_counter(core * this)
@@ -2329,9 +2712,6 @@ void core_machine_stacker_counter(core * this)
 		this->rejected_sheet_seq_counter = 0;
 	}
 
-	/* stecking error handling */
-	core_stacker_error_handler(this, stacker_status);
-
 	this->sn_trig = stacker_status;					
 }
 
@@ -2359,7 +2739,7 @@ void core_counter_check_sum(core * this)
 void core_machine_log_monitor(core * this)
 {
 	if(this->machine_state != this->machine_state_pre)
-		c_log_add_record_with_cmd(this->log, "%s", core_machine_get_state_str(this));
+		c_log_add_record_with_cmd(this->log, "%d - %s", this->machine_state, core_machine_get_state_str(this));
 
 	this->machine_state_pre = this->machine_state;
 }
@@ -2490,6 +2870,7 @@ core * core_new()
 	{
 		pthread_mutex_init(&(this->mutex), NULL);
 
+		this->io_card_ref = io_card_new();
 
 		this->iij_tcp_ref = comm_tcp_new();
 		//this->pci_tcp_ref = comm_tcp_new();
@@ -2497,54 +2878,12 @@ core * core_new()
 		this->ti_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 		this->ta_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 
-
 		this->info = job_info_new(JOB_INFO_CSV_PATH);
 
-		/* machine handler status and control variables */
-		this->machine_state = MACHINE_STATE_PRINT_FINISH;
-		this->machine_state_pre = MACHINE_STATE_WAIT;
-		this->printed_job_name = c_string_new();
-		this->machine_pause_req = false;
-		this->machine_print_req = false;
-		this->machine_error_reset_req = false;
-		this->machine_cancel_req = false;
 
-		this->error_code = 0;
+		/* initialize all core variables */
+		core_initialize_variables(this);
 
-		this->job_list = array_list_new();
-		this->job_list_pre = array_list_new();
-		this->job_list_changed = 0;
-		this->printed_job_index = -1;
-
-
-		this->q_hotfolder_main_path = c_string_new();
-		this->q_hotfolder_feedback_path = c_string_new();
-		this->q_hotfolder_backup_path = c_string_new();
-		this->pci_hotfolder_in_path = c_string_new();
-		this->pci_hotfolder_out_path = c_string_new();
-		this->gis_hotfolder_path = c_string_new();
-		this->job_log_path = c_string_new();
-
-		this->timer = c_freq_millis();
-
-
-		this->feeded_main_sheet_counter = 0;
-		this->feeded_companion_sheet_counter = 0;
-		this->stacked_sheet_counter = 0;
-		this->rejected_sheet_counter = 0;
-		this->rejected_sheet_seq_counter = 0;
-		this->tab_insert_counter = 0;
-		this->inspected_sheet_counter = 0;
-
-		
-		this->print_confirmation_req = false;
-
-		/* GIS printer status */
-		this->print_controller_status = c_string_new_with_init("Unknown");
-	
-		this->io_card_ref = io_card_new();
-
-	
 		/* load configuration from configuration file */
 		config_init(&(this->cfg_ref));
 
@@ -2554,8 +2893,17 @@ core * core_new()
 			c_log_add_record_with_cmd(this->log, "Vytvářím výchozí konfiguraci.");
 			core_default_config(this);
 		}
+		else
+		{
+			c_log_add_record_with_cmd(this->log, "Načítám konfigurační soubor: %s", CONFIGURATION_FILE_PATH);
+			int conf_ret_val = core_load_config(this);
+
+			if(conf_ret_val == 0)
+				c_log_add_record_with_cmd(this->log, "Konfigurace načtena");
+			else	
+				c_log_add_record_with_cmd(this->log, "Konfigurace nebyla úspěšně načtena: %d", conf_ret_val);
+		}
 	
-		c_log_add_record_with_cmd(this->log, "Konfigurace načtena");
 
 
 		/* initialize and parametrizing the network layer */
@@ -2618,7 +2966,7 @@ void core_finalize(core * this)
 	comm_tcp_finalize(this->iij_tcp_ref);
 	//comm_tcp_finalize(this->pci_tcp_ref);
 	
-	//config_write_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH);
+	config_write_file(&(this->cfg_ref), CONFIGURATION_FILE_PATH);
 	config_destroy(&(this->cfg_ref));
 
 
@@ -2650,12 +2998,20 @@ void core_finalize(core * this)
 	free(this);
 }
 
-uint8_t core_set_interface_language(core * this, uint8_t lang_index)
+uint8_t core_set_interface_language(core * this, int lang_index)
 {
 	if((lang_index >=0) && (lang_index < lang_num))
 	{
 		this->lang_index = lang_index;
 		c_log_add_record_with_cmd(this->log, "Jazyk rozhraní změněn na: %s", multi_lang[this->lang_index].lang_name);
+
+		core_update_config(this, 
+				CFG_GROUP_LANGUAGE, 
+				CFG_LANG_INDEX, 
+				CONFIG_TYPE_INT, 
+				&lang_index, 
+				"Nastavení jazyka bylo aktualizováno.", 
+				"Nepodařilo se aktualizovat nastavení jazyka!");
 
 		return STATUS_SUCCESS;
 	}
@@ -2663,25 +3019,93 @@ uint8_t core_set_interface_language(core * this, uint8_t lang_index)
 	return STATUS_GENERAL_ERROR;
 }
 
+
+void core_set_machine_mode(core * this, int mode)
+{
+	if((mode >= 0) && (mode < GR_MODE_N))
+	{
+		this->machine_mode = mode;
+		char * mode_str = NULL;
+
+		switch(mode)
+		{
+			case GR_SETUP:
+				mode_str = "Nastavení";
+			break;
+
+			case GR_PRINT:
+				mode_str = "Tisk";
+			break;
+
+			case GR_INSPECTION:
+				mode_str = "Inspekce";
+			break;
+
+			case GR_PRINT_INSPECTION:
+				mode_str = "Tisk s inspekcí";
+			break;
+
+			default:
+				mode_str = "Neznámá hodnota";
+			break;
+		}
+	
+		c_log_add_record_with_cmd(this->log, "Nastaven režim Gremser stroje: %s", mode_str);
+
+		core_update_config(this, 
+				CFG_GROUP_PRINT_PARAMS, 
+				CFG_PP_GR_MACHINE_MODE, 
+				CONFIG_TYPE_INT, 
+				&mode, 
+				"Nastavení režimu Gremser dopravníku aktualizováno.", 
+				"Nepodařilo se aktualizovat režim Gremser dopravníku!");
+	}
+}
+
+void core_refresh_dir_list(core * this)
+{
+	pthread_mutex_lock(&(this->mutex));
+
+	this->job_list_changed = 1;
+	
+	pthread_mutex_unlock(&(this->mutex));
+}
+
 uint8_t core_iij_set_ip_addr(core * this, char * ip_addr)
 {
 	uint8_t res = comm_tcp_set_ip_addr(this->iij_tcp_ref, ip_addr);
-
+		
 	if(res == STATUS_SUCCESS)
 		c_log_add_record_with_cmd(this->log, "Nastavena nová IP adresa pro připojení GISu: %s", ip_addr);
 	else
 		c_log_add_record_with_cmd(this->log, "Neúspěšné nastavení nové IP adresy pro připojení GISu: %s", ip_addr);
 
+	core_update_config(this, 
+			CFG_GROUP_NETWORK, 
+			CFG_NETWORK_GIS_IP_ADDRESS, 
+			CONFIG_TYPE_STRING, 
+			ip_addr, 
+			"Nastavení síťového ip adresy pro GIS aktualizováno.", 
+			"Nepodařilo se aktualizovat ip adresu pro GIS");
 	return res;
 }
 
 uint8_t core_iij_set_tcp_port(core * this, int port)
 {
 	uint8_t res = comm_tcp_set_tcp_port(this->iij_tcp_ref, port);
+
 	if(res == STATUS_SUCCESS)
 		c_log_add_record_with_cmd(this->log, "Nastavena nové hodnoty TCP portu pro připojení GISu: %d", port);
 	else
 		c_log_add_record_with_cmd(this->log, "Neúspěšné nastavení nové hodnoty TCP portu pro připojení GISu: %d", port);
+
+	core_update_config(this, 
+			CFG_GROUP_NETWORK, 
+			CFG_NETWORK_GIS_TCP_PORT, 
+			CONFIG_TYPE_INT, 
+			&port, 
+			"Nastavení síťového portu pro GIS aktualizováno.", 
+			"Nepodařilo se aktualizovat síťového portu pro GIS");
 
 	return res;
 }
@@ -2772,15 +3196,32 @@ void core_set_max_stacked_sheets(core * this, int sheet_val)
 {
 	this->max_stacked_sheets = sheet_val;
 	c_log_add_record_with_cmd(this->log, "Nastaven maximální počet archů ve vykladači: %d", sheet_val);
+
+	core_update_config(this, 
+			CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_MAX_SHEET_IN_STACKER, 
+			CONFIG_TYPE_INT, 
+			&sheet_val, 
+			"Nastavení maximálního počtu archů ve vykladači aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení maximálního počtu archů ve vykladači!");
+
 }
 
 void core_set_max_rejected_sheet_seq(core * this, int sheet_val)
 {
 	this->rejected_sheet_for_stop = sheet_val;
 	c_log_add_record_with_cmd(this->log, "Nastaven počet vadně vyhodnocených archů pro zastavení tisku : %d", sheet_val);
+
+	core_update_config(this, 
+			CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_SHEET_FOR_STOP, 
+			CONFIG_TYPE_INT, 
+			&sheet_val, 
+			"Nastavení maximální sekvence vadně vyhodnocených archů aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení maximální sekvence vadn vyhodnocených archů!");
 }
 
-void core_set_companion_sheet_source(core * this, uint8_t source)
+void core_set_companion_sheet_source(core * this, int source)
 {
 	if(source >= 0 && source < SSOURCE_N)
 	{
@@ -2799,6 +3240,14 @@ void core_set_companion_sheet_source(core * this, uint8_t source)
 		}
 
 		c_log_add_record_with_cmd(this->log, "Nastaven zdroj pro prokladový arch: %s", sheet_src_str);
+
+		core_update_config(this, 
+				CFG_GROUP_PRINT_PARAMS, 
+				CFG_PP_COMPAION_SHEET_SOURCE, 
+				CONFIG_TYPE_INT, 
+				&source, 
+				"Nastavení zdroje pro prokladový arch aktualizováno.", 
+				"Nepodařilo se aktualizovat nastavení zdroje pro prokladový arch!");
 	}
 	else
 	{
@@ -2810,6 +3259,14 @@ void core_set_sheet_source_confirmation(core * this, bool confirm)
 {
 	this->sheet_source_confirmation = confirm;
 	c_log_add_record_with_cmd(this->log, "Potvrzování naložení prokladového archu z hlavního nakladače: %s", confirm == true ? "Aktivováno" : "Deaktivováno");
+
+	core_update_config(this, 
+			CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_SHEET_SOURCE_CONFIRMATION, 
+			CONFIG_TYPE_BOOL, 
+			&confirm, 
+			"Nastavení potvrzování naložení prokladového archu z hlavního nakladače aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení potvrzování naložení prokladového archu z hlavního nakladače!");
 }
 
 
@@ -2817,6 +3274,14 @@ uint8_t core_set_q_main_hotfolder_path(core * this, const char * path)
 {
 	c_string_set_string(this->q_hotfolder_main_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty k výstupnímu hotfolderu pro Quadient: %s", path);
+
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_QUADIENT_MAIN, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy výstupního hotfolderu pro Quadient aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy výstupního hotfolderu pro Quadient!");
 
 	return STATUS_SUCCESS;
 }
@@ -2826,6 +3291,15 @@ uint8_t core_set_q_feedback_hotfolder_path(core * this, const char * path)
 	c_string_set_string(this->q_hotfolder_feedback_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty k hotfolderu pro ukládání zpětnovazebných csv pro Quadient: %s", path);
 
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_QUADIENT_FEEDBACK, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy zpětnovazebního hotfolderu pro Quadient aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy zpětnovazebního hotfolderu pro Quadient!");
+
+
 	return STATUS_SUCCESS;
 }
 
@@ -2833,6 +3307,14 @@ uint8_t core_set_q_backup_hotfolder_path(core * this, const char * path)
 {
 	c_string_set_string(this->q_hotfolder_backup_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty k hotfolderu pro zálohování tiskových dat z Quadientu: %s", path);
+
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_QUADIENT_BACKUP, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy hotfolderu pro zálohování dat z Quadient aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy hotfolderu zálohování pro Quadient!");
 
 	return STATUS_SUCCESS;
 }
@@ -2842,6 +3324,14 @@ uint8_t core_set_pci_hotfolder_in_path(core * this, const char * path)
 	c_string_set_string(this->pci_hotfolder_in_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty ke vstupnímu hotfolderu kamery: %s", path);
 
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_PCI_IN, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy vstupního hotfolderu pro kameru aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy výstupního hotfolderu pro kameru!");
+
 	return STATUS_SUCCESS;
 }
 
@@ -2850,6 +3340,14 @@ uint8_t core_set_pci_hotfolder_out_path(core * this, const char * path)
 	c_string_set_string(this->pci_hotfolder_out_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty k výstupnímu hotfolderu kamery: %s", path);
 
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_PCI_OUT, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy výstupního hotfolderu pro kameru aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy výstupního hotfolderu pro kameru!");
+
 	return STATUS_SUCCESS;
 }
 
@@ -2857,6 +3355,15 @@ uint8_t core_set_gis_hotfolder_path(core * this, const char * path)
 {
 	c_string_set_string(this->gis_hotfolder_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty k hotfolderu gisu: %s", path);
+
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_QUADIENT_MAIN, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy vstupního hotfolderu pro GIS aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy vstupního hotfolderu pro GIS!");
+
 	return STATUS_SUCCESS;
 }
 
@@ -2864,6 +3371,15 @@ uint8_t core_set_job_report_hotfolder_path(core * this, const char * path)
 {
 	c_string_set_string(this->job_log_path, (char*) path);
 	c_log_add_record_with_cmd(this->log, "Nastavení nové cesty k reportovacímu hotfolderu: %s", path);
+
+	core_update_config(this, 
+			CFG_GROUP_HOTFOLDER, 
+			CFG_HOT_QUADIENT_MAIN, 
+			CONFIG_TYPE_STRING, 
+			(void*) path, 
+			"Nastavení adresy hotfolderu pro reportování csv z tisku aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení adresy hotfolderu pro reportování csv z tisku!");
+
 	return STATUS_SUCCESS;
 }
 
@@ -2967,7 +3483,7 @@ uint8_t core_print_pause(core * this)
 {
 	uint8_t res = STATUS_SUCCESS;
 	
-	if(this->machine_state != MACHINE_STATE_ERROR && this->machine_state != MACHINE_STATE_WAIT)
+	if((this->machine_state != MACHINE_STATE_ERROR) && (this->machine_state != MACHINE_STATE_WAIT))
 	{
 		this->machine_pause_req = true;
 		c_log_add_record_with_cmd(this->log, "Tisk jobu %s pozastaven.", c_string_get_char_array(this->printed_job_name));
@@ -3003,7 +3519,7 @@ uint8_t core_print_continue(core * this)
 	
 		while((ttl < 3) || (this->machine_state != MACHINE_STATE_PAUSE))
 		{
-			usleep(HOT_FOLDER_READING_INTERVAL);
+			usleep(HOT_FOLDER_READING_INTERVAL/1000);
 			ttl++;
 		}
 
@@ -3037,35 +3553,11 @@ uint8_t core_print_continue(core * this)
 uint8_t core_print_cancel(core * this)
 {
 	uint8_t res = STATUS_SUCCESS;
-	uint8_t ttl = 0;
 
 	if(c_string_len(this->printed_job_name) > 0)
 	{
-		char * job_name = (char * ) malloc(sizeof(char) * (c_string_len(this->printed_job_name)+1));
-		strcpy(job_name, c_string_get_char_array(this->printed_job_name));
-	
-		while((this->machine_state != MACHINE_STATE_WAIT) && (ttl < 10))
-		{
-			this->machine_cancel_req = true;
-			usleep(MACHINE_CYCLE_TIMING);
-			ttl++;
-		}
-
-		this->machine_cancel_req = false;
-		core_printer_abbort_print(this);
-
-		if(this->machine_state != MACHINE_STATE_WAIT)
-		{
-			res = STATUS_GENERAL_ERROR;
-			c_log_add_record_with_cmd(this->log, "Přerušení jobu %s zkončilo chybou! Obslužné vlákno se nachází ve stavu: %d - %s", 
-						job_name, this->machine_state, core_get_error_str(this));
-		}
-		else
-		{
-			c_log_add_record_with_cmd(this->log, "Tisk jobu %s úspěšně přerušen.", job_name);
-		}
-
-		free(job_name);
+		c_log_add_record_with_cmd(this->log, "Požadavek na ukončení jobu %s.", c_string_get_char_array(this->printed_job_name));
+		this->machine_cancel_req = true;
 	}
 	else
 	{
@@ -3365,8 +3857,15 @@ job_info * job_info_new(char * csv_address)
 
 	this->total_sheet_number = 0;
 	this->total_stemps_number = 0;
+	this->printed_sheet_number = 0;
 
 	return this;
+}
+
+
+int job_info_get_printed_sheet_number(job_info * this)
+{
+	return this->printed_sheet_number;
 }
 
 int job_info_get_job_index(job_info * this)
@@ -3388,25 +3887,31 @@ void job_info_clear(job_info * this)
 	this->total_sheet_number = 0;
 	this->total_stemps_number = 0;
 
+
+	this->printed_sheet_number = 0;
+
 	int i, j;
 	for(i = 0; i < array_list_size(this->job_list); i++)
 	{	
 		array_list * job = array_list_get(this->job_list, i);
 
-		for(j = 0; j < array_list_size(job); j++)
+		if(job != NULL)
 		{
-			info_struct * sheet_info = array_list_get(job, i);
-
-			if(sheet_info != NULL)
+			for(j = 0; j < array_list_size(job); j++)
 			{
-				if(sheet_info->sheet_order != NULL)
-					free(sheet_info->sheet_order);
-			
-				free(sheet_info);
-			}
-		}
+				info_struct * sheet_info = array_list_get(job, j);
 
-		array_list_destructor_v2(job);
+				if(sheet_info != NULL)
+				{
+					if(sheet_info->sheet_order != NULL)
+						free(sheet_info->sheet_order);
+				
+					free(sheet_info);
+				}
+			}
+
+			array_list_destructor_v2(job);
+		}
 	}
 
 	array_list_clear(this->job_list);
@@ -3418,10 +3923,60 @@ void job_info_add_job_record(job_info * this)
 	array_list_add(this->job_list, array_list_new());
 }
 
+void job_info_generate_missing_sheet_records(job_info * this)
+{
+	job_info_add_job_record(this);
+	
+	int k,i,j;
+
+	for(k = 0; k < this->total_sheet_number; k++)
+	{
+		char sheet_order_str[12];
+		sprintf(sheet_order_str, "%d", k+1);		
+		array_list * job = NULL;
+		bool sheet_printed = false;
+
+		for(i = 0; i < array_list_size(this->job_list)-1; i++)
+		{
+			job = array_list_get(this->job_list, i);
+
+			if(job != NULL)
+			{
+				for(j = 0; j < array_list_size(job); j++)
+				{
+					info_struct * sheet_info = array_list_get(job, j);
+					if(sheet_info == NULL)
+						printf("sheet info NULL - %d\n", j);
+
+					if(strcmp(sheet_order_str, sheet_info->sheet_order) == 0)
+					{
+						sheet_printed = true;
+						break;		
+					}
+				}
+
+				if(sheet_printed == true)
+					break;				
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if(sheet_printed == false)
+		{
+			job_info_add_sheet_record(this, sheet_order_str);
+			job_info_set_sheet_record_result(this, "FAIL", k);
+		}
+	}
+}
+
 void job_info_add_sheet_record(job_info * this, char * sheet_order)
 {
 	info_struct * sheet_info = (info_struct*) malloc(sizeof(info_struct));
-	sheet_info->sheet_order = sheet_order;
+	sheet_info->sheet_order = (char*) malloc(sizeof(char)*(strlen(sheet_order)+1));
+	strcpy(sheet_info->sheet_order, sheet_order);
 	sheet_info->result = NULL;
 	array_list_add(array_list_get(this->job_list, job_info_get_job_index(this)), sheet_info);
 }
@@ -3429,7 +3984,14 @@ void job_info_add_sheet_record(job_info * this, char * sheet_order)
 void job_info_set_sheet_record_result(job_info * this, char * result, int index)
 {
 	info_struct * sheet_info = array_list_get(array_list_get(this->job_list, job_info_get_job_index(this)), index);
-	sheet_info->result = result;
+
+	if(sheet_info != NULL)
+	{
+	//	if(strcmp(result, "PASS") == 0)
+	//		this->printed_sheet_number++;
+
+		sheet_info->result = result;
+	}
 }	
 
 int8_t job_info_generate_csv(job_info * this)
@@ -3438,15 +4000,17 @@ int8_t job_info_generate_csv(job_info * this)
 	{
 		c_string_add(this->csv_content, "Job: ");
 		c_string_add(this->csv_content, c_string_get_char_array(this->order_name));
-
-		sprintf(c_string_get_char_array(this->csv_content), "\nTotal number of sheets: %d\n", this->total_sheet_number);	
+		char str_total_number[10];
+		sprintf(str_total_number, "%d\n",  this->total_sheet_number);	
+		c_string_add(this->csv_content, "\nTotal sheet number: ");
+		c_string_add(this->csv_content, str_total_number);
 
 		int i,j;
 		for(i = 0; i < array_list_size(this->job_list); i++)
 		{
 			array_list * job = array_list_get(this->job_list, i);
 			char order_string[5];
-			sprintf(order_string, "%.4d", i);
+			sprintf(order_string, "%.4d", i+1);
 			c_string_add(this->csv_content, "\nOrder: ");
 			c_string_add(this->csv_content, order_string);	
 
@@ -3456,7 +4020,11 @@ int8_t job_info_generate_csv(job_info * this)
 				c_string_add(this->csv_content, "\n");
 				c_string_add(this->csv_content, sheet_info->sheet_order);
 				c_string_add(this->csv_content, "	");
-				c_string_add(this->csv_content, sheet_info->result);
+
+				if(sheet_info->result != NULL)
+					c_string_add(this->csv_content, sheet_info->result);
+				else
+					c_string_add(this->csv_content, "FAIL");
 			}
 		}
 
@@ -3479,7 +4047,8 @@ void job_info_finalize(job_info * this)
 	c_string_finalize(&(this->csv_content));
 	c_string_finalize(&(this->csv_name));
 
-	free(this->csv_addr);
+	if(this->csv_addr != NULL)
+		free(this->csv_addr);
 
 	free(this);
 }
@@ -3957,6 +4526,8 @@ uint8_t util_move_file(char * src, char* dest, char* name)
 
 	sprintf(dest_addr, "%s/%s", dest, name);
 	sprintf(src_addr, "%s/%s", src, name);
+
+	printf("%s -> %s\n", src_addr, dest_addr);
 
 	return rename(src_addr, dest_addr);
 }
@@ -4753,6 +5324,8 @@ gboolean gui_cyclic_interupt(gpointer param)
 	}
 	
 
+	gtk_combo_box_set_active(GTK_COMBO_BOX(this->print_params_page->print_mode_combo), this->core_ref->machine_mode);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->print_params_page->print_mode_combo), this->core_ref->machine_state == MACHINE_STATE_WAIT);
 
 	bool pause_en = (this->core_ref->machine_state != MACHINE_STATE_WAIT) && (this->core_ref->machine_state != MACHINE_STATE_NEXT) && 
 						(this->core_ref->machine_state != MACHINE_STATE_ERROR) && (this->core_ref->machine_state != MACHINE_STATE_PAUSE) && 
@@ -4810,47 +5383,10 @@ void gui_set_language(gui * this)
 {
 	gtk_window_set_title(GTK_WINDOW(this->main_win), multi_lang[this->core_ref->lang_index].win_title);
 
-	/* columns for the job list tree widget */
-	gui_control_page_delete_columns(this->control_page->job_list);
-	gtk_tree_view_append_column (GTK_TREE_VIEW(this->control_page->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[this->core_ref->lang_index].gui_job_name, JOB_STATE)));
-	gtk_tree_view_append_column (GTK_TREE_VIEW(this->control_page->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[this->core_ref->lang_index].gui_job_name, JOB_NAME)));
-	gtk_tree_view_append_column (GTK_TREE_VIEW(this->control_page->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[this->core_ref->lang_index].gui_job_pdf_name, JOB_PDF_NAME)));
-
-	gtk_tree_view_append_column (GTK_TREE_VIEW(this->control_page->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[this->core_ref->lang_index].gui_job_bkcore_name, JOB_BKCORE_CSV_NAME)));
-
-	gtk_tree_view_append_column (GTK_TREE_VIEW(this->control_page->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[this->core_ref->lang_index].gui_job_camera_name, JOB_CAMERA_CSV_NAME)));
-
-
-	/* columns for job report csv list tree widget */
-
-	gui_control_page_delete_columns(this->control_page->job_report_list);
-	gtk_tree_view_append_column (GTK_TREE_VIEW(this->control_page->job_report_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[this->core_ref->lang_index].rep_csv_log_column_file_name, REP_CSV_NAME)));
 
 
 
-
-	int i;
-	for(i = 0; i< S_BTN_N; i++)
-	{
-		if(i == S_BTN_NETWORK)
-			settings_button_set_text(this->settings_page->btn[i], multi_lang[this->core_ref->lang_index].set_btn_network);
-		else if(i == S_BTN_LANG)
-			settings_button_set_text(this->settings_page->btn[i], multi_lang[this->core_ref->lang_index].set_btn_lang_settings);
-		else if(i == S_BTN_PRINT_PARAMETERS)
-			settings_button_set_text(this->settings_page->btn[i], multi_lang[this->core_ref->lang_index].set_btn_print_param);
-		else if(i == S_BTN_HOTFOLDERS)
-			settings_button_set_text(this->settings_page->btn[i], multi_lang[this->core_ref->lang_index].set_btn_hotfolder);
-		else if(i == S_BTN_IO_VISION)
-			settings_button_set_text(this->settings_page->btn[i], multi_lang[this->core_ref->lang_index].set_btn_io_vision);
-		else if(i == S_BTN_BACK)
-			settings_button_set_text(this->settings_page->btn[i], multi_lang[this->core_ref->lang_index].set_btn_back);
-	}
+	gui_control_page_language(this->control_page);
 
 	settings_button_set_text(this->io_vision_page->btn_return, multi_lang[this->core_ref->lang_index].set_btn_back_to_settngs);
 	settings_button_set_text(this->hotfolder_page->btn_return, multi_lang[this->core_ref->lang_index].set_btn_back_to_settngs);
@@ -4859,46 +5395,19 @@ void gui_set_language(gui * this)
 	settings_button_set_text(this->lang_page->btn_return, multi_lang[this->core_ref->lang_index].set_btn_back_to_settngs);
 
 
-	gtk_label_set_text(GTK_LABEL(this->lang_page->list_label), multi_lang[this->core_ref->lang_index].set_lan_labgel);
 
-	gtk_label_set_text(GTK_LABEL(this->network_page->iij_tcp_port_label), multi_lang[this->core_ref->lang_index].set_net_iij_tcp_port);
-	gtk_label_set_text(GTK_LABEL(this->network_page->iij_connection_label), multi_lang[this->core_ref->lang_index].set_net_iij_connection);
-	gtk_label_set_text(GTK_LABEL(this->network_page->iij_ip_address_label), multi_lang[this->core_ref->lang_index].set_net_iij_ip_addr);
-	gtk_label_set_text(GTK_LABEL(this->network_page->iij_tcp_port_corect_label), NULL);
-	gtk_label_set_text(GTK_LABEL(this->network_page->iij_ip_addr_corect_label), NULL);
 
+	gui_settings_page_language(this->settings_page);
 
 	gui_print_params_page_language(this->print_params_page);
 
-	for(int i = 0;i< HOT_LIST_N; i++)
-	{
-		gtk_button_set_label(GTK_BUTTON(this->hotfolder_page->hot_btn[i]), multi_lang[this->core_ref->lang_index].file_chooser_btn_browse);
-		
-		switch(i)
-		{
-			case Q_HOT_MAIN:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_q_main_fs_label);
-			break;
-			case Q_HOT_FEEDBACK:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_q_feedback_fs_label);
-			break;
-			case Q_HOT_BACKUP:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_q_backup_fs_label);
-			break;
-			case PCI_HOT_IN:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_pci_in_fs_label);
-			break;
-			case PCI_HOT_OUT:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_pci_out_fs_label);
-			break;
-			case GIS_HOT:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_gis_fs_label);
-			break;
-			case JOB_LOG_DIR:
-				gtk_label_set_text(GTK_LABEL(this->hotfolder_page->hot_lbl[i]), multi_lang[this->core_ref->lang_index].hot_report_csv_fs_label);
-			break;
-		}
-	}
+	gui_hotfolder_page_language(this->hotfolder_page);
+
+
+	gui_network_page_language(this->network_page);
+
+	gui_lang_page_language(this->lang_page);
+
 }
 
 gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
@@ -5023,8 +5532,7 @@ void gui_signals(gui * this)
 	g_signal_connect(G_OBJECT(this->print_params_page->sheet_source_combo), "changed", G_CALLBACK(gui_print_params_set_sheet_source_callback), this->print_params_page);
 	g_signal_connect(G_OBJECT(this->print_params_page->print_confirm_switch), "state_set", G_CALLBACK(gui_print_params_set_print_confirmation_state_callback), this->print_params_page);
 
-
-
+	g_signal_connect(G_OBJECT(this->print_params_page->print_mode_combo), "changed", G_CALLBACK(gui_print_params_set_machine_mode_callback), this->print_params_page);
 
 }
 
@@ -5167,8 +5675,8 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 		}
 	}
 
-	int i;
-	for(i = 0; i < GC_BTN_N; i++)
+	
+	for(int i = 0; i < GC_BTN_N; i++)
 	{
 		if(i == GC_BTN_PRINT)
 			this->btn[i] = gtk_button_new_with_label ("print");
@@ -5200,6 +5708,35 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	return this;
 }
 
+
+void gui_control_page_language(gui_control_page * this)
+{
+	int lang_index = this->gui_base_ref->core_ref->lang_index;
+
+	/* columns for the job list tree widget */
+	gui_control_page_delete_columns(this->job_list);
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[lang_index].gui_job_name, JOB_STATE)));
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[lang_index].gui_job_name, JOB_NAME)));
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[lang_index].gui_job_pdf_name, JOB_PDF_NAME)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[lang_index].gui_job_bkcore_name, JOB_BKCORE_CSV_NAME)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[lang_index].gui_job_camera_name, JOB_CAMERA_CSV_NAME)));
+
+
+	/* columns for job report csv list tree widget */
+
+	gui_control_page_delete_columns(this->job_report_list);
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_report_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang[lang_index].rep_csv_log_column_file_name, REP_CSV_NAME)));
+
+}
+
 void gui_control_page_btn_cancel_callback(GtkButton *button, gpointer param)
 {
 	gui_control_page * this = (gui_control_page*) param;
@@ -5210,6 +5747,8 @@ void gui_control_page_btn_reset_callback(GtkButton *button, gpointer param)
 {
 	gui_control_page * this = (gui_control_page*) param;
 	core_print_reset_error(this->gui_base_ref->core_ref);
+
+	core_refresh_dir_list(this->gui_base_ref->core_ref);
 }
 
 void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer param)
@@ -5423,6 +5962,28 @@ gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref)
 	}
 
 	return this;
+}
+
+
+void gui_settings_page_language(gui_settings_page * this)
+{
+	int lang_index = this->gui_base_ref->core_ref->lang_index;
+	
+	for(int i = 0; i< S_BTN_N; i++)
+	{
+		if(i == S_BTN_NETWORK)
+			settings_button_set_text(this->btn[i], multi_lang[lang_index].set_btn_network);
+		else if(i == S_BTN_LANG)
+			settings_button_set_text(this->btn[i], multi_lang[lang_index].set_btn_lang_settings);
+		else if(i == S_BTN_PRINT_PARAMETERS)
+			settings_button_set_text(this->btn[i], multi_lang[lang_index].set_btn_print_param);
+		else if(i == S_BTN_HOTFOLDERS)
+			settings_button_set_text(this->btn[i], multi_lang[lang_index].set_btn_hotfolder);
+		else if(i == S_BTN_IO_VISION)
+			settings_button_set_text(this->btn[i], multi_lang[lang_index].set_btn_io_vision);
+		else if(i == S_BTN_BACK)
+			settings_button_set_text(this->btn[i], multi_lang[lang_index].set_btn_back);
+	}
 }
 
 void gui_settings_page_btn_go_to_io_vision_callback(GtkWidget* widget, GdkEventButton* event, gpointer param)
@@ -5712,19 +6273,31 @@ gui_network_page * gui_network_page_new(gui_base * gui_base_ref)
 	return this; 
 }
 
+
+void gui_network_page_language(gui_network_page * this)
+{
+	int lang_index = this->gui_base_ref->core_ref->lang_index;
+
+	gtk_label_set_text(GTK_LABEL(this->iij_tcp_port_label), multi_lang[lang_index].set_net_iij_tcp_port);
+	gtk_label_set_text(GTK_LABEL(this->iij_connection_label), multi_lang[lang_index].set_net_iij_connection);
+	gtk_label_set_text(GTK_LABEL(this->iij_ip_address_label), multi_lang[lang_index].set_net_iij_ip_addr);
+	gtk_label_set_text(GTK_LABEL(this->iij_tcp_port_corect_label), NULL);
+	gtk_label_set_text(GTK_LABEL(this->iij_ip_addr_corect_label), NULL);
+}
+
 gboolean gui_setting_page_iij_network_control_callback(GtkSwitch *widget, gboolean state, gpointer param)
 {
 	gui_network_page * this = (gui_network_page*) param;
 
 	if(state)
 	{
+		gtk_widget_set_sensitive(GTK_WIDGET(this->iij_network_switch), FALSE);
+		
 		if(core_iij_is_connected(this->gui_base_ref->core_ref) != STATUS_CLIENT_CONNECTED)
 		{
-			gtk_widget_set_sensitive(GTK_WIDGET(this->iij_network_switch), FALSE);
-		
 			uint8_t tcp_port_res = core_iij_set_tcp_port(this->gui_base_ref->core_ref, atoi(gtk_entry_get_text(GTK_ENTRY(this->iij_tcp_port_entry))));
 			uint8_t ip_address_res = core_iij_set_ip_addr(this->gui_base_ref->core_ref, (char*) gtk_entry_get_text(GTK_ENTRY(this->iij_ip_address_entry)));
-
+	
 			if((tcp_port_res == STATUS_SUCCESS) && (ip_address_res == STATUS_SUCCESS))
 			{
 				core_iij_connect(this->gui_base_ref->core_ref);
@@ -5735,21 +6308,19 @@ gboolean gui_setting_page_iij_network_control_callback(GtkSwitch *widget, gboole
 			{
 				if(ip_address_res != STATUS_SUCCESS)
 					gtk_label_set_text(GTK_LABEL(this->iij_ip_addr_corect_label), multi_lang[this->gui_base_ref->core_ref->lang_index].set_net_iij_wrong_tcp_port_label);
-	
+		
 				if(tcp_port_res != STATUS_SUCCESS)
 					gtk_label_set_text(GTK_LABEL(this->iij_tcp_port_corect_label), multi_lang[this->gui_base_ref->core_ref->lang_index].set_net_iij_wrong_ip_address_label);
 			}
-
-			gtk_widget_set_sensitive(GTK_WIDGET(this->iij_network_switch), TRUE);
 		}
+
+		gtk_widget_set_sensitive(GTK_WIDGET(this->iij_network_switch), TRUE);
 	}
 	else
 	{
 		if(core_iij_is_connected(this->gui_base_ref->core_ref) == STATUS_CLIENT_CONNECTED)
 			core_iij_disconnect(this->gui_base_ref->core_ref);
 	}
-
-
 	
 	return TRUE;
 }
@@ -5819,6 +6390,43 @@ gui_hotfolder_page * gui_hotfolder_page_new(gui_base * gui_base_ref)
 
 	return this;
 }
+
+
+void gui_hotfolder_page_language(gui_hotfolder_page * this)
+{
+	int lang_index = this->gui_base_ref->core_ref->lang_index;
+
+	for(int i = 0; i < HOT_LIST_N; i++)
+	{
+		gtk_button_set_label(GTK_BUTTON(this->hot_btn[i]), multi_lang[lang_index].file_chooser_btn_browse);
+		
+		switch(i)
+		{
+			case Q_HOT_MAIN:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_q_main_fs_label);
+			break;
+			case Q_HOT_FEEDBACK:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_q_feedback_fs_label);
+			break;
+			case Q_HOT_BACKUP:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_q_backup_fs_label);
+			break;
+			case PCI_HOT_IN:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_pci_in_fs_label);
+			break;
+			case PCI_HOT_OUT:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_pci_out_fs_label);
+			break;
+			case GIS_HOT:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_gis_fs_label);
+			break;
+			case JOB_LOG_DIR:
+				gtk_label_set_text(GTK_LABEL(this->hot_lbl[i]), multi_lang[lang_index].hot_report_csv_fs_label);
+			break;
+		}
+	}
+}
+
 
 void gui_hotfolder_page_select_q_main_path_callback(GtkWidget * widget, gpointer param)
 {
@@ -6007,6 +6615,7 @@ void gui_print_params_page_language(gui_print_params_page * this)
 		}
 	}
 
+	gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(this->sheet_source_combo));
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang[lang_index].par_sheet_source_main);
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang[lang_index].par_sheet_source_companion);
 	
@@ -6014,6 +6623,14 @@ void gui_print_params_page_language(gui_print_params_page * this)
 	
 	gtk_label_set_text(GTK_LABEL(this->sheet_source_lbl), multi_lang[lang_index].par_sheet_source_lbl);
 	gtk_label_set_text(GTK_LABEL(this->print_confirm_lbl), multi_lang[lang_index].par_print_confirm_lbl);
+
+	gtk_label_set_text(GTK_LABEL(this->print_mode_lbl), multi_lang[lang_index].par_machine_mode_lbl);
+
+	gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(this->print_mode_combo));
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(this->print_mode_combo), multi_lang[lang_index].par_mm_setup_comb);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(this->print_mode_combo), multi_lang[lang_index].par_mm_print_comb);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(this->print_mode_combo), multi_lang[lang_index].par_mm_inspection_comb);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(this->print_mode_combo), multi_lang[lang_index].par_mm_print_inspection_comb);
 }
 
 
@@ -6028,6 +6645,13 @@ gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widg
 	gui_print_params_page * this = (gui_print_params_page*) param;
 	core_set_sheet_source_confirmation(this->gui_base_ref->core_ref, state);
 	return TRUE;
+}
+
+
+void gui_print_params_set_machine_mode_callback (GtkComboBox *widget, gpointer param)
+{
+	gui_print_params_page * this = (gui_print_params_page *) param;
+	core_set_machine_mode(this->gui_base_ref->core_ref, gtk_combo_box_get_active(GTK_COMBO_BOX(this->print_mode_combo)));
 }
 
 
@@ -6128,8 +6752,7 @@ gui_lang_page * gui_lang_page_new(gui_base * gui_base_ref)
 	settings_button_set_font_size(this->btn_return, 18);
 	settings_button_set_selected(this->btn_return, 1);
 
-	int i;
-	for(i = 0;i<lang_num;i++)
+	for(int i = 0;i<lang_num;i++)
 	{
 		gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->lang_list), multi_lang[i].lang_name);
 	}
@@ -6143,6 +6766,13 @@ gui_lang_page * gui_lang_page_new(gui_base * gui_base_ref)
 	gtk_fixed_put(GTK_FIXED(this->page), this->lang_list, gui_base_ref->work_area_geometry.width/4*3-400, 400);
 
 	return this;
+}
+
+
+void gui_lang_page_language(gui_lang_page * this)
+{
+	int lang_index = this->gui_base_ref->core_ref->lang_index;
+	gtk_label_set_text(GTK_LABEL(this->list_label), multi_lang[lang_index].set_lan_labgel);
 }
 
 void gui_lang_page_set_interface_language_callback(GtkComboBox * widget, gpointer * param)
@@ -6247,7 +6877,9 @@ void gtk_info_window_finalize()
 
 
 int main(int argv, char ** argc)
-{	
+{
+	multi_lang_init();
+	
 	core * core_instance = core_new();	
 
 	/* choose the control interface for working */

@@ -71,8 +71,6 @@
 
 #define GIS_HOT_FOLDER "./gis_hot/"
 
-#define JOB_LOG "./job_log/"
-
 #define LOG_PATH "./log/"
 
 #define JOB_INFO_CSV_PATH "./job_info_csv/"
@@ -199,186 +197,221 @@ struct _lang_
 	const char * par_print_confirm_lbl;
 	const char * par_sheet_source_main;
 	const char * par_sheet_source_companion;
+	const char * par_machine_mode_lbl;
+	const char * par_mm_setup_comb;
+	const char * par_mm_inspection_comb;
+	const char * par_mm_print_comb;
+	const char * par_mm_print_inspection_comb;
 };
 typedef struct _lang_ lang;
 
-				/* czech language labels */
-const lang multi_lang[lang_num] = {{"Čeština",  							/* lang_name */
-				"Host-BK CZ",							/* win_title */	
-				"Jméno jobu",
-				"Soubor pdf",
-				"BKcore csv",
-				"Camera csv",
-				"Tisk",
-				"Job v chybě",
-				"Čeká se na start",
-				"Čeká se na data",
-				"Nastavení sítě",
-				"Nastavení jazyka",
-				"Tiskové parametry",
-				"Nastavení hotfolderů",
-				"Zobrazení IO",
-				"Zpět na controlní panel",
-				"Zpět",
 
-				"Připraven",
-				"Nelze uložit zpětnovazební csv!",
-				"Chyba analýzy camerového csv!",
-				"Nelze načíst řídící csv!",
-				"Nelze odeslat pdf soubor do GISu!",
-				"Nelze odeslat csv soubor do kamery!",
-				"Nesoulad pořadových indexů jobů!",
-				"Vykladač zahlcen!",
-				"Vykladač ucpán!",
-				"Vykladač Bottom!",
-				"Vykladač multifunkce!",
-				"Vykladač není aktivní!",
-				"Podavač hlásí E-stop!",
-				"Podavač není aktivní!",
-				"Podavač multifunkce!",
-				"Podavač nepodává archy!",
-				"Podavač podal více archů současně!",
-				"Stroj hlásí E-stop!",
-				"Výhybka ucpána!",
-				"Podavač ucpán!",
-				"Podavač nastřelovacích proužků hlásí chybu!",
-				"Podavač prokladových archů hlásí chybu!",
-				"Nesoulad počítadel!",
-				"Nízká kvalita tisku! Zkontrolujte tiskové hlavy.",
-				"Počítač GISu neodpovídá!",
-				"Neznámá chyba!",
-
-				"Jazyk rozhraní:",
-				"Číslo TCP portu GISu:",
-				"IP adresa GISu:",
-				"Ovládání síťového spojení:",
-				"Chybný formát TCP portu!",
-				"Chybný formát IP adresy!",
-
-				"Procházet",
-				"Zrušit",
-				"Vybrat",
-				"Datový hotfolder.",
-				"Zpětnovazební hotfolder.",
-				"Hotfolder pro zálohování.",
-				"Vstupní kamerový hotfolder.",
-				"Výstupní kamerový hotfolder.",
-				"Hotfolder pro GIS.",
-				"Reportovací adresář.",
-				"Datový hotfolder Quadient:",
-				"Zpětnovazební hotfolder Quadient:",
-				"Hotfolder pro zálohování Quadient:",
-				"Vstupní kamerový hotfolder:",
-				"Výstupní kamerový hotfolder:",
-				"Hotfolder pro GIS:",
-				"Adresář pro reporty:",
-				"Reportové csv",
-				
-				"GIS status:",
-				"Status stroje:",
-				"Naložené archy:",
-				"Naložené prokladové archy:",
-				"Vadné archy:",
-				"Vyložené archy:",
-				"Sekvence vadných archů:"
-				"Nastřelovací proužky:",
-				
-				"Maximum archů ve vykladači:",
-                                "Maximální sekvence vadných archů:",
-				"Nakladač pro prokladový arch:",
-				"Potvrzení naložení archu z hlavního nakladače:",
-				"Hlavní nakladač",
-				"Prokladový nakladač"},
+lang multi_lang[lang_num];
 
 
 
+void multi_lang_init_czech()
+{
+/* Czech labels */
+    multi_lang[lang_cz].lang_name = "Čeština";
+    multi_lang[lang_cz].win_title = "Host-BK CZ";
+    multi_lang[lang_cz].gui_job_name = "Jméno jobu";
+    multi_lang[lang_cz].gui_job_pdf_name = "Soubor pdf";
+    multi_lang[lang_cz].gui_job_bkcore_name = "BKcore csv";
+    multi_lang[lang_cz].gui_job_camera_name = "Camera csv";
+    multi_lang[lang_cz].print_state_print = "Tisk";
+    multi_lang[lang_cz].print_state_job_error = "Job v chybě";
+    multi_lang[lang_cz].print_state_wait = "Čeká se na start";
+    multi_lang[lang_cz].print_state_wait_for_data = "Čeká se na data";
+    multi_lang[lang_cz].set_btn_network = "Nastavení sítě";
+    multi_lang[lang_cz].set_btn_lang_settings = "Nastavení jazyka";
+    multi_lang[lang_cz].set_btn_print_param = "Tiskové parametry";
+    multi_lang[lang_cz].set_btn_hotfolder = "Nastavení hotfolderů";
+    multi_lang[lang_cz].set_btn_io_vision = "Zobrazení IO";
+    multi_lang[lang_cz].set_btn_back = "Zpět na controlní panel";
+    multi_lang[lang_cz].set_btn_back_to_settngs = "Zpět";
 
-				/* english language label */
-				{"English", 							/* lang_name */
-				"Host-BK EN",							/* win_title */
-				"Job name",
-				"pdf file",
-				"BKcore csv",
-				"Camera csv",
-				"Printing",
-				"Job in error",
-				"Waiting for start",
-				"Waiting for data",
-				"Network settings",
-				"Language settings",
-				"Print parameters",
-				"Hotfolder settings",
-				"IO vision",
-				"Back to control page",
-				"Back",
+    multi_lang[lang_cz].err_no_error = "Připraven";
+    multi_lang[lang_cz].err_cant_save_f_csv = "Nelze uložit zpětnovazební csv!";
+    multi_lang[lang_cz].err_analyze_camera_csv = "Chyba analýzy camerového csv!";
+    multi_lang[lang_cz].err_cant_load_bkcore_csv = "Nelze načíst řídící csv!";
+    multi_lang[lang_cz].err_cant_copy_pdf_to_gis = "Nelze odeslat pdf soubor do GISu!";
+    multi_lang[lang_cz].err_cant_copy_csv_to_camera = "Nelze odeslat csv soubor do kamery!";
+    multi_lang[lang_cz].err_job_order_mismatch = "Nesoulad pořadových indexů jobů!";
+    multi_lang[lang_cz].err_stacker_jam_pile = "Vykladač zahlcen!";
+    multi_lang[lang_cz].err_stacker_jam_conveyor = "Vykladač ucpán!";
+    multi_lang[lang_cz].err_stacker_bottom = "Vykladač Bottom!";
+    multi_lang[lang_cz].err_stacker_multifunction = "Vykladač multifunkce!";
+    multi_lang[lang_cz].err_stacker_off = "Vykladač není aktivní!";
+    multi_lang[lang_cz].err_feeder_e_stop = "Podavač hlásí E-stop!";
+    multi_lang[lang_cz].err_feeder_off = "Podavač není aktivní!";
+    multi_lang[lang_cz].err_feeder_multifunction = "Podavač multifunkce!";
+    multi_lang[lang_cz].err_feeder_sheet_missing = "Podavač nepodává archy!";
+    multi_lang[lang_cz].err_feeder_double_sheet = "Podavač podal více archů současně!";
+    multi_lang[lang_cz].err_machine_e_stop = "Stroj hlásí E-stop!";
+    multi_lang[lang_cz].err_reject_bin_jam = "Výhybka ucpána!";
+    multi_lang[lang_cz].err_feeder_jam = "Podavač ucpán!";
+    multi_lang[lang_cz].err_ti = "Podavač nastřelovacích proužků hlásí chybu!";
+    multi_lang[lang_cz].err_ta = "Podavač prokladových archů hlásí chybu!";
+    multi_lang[lang_cz].err_counters_mismatch = "Nesoulad počítadel!";
+    multi_lang[lang_cz].err_low_print_quality = "Nízká kvalita tisku! Zkontrolujte tiskové hlavy.";
+    multi_lang[lang_cz].err_gis_disconnected = "Počítač GISu neodpovídá!";
+    multi_lang[lang_cz].err_unknown_error = "Neznámá chyba!";
 
-				"Ready",
-				"Can't save feedback csv!",
-				"Camera csv analyzing error!",
-				"Can't load control csv!",
-				"Can't send pdf file to GIS!",
-				"Can't send csv file to camera!",
-				"Job index order mismatch!",
-				"Stacker jam pile!",
-				"Stacker jam conveyer!",
-				"Stakcer bottom!",
-				"Stacker multifunction!",
-				"Stacker in off state!",
-				"Feeder E-stop!",
-				"Feeder in off state!",
-				"Feeder multifunction!",
-				"Feeder sheet missing!",
-				"Feeder double sheet!",
-				"Machine E-stop!",
-				"Reject bin jam!",
-				"Feeder jam!",
-				"Tab insert error!",
-				"Companion sheet feeder error!",
-				"Counters mismatch!",
-				"Low print quality! Check print heads.",
-				"GIS computer not responding!",
-				"Unknown error!",
+    multi_lang[lang_cz].set_lan_labgel = "Jazyk rozhraní:";
+    multi_lang[lang_cz].set_net_iij_tcp_port = "Číslo TCP portu GISu:";
+    multi_lang[lang_cz].set_net_iij_ip_addr = "IP adresa GISu:";
+    multi_lang[lang_cz].set_net_iij_connection = "Ovládání síťového spojení:";
+    multi_lang[lang_cz].set_net_iij_wrong_tcp_port_label = "Chybný formát TCP portu!";
+    multi_lang[lang_cz].set_net_iij_wrong_ip_address_label = "Chybný formát IP adresy!";
 
-				"Interface language:",
-				"TCP port nuber for GIS:",
-				"IP address for GIS:",
-				"Network connection control:",
-				"Wrong TCP port format!",
-				"Wrong IP address format",
+    multi_lang[lang_cz].file_chooser_btn_browse = "Procházet";
+    multi_lang[lang_cz].file_chooser_cancel_btn = "Zrušit";
+    multi_lang[lang_cz].file_chooser_select_btn = "Vybrat";
+    multi_lang[lang_cz].hot_q_main_fs_title = "Datový hotfolder.";
+    multi_lang[lang_cz].hot_q_feedback_fs_title = "Zpětnovazební hotfolder.";
+    multi_lang[lang_cz].hot_q_backup_fs_title = "Hotfolder pro zálohování.";
+    multi_lang[lang_cz].hot_pci_in_fs_title = "Vstupní kamerový hotfolder.";
+    multi_lang[lang_cz].hot_pci_out_fs_title = "Výstupní kamerový hotfolder.";
+    multi_lang[lang_cz].hot_gis_fs_title = "Hotfolder pro GIS.";
+    multi_lang[lang_cz].hot_report_csv_fs_title = "Reportovací adresář.";
 
-				"Browse",
-				"Cancel",
-				"Select",
-				"Data hotfolder",
-				"Feedback hotfolder",
-				"Backup hotfolder",
-				"Camera input hotfolder",
-				"Camera output hotfolder",
-				"GIS hotfolder",
-				"Report directory",
-				"Data hotfolder Quadient:",
-				"Feedback hotfolder Quadient:",
-				"Backup hotfolder Quadient:",
-				"Camera input hotfolder:",
-				"Camera output hotfolder:",
-				"GIS hotfolder:",
-				"Report directory:",
-				"Report csv",
+    multi_lang[lang_cz].hot_q_main_fs_label = "Datový hotfolder Quadient:";
+    multi_lang[lang_cz].hot_q_feedback_fs_label = "Zpětnovazební hotfolder Quadient:";
+    multi_lang[lang_cz].hot_q_backup_fs_label = "Hotfolder pro zálohování Quadient:";
+    multi_lang[lang_cz].hot_pci_in_fs_label = "Vstupní kamerový hotfolder:";
+    multi_lang[lang_cz].hot_pci_out_fs_label = "Výstupní kamerový hotfolder:";
+    multi_lang[lang_cz].hot_gis_fs_label = "Hotfolder pro GIS:";
+    multi_lang[lang_cz].hot_report_csv_fs_label = "Adresář pro reporty:";
 
-				"GIS status:",
-				"Machine status",
-				"Feeded sheets:",
-				"Feeded companion sheets:",
-				"Rejected sheets:",
-				"Stacked sheets:",
-				"Rejected sheets sequence:"
-				"Tab inserts:",
+    multi_lang[lang_cz].rep_csv_log_column_file_name = "Reportové csv";
 
-				"Maximum number of sheets in the stecker:",
-	                        "Maximum number of rejected sheets in sequence:",
-				"Feeder for companion sheet:",
-				"Confirmation feeding from main feeder:",
-				"Main feeder",
-				"Companion feeder"}};
+    multi_lang[lang_cz].g_status_gis_lbl = "GIS status:";
+    multi_lang[lang_cz].g_status_machine_lbl = "Status stroje:";
+    multi_lang[lang_cz].g_cnt_main_feed_lbl = "Naložené archy:";
+    multi_lang[lang_cz].g_cnt_companion_feed_lbl = "Naložené prokladové archy:";
+    multi_lang[lang_cz].g_cnt_rejected_lbl = "Vadné archy:";
+    multi_lang[lang_cz].g_cnt_stakced_lbl = "Vyložené archy:";
+    multi_lang[lang_cz].g_cnt_rejected_seq_lbl = "Sekvence vadných archů:";
+    multi_lang[lang_cz].g_cnt_tab_insert_blb = "Nastřelovací proužky:";
+
+    multi_lang[lang_cz].par_max_stacked_sheet_lbl = "Maximum archů ve vykladači:";
+    multi_lang[lang_cz].par_rejected_sheet_seq_lbl = "Maximální sekvence vadných archů:";
+    multi_lang[lang_cz].par_sheet_source_lbl = "Nakladač pro prokladový arch:";
+    multi_lang[lang_cz].par_print_confirm_lbl = "Potvrzení naložení archu z hlavního nakladače:";
+    multi_lang[lang_cz].par_sheet_source_main = "Hlavní nakladač";
+    multi_lang[lang_cz].par_sheet_source_companion = "Prokladový nakladač";
+    multi_lang[lang_cz].par_machine_mode_lbl = "Režim Gremser dopravníku: ";
+    multi_lang[lang_cz].par_mm_setup_comb = "NASTAVENÍ";
+    multi_lang[lang_cz].par_mm_inspection_comb = "INSPEKCE";
+    multi_lang[lang_cz].par_mm_print_comb = "TISK";
+    multi_lang[lang_cz].par_mm_print_inspection_comb = "TISK S INSPEKCÍ";
+}
+
+void multi_lang_init_english()
+{
+ /* English labels */
+
+    multi_lang[lang_en].lang_name = "English";
+    multi_lang[lang_en].win_title = "Host-BK EN";
+    multi_lang[lang_en].gui_job_name = "Job name";
+    multi_lang[lang_en].gui_job_pdf_name = "pdf file";
+    multi_lang[lang_en].gui_job_bkcore_name = "BKcore csv";
+    multi_lang[lang_en].gui_job_camera_name = "Camera csv";
+    multi_lang[lang_en].print_state_print = "Printing";
+    multi_lang[lang_en].print_state_job_error = "Job in error";
+    multi_lang[lang_en].print_state_wait = "Waiting for start";
+    multi_lang[lang_en].print_state_wait_for_data = "Waiting for data";
+    multi_lang[lang_en].set_btn_network = "Network settings";
+    multi_lang[lang_en].set_btn_lang_settings = "Language settings";
+    multi_lang[lang_en].set_btn_print_param = "Print parameters";
+    multi_lang[lang_en].set_btn_hotfolder = "Hotfolder settings";
+    multi_lang[lang_en].set_btn_io_vision = "IO vision";
+    multi_lang[lang_en].set_btn_back = "Back to control page";
+    multi_lang[lang_en].set_btn_back_to_settngs = "Back";
+
+    multi_lang[lang_en].err_no_error = "Ready";
+    multi_lang[lang_en].err_cant_save_f_csv = "Can't save feedback csv!";
+    multi_lang[lang_en].err_analyze_camera_csv = "Camera csv analyzing error!";
+    multi_lang[lang_en].err_cant_load_bkcore_csv = "Can't load control csv!";
+    multi_lang[lang_en].err_cant_copy_pdf_to_gis = "Can't send pdf file to GIS!";
+    multi_lang[lang_en].err_cant_copy_csv_to_camera = "Can't send csv file to camera!";
+    multi_lang[lang_en].err_job_order_mismatch = "Job index order mismatch!";
+    multi_lang[lang_en].err_stacker_jam_pile = "Stacker jam pile!";
+    multi_lang[lang_en].err_stacker_jam_conveyor = "Stacker jam conveyer!";
+    multi_lang[lang_en].err_stacker_bottom = "Stakcer bottom!";
+    multi_lang[lang_en].err_stacker_multifunction = "Stacker multifunction!";
+    multi_lang[lang_en].err_stacker_off = "Stacker in off state!";
+    multi_lang[lang_en].err_feeder_e_stop = "Feeder E-stop!";
+    multi_lang[lang_en].err_feeder_off = "Feeder in off state!";
+    multi_lang[lang_en].err_feeder_multifunction = "Feeder multifunction!";
+    multi_lang[lang_en].err_feeder_sheet_missing = "Feeder sheet missing!";
+    multi_lang[lang_en].err_feeder_double_sheet = "Feeder double sheet!";
+    multi_lang[lang_en].err_machine_e_stop = "Machine E-stop!";
+    multi_lang[lang_en].err_reject_bin_jam = "Reject bin jam!";
+    multi_lang[lang_en].err_feeder_jam = "Feeder jam!";
+    multi_lang[lang_en].err_ti = "Tab insert error!";
+    multi_lang[lang_en].err_ta = "Companion sheet feeder error!";
+    multi_lang[lang_en].err_counters_mismatch = "Counters mismatch!";
+    multi_lang[lang_en].err_low_print_quality = "Low print quality! Check print heads.";
+    multi_lang[lang_en].err_gis_disconnected = "GIS computer not responding!";
+    multi_lang[lang_en].err_unknown_error = "Unknown error!";
+
+    multi_lang[lang_en].set_lan_labgel = "Interface language:";
+    multi_lang[lang_en].set_net_iij_tcp_port = "TCP port nuber for GIS:";
+    multi_lang[lang_en].set_net_iij_ip_addr = "IP address for GIS:";
+    multi_lang[lang_en].set_net_iij_connection = "Network connection control:";
+    multi_lang[lang_en].set_net_iij_wrong_tcp_port_label = "Wrong TCP port format!";
+    multi_lang[lang_en].set_net_iij_wrong_ip_address_label = "Wrong IP address format";
+
+    multi_lang[lang_en].file_chooser_btn_browse = "Browse";
+    multi_lang[lang_en].file_chooser_cancel_btn = "Cancel";
+    multi_lang[lang_en].file_chooser_select_btn = "Select";
+    multi_lang[lang_en].hot_q_main_fs_title = "Data hotfolder";
+    multi_lang[lang_en].hot_q_feedback_fs_title = "Feedback hotfolder";
+    multi_lang[lang_en].hot_q_backup_fs_title = "Backup hotfolder";
+    multi_lang[lang_en].hot_pci_in_fs_title = "Camera input hotfolder";
+    multi_lang[lang_en].hot_pci_out_fs_title = "Camera output hotfolder";
+    multi_lang[lang_en].hot_gis_fs_title = "GIS hotfolder";
+    multi_lang[lang_en].hot_report_csv_fs_title = "Report directory";
+
+    multi_lang[lang_en].hot_q_main_fs_label = "Data hotfolder Quadient:";
+    multi_lang[lang_en].hot_q_feedback_fs_label = "Feedback hotfolder Quadient:";
+    multi_lang[lang_en].hot_q_backup_fs_label = "Backup hotfolder Quadient:";
+    multi_lang[lang_en].hot_pci_in_fs_label = "Camera input hotfolder:";
+    multi_lang[lang_en].hot_pci_out_fs_label = "Camera output hotfolder:";
+    multi_lang[lang_en].hot_gis_fs_label = "GIS hotfolder:";
+    multi_lang[lang_en].hot_report_csv_fs_label = "Report directory:";
+
+    multi_lang[lang_en].rep_csv_log_column_file_name = "Report csv";
+
+    multi_lang[lang_en].g_status_gis_lbl = "GIS status:";
+    multi_lang[lang_en].g_status_machine_lbl = "Machine status";
+    multi_lang[lang_en].g_cnt_main_feed_lbl = "Feeded sheets:";
+    multi_lang[lang_en].g_cnt_companion_feed_lbl = "Feeded companion sheets:";
+    multi_lang[lang_en].g_cnt_rejected_lbl = "Rejected sheets:";
+    multi_lang[lang_en].g_cnt_stakced_lbl = "Stacked sheets:";
+    multi_lang[lang_en].g_cnt_rejected_seq_lbl = "Rejected sheets sequence:";
+    multi_lang[lang_en].g_cnt_tab_insert_blb = "Tab inserts:";
+
+    multi_lang[lang_en].par_max_stacked_sheet_lbl = "Maximum number of sheets in the stecker:";
+    multi_lang[lang_en].par_rejected_sheet_seq_lbl = "Maximum number of rejected sheets in sequence:";
+    multi_lang[lang_en].par_sheet_source_lbl = "Feeder for companion sheet:";
+    multi_lang[lang_en].par_print_confirm_lbl = "Confirmation feeding from main feeder:";
+    multi_lang[lang_en].par_sheet_source_main = "Main feeder";
+    multi_lang[lang_en].par_sheet_source_companion = "Companion feeder";
+    multi_lang[lang_en].par_machine_mode_lbl = "Gremser machine mode:";
+    multi_lang[lang_en].par_mm_setup_comb = "SETUP";
+    multi_lang[lang_en].par_mm_inspection_comb = "INSPECTION";
+    multi_lang[lang_en].par_mm_print_comb = "PRINT";
+    multi_lang[lang_en].par_mm_print_inspection_comb = "PRINT INSPECTION";
+}
+
+void multi_lang_init()
+{
+    multi_lang_init_czech();
+    multi_lang_init_english();
+}
+
 
 #endif

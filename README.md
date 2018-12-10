@@ -1,15 +1,15 @@
 
 
-TODO:
+**TODO**:
+* ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1)
+* napojení do databáze omronu v gremser stroji
+* na základě napojení do omronu, upravit počítadla archů, která budou vyčtena 
+* přidat informace o jobu do reportovacího csv, vytvořit v něm informační hlavičku, tu pak načíst a zobrazit v okně se seznamem reportů v ovládacím panelu
 * Vytvořit skript pro spouštění GIS serveru a bufferovací aplikace
-* Nastavení režimu stroje, nesmí být změněn při tisku
-* Na základě nastaveného režimu ošetřit posílání pdf a csv do subsystémů
-* Upravit kartu tiskové paramtry a přidat nastavení pro volby zdroje prokladového archu
 * Vytvořit automatizované unit testy pro krytické funkce a vyladit jádro
-* Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job
+* Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job?
 * Upravit řídící panel pro zobrazení pouze jednoho jobu připraveného k tisku
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
-* Napojit konfiguraci do jádra
 * Odstranit ze zdrojových kódů nepotřebný kód z části rozhraní příkazové řádky
 * Zpomalit tisk pokus se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 * Kontrola síťového spojení s počítačem quadient
@@ -17,8 +17,13 @@ TODO:
 
 
 
-DONE:
+**DONE**:
 
+* Nastavení režimu stroje, nesmí být změněn při tisku
+* Napojit konfiguraci do jádra
+* Upravit kartu tiskové paramtry a přidat nastavení pro volby zdroje prokladového archu
+* Na základě nastaveného režimu ošetřit posílání pdf a csv do subsystémů (upravit stav prepare a na konci kontrolu kamerového csv a generování zpětnovazebního csv pro quadient)
+* Vytvořit program pro testování zátěže GISu
 * Upravit kartu řídícího rozhraní pro potvrzení nabraní prokladového archu z hlavního nakladače
 * Zrychlit odezvu resetu
 * Zobrazit na řídícím panelu hodnotu počítadel
@@ -45,5 +50,76 @@ DONE:
 * Implementovat logování procesů v jádře a ukládat jej do souboru
 * Implementovat detekci chyby definovanou blikáním vstupu frekcencí ~2Hz (Tab insert, companion sheet feeder feedback input)
 * Vytvořit kartu pro vizualizaci stavů vstupů a výstupů
+
+
+
+**BUG report**:
+
+* BUG: 00004 v reportovacím csv ne nezobrazuje stav PASS
+ - Je zobrazován pouze stav FAIL v případě, že prokladový arch neprošel kamerovou kontrolou, vypadá to, že tento stav nebyl do datové struktury job_info vůbec při kontrole zadán.
+
+* BUG: 00003 chybné generování zpětnovazenbího csv - OPRAVENO
+ - porovnávání zdá se funguje správně, ale jsou rozbyté indexy ve výstupním csv 
+ -> při úpravě systému pro ukládání indexů archů jsem neupravil jejich načítání v čísti pro generování, nebyl čten řetězec obsahující index archu ale adresa na strukturu ve které byl uložen
+
+
+* BUG: 00002 při generování zpětnovazebního csv dojde po nějaké době k narušení paměti - OPRAVENO
+ - zatím byl zaznamenám pouze případ při generování zpětnovazebního csv pro prokladový arch s 0% úspěšností kamerové revize, zpětnovazební csv nebyl vůbec vytvořeno 
+ -> bylo nalezeno několik chyb:
+ 	1 - v bkcore csv na prokladový arch nejsou narozdíl od kolkového na prvních dvou pozicích metadata o jobu, bylo potřeba vytvořit výjimku 
+		uvnitř funkce core_machine_state_prepare, kde se tato metadata četou, čtení metadat je povolenou pouze v případě, že se jedná o job s příznakem 'k'
+	2 - bkcore csv na prokladový arch obsahuje index tisknutého prokladového archu, který vždy začíná od 1, proto je (v případě tisku jednoho archu) přeten pouze jeden znak,
+		to způsobuje, že csv_size = offset a vůbec nedojde ke vstupu do části pro tisk prokladových archů, to způsobuje problém i v případě jednoarchových jobu s kolky.
+		Tento problém byl způsoben uvnitř funkce core_machine_state_read_csv_line kde se fyzicky čte obsah bkcore csv souboru, v této části byly porovnávány špatné proměnné,
+		byly porovnávány proměnné offset < bkcore_csv_size, kde offset udává aktuální pozici konce daného řádku, tato hodnota je ale přičítána k 
+		proměnné bkcore_csv_pos += (offset+1) (ukončovací
+		znak '\n'). Tím tak došlo k tomu, že v případě čtení posledního řádku již nebyla splněna podmínka pro vstup do tiskového podprogramu a programový tok byl 
+		přesměrován do stavu čekání na dokončení tisku
+
+
+* BUG: 00001 neúspěné rušení probíhajícího jobu - OPRAVENO
+ -  log vypisuje hlášku: "Přerušení jobu stc-17898 zkončilo chybou! Obslužné vlákno se nachází ve stavu: 2 - Ready", nakonec dojde k narušení paměti. Při rušení tisku se podle
+	výpisu logu obslužné vlákno dostalo do stavu read_csv_line ze kterého mělo jedinou možnost přejít do stavu print_break, v této funkci tedy musí být chyba
+	-> bylo nalezeno několik chyb:
+	1 - log vypisoval hlášku o chybě při ukončování jobu, protože se vlákno se může nacházet ve dvou časovacích režimech - realtime a standby, v realtime režimu je 
+		frekvence volání smyčky v jednotkách milisekund a v režimu standby se jedná o stovky milisekund. Uvnitř funkce, která se stará o ukončení tisku byla nastavena
+		prodleva pro nastavení ukončovacího příznaku print_cancel_req=true pouze v na 10 cyklů v realtime režimu, tisk lze ale přerušit pouze ze stavu read_csv_line nebo
+		wait_next a do těchto stavů se dostávají vždy nejdříve po x vteřinách (po dokončení naložení archu a nebo po dokončení jobu a čekání na další data), proto 
+		byla časová prodleva zrušena a v případě neúspěšného ukončení a zablokování rozhraní je nutné resetovat cyklus, tato řídící proměnná je vynulována ve stavu print_finish
+	2 - uvnitř funkce machine_state_print_break byl volán podprogram pro analýzu kamerového csv i v případě, že se stroj nenacházel inspekčním režimu (žádné csv z kamery neexistuje),
+		chyba byla tedy vyvolána i v režimu PRINT nebo SETUP, ošetřeno podmínkou nastaveného režimu.
+	3 - chyba způsobující pád programu vlivem neoprávněného přístupu do paměti byla způsobena uvnitř funkce core_analyze_csv, která se volá v případě, že je job ukončen
+		před jeho dokončením, tedy nejedná se o job s příznakem 'e'. Díky tomu se tento problém neprojevil při korektním ukončení jobu. Při nakládání archů jsou průběžně vytvářeny
+		záznamy o naložených arších, ale pokud se tisk stopne předčasně, struktura neobsahuje záznamy o všech arších, které bkcore csv obsahuje a nakonci nemohou být ohodnoceny
+		při analýze kamerového csv a v tomto bodě dojde k narušení paměti, protože se struktura vrátí hodnotu NULL a zde není ošetřena tato eventualita, možnost je buď před začátkem 
+		nakládání archů vygenerovat celou strukturu obsahující informace o arších a nebo při této eventualitě složitě chybějící struktury vygenerovat. První možnost je nejjednodušší,
+		protože díky tomu lze zrobustnit funkci read_csv_line ve které probíhá posílání jednotlivých archů z nakladače (vis. BUG 00002)
+	4 - bkcore csv obsahuje u kolkového jobu na konci souboru znak odřádkování '\n', ale v případě prokladového archu již nikoli, z tohoto důvodu nevytváří modifikovaný kód pro prokladové
+		archy záznamy ve strukturě s informace jobu a tím nejsou nakládány na dopravník archy a zároveň je na konci přistupováno na NULL který končí pádem programu. Přidán na konec
+		kódu pro generování záznamů do struktury s informace o jobu podmínku, pokud se před koncem souboru nacházely nějaké číselné znaky vytvoř záznam.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
