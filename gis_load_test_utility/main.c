@@ -52,8 +52,8 @@
 
 #define GIS_CMD_NETWORK_CONNECTED "N,C\n"
 #define GIS_CMD_PRINT_LISTENER "P,L\n"
-#define GIS_CMD_PRINT_ABORT "P,A\nP,A\n"
-
+#define GIS_CMD_PRINT_ABORT "P,A\n"
+#define GIS_CMD_RIP_ABORT "R,A\n"
 
 #define GIS_LOAD_STATUS_SUCCESS 0
 #define GIS_LOAD_STATUS_ERROR 255
@@ -314,7 +314,29 @@ void comm_tcp_finalize(comm_tcp * client)
 }
 
 
+int fs_dir_is_empty(char * address)
+{
+	DIR * dir_ref = opendir(address);
+	int res = -1;
+	
+	if(dir_ref != NULL)
+	{
+		struct dirent * dir_cont = NULL;
+		res = 0;
 
+		while((dir_cont =readdir(dir_ref)) != NULL)
+		{
+			if(dir_cont->d_type != DT_DIR)
+			{
+				res ++;
+			}
+		}
+
+		closedir(dir_ref);
+	}
+	
+	return res;
+}
 
 
 array_list * fs_read_dir_content(char * address)
@@ -453,6 +475,12 @@ void gis_load_abbort_print(gis_load * this)
 	comm_tcp_transaction(this->gis_tcp_ref, GIS_CMD_PRINT_ABORT, COMM_TCP_IO_BUFFER_SIZE);
 }
 
+
+void gis_load_abbort_rip(gis_load * this)
+{
+	comm_tcp_transaction(this->gis_tcp_ref, GIS_CMD_RIP_ABORT, COMM_TCP_IO_BUFFER_SIZE);
+}
+
 uint8_t gis_load_runtime_state_reading(gis_load* this)
 {
 	comm_tcp_send(this->gis_tcp_ref, GIS_CMD_PRINT_LISTENER);
@@ -493,6 +521,8 @@ uint8_t gis_load_runtime_state_reading(gis_load* this)
 							{
 								gis_load_delay(10);
 								gis_load_abbort_print(this);
+								usleep(500000);
+								gis_load_abbort_rip(this);
 								status = 1;
 							} 
 
@@ -578,48 +608,22 @@ int main(int argv, char ** argc)
 			int status = 0;
 			for(int i = 0; i <array_list_size(file_list); i++)
 			{
-				printf("Waiting for hotfolder clearing:   ");
-				int j = 10;
-				array_list * file_list_gis_hot = fs_read_dir_content(GIS_HOT_PATH);
+				printf("Waiting for hotfolder clearing...\n");
 
-				while((array_list_size(file_list_gis_hot)) > 0 && (j > 0))
+				while(fs_dir_is_empty(GIS_HOT_PATH) > 0)
 				{
-					if(j < 9)
-						printf("\b\b%i ", j);
-					else
-						printf("\b\b\b%i ", j);
-
+					printf("Waiting for GIS hotfolder clearing...\n");
 					fflush(stdout);
 					sleep(1);
-					j--;
-
-					if(file_list_gis_hot != NULL)
-						array_list_destructor_with_release(&file_list_gis_hot, c_string_finalize_v2);
-
-					file_list_gis_hot = fs_read_dir_content(GIS_HOT_PATH);
 				}
-
-				
-				if(array_list_size(file_list_gis_hot) > 0)
-				{
-					for(int k = 0; k > array_list_size(file_list_gis_hot); k++)
-					{
-						fs_delete_file(GIS_HOT_PATH, c_string_get_char_array((c_string*) array_list_get(file_list_gis_hot, k)));
-						printf("\nHotfolder clear\n");
-					}
-				}
-				else
-				{
-					printf("Clear\n");
-				}
-
-				array_list_destructor_with_release(&file_list_gis_hot, c_string_finalize_v2);
 
 				gis_load_delay(GIS_LOAD_TEST_DELAY-5);
 
 				/* copy n-th pdf file to gis hot folder */
 				if(fs_copy_file(PDF_INPUT_ADDR, GIS_HOT_PATH, c_string_get_char_array((c_string *) array_list_get(file_list, i))) == 0)
 					printf("copy pdf %s to path %s\n", c_string_get_char_array(array_list_get(file_list, i)), GIS_HOT_PATH);
+				else
+					printf("Copy file error!\n");
 	
 				/* wait for the gis response */
 				status += gis_load_runtime_state_reading(gis_load_ref);

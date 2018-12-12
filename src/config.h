@@ -25,10 +25,10 @@
 #define IO_SIMULATION TRUE
 
 /** @ingroup configuration Time interva for correct receave the respond from TCP socket in microseconds. */
-#define TCP_NETWORK_TTL_U 500000 
+#define TCP_NETWORK_TTL_U 100000 
 
 /** @ingroup configuration Time interva for correct receave the respond from TCP socket in seconds. */
-#define TCP_NETWORK_TTL_S 1
+#define TCP_NETWORK_TTL_S 0
 
 /** @ingroup configuration Default TCP port value for tcp communication with pritner subsystem, needed when configuration file is broken. */
 #define DEFAULT_TCP_PORT_GIS 2000
@@ -37,10 +37,14 @@
 #define DEFAULT_TCP_PORT_PCI 500
 
 /** @ingroup configuration Default IP address value for tcp communication with pritner subsystem, needed when configuration file is broken. */
-#define DEFAULT_IP_ADDRESS_GIS "192.168.1.127"
+#define DEFAULT_IP_ADDRESS_GIS "192.168.25.16"
 
 /** @ingroup configuration Default IP address value for tcp communication with camera revision subsystem, needed when configuration file is broken. */
-#define DEFAULT_IP_ADDRESS_PCI "192.168.0.2"
+#define DEFAULT_IP_ADDRESS_PCI "192.168.50.14"
+
+#define DEFAULT_IP_ADDRESS_QUADIENT "192.168.50.15"
+
+#define DEFAULT_NETWORK_RESPONDER_TCP_PORT 1500
 
 /** @ingroup configuration Path to the file with system configuration for the libconfig. */
 #define CONFIGURATION_FILE_PATH "./sys_cfg"
@@ -152,14 +156,22 @@ struct _lang_
 	const char * err_counters_mismatch;
 	const char * err_low_print_quality;
 	const char * err_gis_disconnected;
+	const char * err_csv_sheet_num;
+	const char * err_sheet_feeder_redirection;
+	const char * err_pci_computer_not_responding;
+	const char * err_iij_computer_not_responding;
+	const char * err_quadient_computer_not_responding;
 	const char * err_unknown_error;
 
-	const char * set_lan_labgel;
+	const char * set_lan_label;
 	const char * set_net_iij_tcp_port;
 	const char * set_net_iij_ip_addr;
 	const char * set_net_iij_connection;
 	const char * set_net_iij_wrong_tcp_port_label;
 	const char * set_net_iij_wrong_ip_address_label;
+	const char * set_net_iij_connection_test_label;
+	const char * set_net_pci_connection_test_label;
+	const char * set_net_quadient_connection_test_label;
 
 	const char * file_chooser_btn_browse;
 	const char * file_chooser_cancel_btn;
@@ -183,13 +195,19 @@ struct _lang_
 	const char * rep_csv_log_column_file_name;
 
 	const char * g_status_gis_lbl;
+	const char * g_counters_label;
+	const char * g_feeder_lbl;
 	const char * g_status_machine_lbl;
+	const char * g_reject_bin_lbl;
 	const char * g_cnt_main_feed_lbl;
+	const char * g_stacker_lbl;
 	const char * g_cnt_companion_feed_lbl;
 	const char * g_cnt_rejected_lbl;
 	const char * g_cnt_stakced_lbl;
 	const char * g_cnt_rejected_seq_lbl;
 	const char * g_cnt_tab_insert_blb;
+	const char * g_job_list_lbl;
+	const char * g_report_csv_list_lbl;
 
 	const char * par_max_stacked_sheet_lbl;
 	const char * par_rejected_sheet_seq_lbl;
@@ -256,14 +274,22 @@ void multi_lang_init_czech()
     multi_lang[lang_cz].err_counters_mismatch = "Nesoulad počítadel!";
     multi_lang[lang_cz].err_low_print_quality = "Nízká kvalita tisku! Zkontrolujte tiskové hlavy.";
     multi_lang[lang_cz].err_gis_disconnected = "Počítač GISu neodpovídá!";
+    multi_lang[lang_cz].err_csv_sheet_num = "Chybné pořadí csv archů!"; 
+    multi_lang[lang_cz].err_sheet_feeder_redirection = "Chyba při přesměrování nakladače pro prokladový arch!";
+    multi_lang[lang_cz].err_pci_computer_not_responding = "Počítač PCI neodpovídá!";
+    multi_lang[lang_cz].err_iij_computer_not_responding = "Počítač IIJ neodpovídá!";
+    multi_lang[lang_cz].err_quadient_computer_not_responding = "Počítač Quadient neodpovídá!";
     multi_lang[lang_cz].err_unknown_error = "Neznámá chyba!";
 
-    multi_lang[lang_cz].set_lan_labgel = "Jazyk rozhraní:";
+    multi_lang[lang_cz].set_lan_label = "Jazyk rozhraní:";
     multi_lang[lang_cz].set_net_iij_tcp_port = "Číslo TCP portu GISu:";
     multi_lang[lang_cz].set_net_iij_ip_addr = "IP adresa GISu:";
     multi_lang[lang_cz].set_net_iij_connection = "Ovládání síťového spojení:";
     multi_lang[lang_cz].set_net_iij_wrong_tcp_port_label = "Chybný formát TCP portu!";
     multi_lang[lang_cz].set_net_iij_wrong_ip_address_label = "Chybný formát IP adresy!";
+    multi_lang[lang_cz].set_net_iij_connection_test_label = "IP adresa počítače IIJ:";
+    multi_lang[lang_cz].set_net_pci_connection_test_label = "IP adresa počítače PCI:";
+    multi_lang[lang_cz].set_net_quadient_connection_test_label = "IP adresa počítače Quadient:";
 
     multi_lang[lang_cz].file_chooser_btn_browse = "Procházet";
     multi_lang[lang_cz].file_chooser_cancel_btn = "Zrušit";
@@ -286,14 +312,20 @@ void multi_lang_init_czech()
 
     multi_lang[lang_cz].rep_csv_log_column_file_name = "Reportové csv";
 
-    multi_lang[lang_cz].g_status_gis_lbl = "GIS status:";
+    multi_lang[lang_cz].g_counters_label = "POČÍTADLA STROJE:";
+    multi_lang[lang_cz].g_feeder_lbl = "NAKLADAČE:";
+    multi_lang[lang_cz].g_status_gis_lbl = "GIS tiskový řadič status:";
     multi_lang[lang_cz].g_status_machine_lbl = "Status stroje:";
-    multi_lang[lang_cz].g_cnt_main_feed_lbl = "Naložené archy:";
+    multi_lang[lang_cz].g_cnt_main_feed_lbl = "Naložené archy hlavní nakladač:";
+    multi_lang[lang_cz].g_stacker_lbl = "VYKLADAČ:";
+    multi_lang[lang_cz].g_reject_bin_lbl = "VÝHYBKA:";
     multi_lang[lang_cz].g_cnt_companion_feed_lbl = "Naložené prokladové archy:";
     multi_lang[lang_cz].g_cnt_rejected_lbl = "Vadné archy:";
-    multi_lang[lang_cz].g_cnt_stakced_lbl = "Vyložené archy:";
+    multi_lang[lang_cz].g_cnt_stakced_lbl = "Vyložené archy očekávané/aktuální:";
     multi_lang[lang_cz].g_cnt_rejected_seq_lbl = "Sekvence vadných archů:";
     multi_lang[lang_cz].g_cnt_tab_insert_blb = "Nastřelovací proužky:";
+    multi_lang[lang_cz].g_job_list_lbl = "Aktuální tisková úloha:";
+    multi_lang[lang_cz].g_report_csv_list_lbl = "Historie vytištěných úloh:";
 
     multi_lang[lang_cz].par_max_stacked_sheet_lbl = "Maximum archů ve vykladači:";
     multi_lang[lang_cz].par_rejected_sheet_seq_lbl = "Maximální sekvence vadných archů:";
@@ -301,7 +333,7 @@ void multi_lang_init_czech()
     multi_lang[lang_cz].par_print_confirm_lbl = "Potvrzení naložení archu z hlavního nakladače:";
     multi_lang[lang_cz].par_sheet_source_main = "Hlavní nakladač";
     multi_lang[lang_cz].par_sheet_source_companion = "Prokladový nakladač";
-    multi_lang[lang_cz].par_machine_mode_lbl = "Režim Gremser dopravníku: ";
+    multi_lang[lang_cz].par_machine_mode_lbl = "Pracovní režim dopravníku: ";
     multi_lang[lang_cz].par_mm_setup_comb = "NASTAVENÍ";
     multi_lang[lang_cz].par_mm_inspection_comb = "INSPEKCE";
     multi_lang[lang_cz].par_mm_print_comb = "TISK";
@@ -355,14 +387,22 @@ void multi_lang_init_english()
     multi_lang[lang_en].err_counters_mismatch = "Counters mismatch!";
     multi_lang[lang_en].err_low_print_quality = "Low print quality! Check print heads.";
     multi_lang[lang_en].err_gis_disconnected = "GIS computer not responding!";
+    multi_lang[lang_en].err_csv_sheet_num = "Wrong sheet order in csv file!"; 
+    multi_lang[lang_en].err_sheet_feeder_redirection = "Error with feeder redirection for companion sheet!";
+    multi_lang[lang_en].err_pci_computer_not_responding = "PCI computer not responding!";
+    multi_lang[lang_en].err_iij_computer_not_responding = "IIJ computer not responding!";
+    multi_lang[lang_en].err_quadient_computer_not_responding = "Quadient computer not responding!";
     multi_lang[lang_en].err_unknown_error = "Unknown error!";
 
-    multi_lang[lang_en].set_lan_labgel = "Interface language:";
+    multi_lang[lang_en].set_lan_label = "Interface language:";
     multi_lang[lang_en].set_net_iij_tcp_port = "TCP port nuber for GIS:";
     multi_lang[lang_en].set_net_iij_ip_addr = "IP address for GIS:";
     multi_lang[lang_en].set_net_iij_connection = "Network connection control:";
     multi_lang[lang_en].set_net_iij_wrong_tcp_port_label = "Wrong TCP port format!";
     multi_lang[lang_en].set_net_iij_wrong_ip_address_label = "Wrong IP address format";
+    multi_lang[lang_en].set_net_iij_connection_test_label = "IP address of IIJ computer:";
+    multi_lang[lang_en].set_net_pci_connection_test_label = "IP address of PCI computer:";
+    multi_lang[lang_en].set_net_quadient_connection_test_label = "IP address of Quadient computer:";
 
     multi_lang[lang_en].file_chooser_btn_browse = "Browse";
     multi_lang[lang_en].file_chooser_cancel_btn = "Cancel";
@@ -385,14 +425,20 @@ void multi_lang_init_english()
 
     multi_lang[lang_en].rep_csv_log_column_file_name = "Report csv";
 
-    multi_lang[lang_en].g_status_gis_lbl = "GIS status:";
+    multi_lang[lang_en].g_counters_label = "MACHINE COUNTERS:";
+    multi_lang[lang_en].g_feeder_lbl = "FEEDERS:";
+    multi_lang[lang_en].g_status_gis_lbl = "GIS print controler status:";
     multi_lang[lang_en].g_status_machine_lbl = "Machine status";
-    multi_lang[lang_en].g_cnt_main_feed_lbl = "Feeded sheets:";
+    multi_lang[lang_en].g_cnt_main_feed_lbl = "Feeded sheets main feeder:";
+    multi_lang[lang_en].g_stacker_lbl = "STAKCER:";
+    multi_lang[lang_en].g_reject_bin_lbl = "Reject bin:";
     multi_lang[lang_en].g_cnt_companion_feed_lbl = "Feeded companion sheets:";
     multi_lang[lang_en].g_cnt_rejected_lbl = "Rejected sheets:";
-    multi_lang[lang_en].g_cnt_stakced_lbl = "Stacked sheets:";
+    multi_lang[lang_en].g_cnt_stakced_lbl = "Stacked sheets expected/current:";
     multi_lang[lang_en].g_cnt_rejected_seq_lbl = "Rejected sheets sequence:";
     multi_lang[lang_en].g_cnt_tab_insert_blb = "Tab inserts:";
+    multi_lang[lang_en].g_job_list_lbl = "Current print job:";
+    multi_lang[lang_en].g_report_csv_list_lbl = "Printed job history:";
 
     multi_lang[lang_en].par_max_stacked_sheet_lbl = "Maximum number of sheets in the stecker:";
     multi_lang[lang_en].par_rejected_sheet_seq_lbl = "Maximum number of rejected sheets in sequence:";
@@ -400,7 +446,7 @@ void multi_lang_init_english()
     multi_lang[lang_en].par_print_confirm_lbl = "Confirmation feeding from main feeder:";
     multi_lang[lang_en].par_sheet_source_main = "Main feeder";
     multi_lang[lang_en].par_sheet_source_companion = "Companion feeder";
-    multi_lang[lang_en].par_machine_mode_lbl = "Gremser machine mode:";
+    multi_lang[lang_en].par_machine_mode_lbl = "Conveyor work mode:";
     multi_lang[lang_en].par_mm_setup_comb = "SETUP";
     multi_lang[lang_en].par_mm_inspection_comb = "INSPECTION";
     multi_lang[lang_en].par_mm_print_comb = "PRINT";

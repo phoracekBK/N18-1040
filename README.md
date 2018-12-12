@@ -1,6 +1,19 @@
 
 
 **TODO**:
+* do řídícího panelu přidat loga partnerů (cm, bk, stc)
+* v řádícím panelu dle grafické předlohy upravit zobrazování informací o dostupném jobu k tisku
+* pro úpravu zobrazování informací o dostupném jobu k tisku upravit čtení funkci read_hotfolder a vyčítat dodatečné informace z csv (počet archů, počet kolků, čas vytvoření)
+* v řídícím panelu upravit zobrazování informací o reportovacích csv (stav ukončení jobu, čas ukončení, počet kolků, počet archů, počet špatně vytištěných archů)
+* pro úpravu zobrazování informací o reportovacích csv při procesu tisku upravit část job_info kde je nutné vyčítat další informace
+* upravit podprogram pro vyčítání obsahu hotfolderu s reportovacími csv, přečíst hlavičku a zobrazit informace do řídícího panelu
+* upravit funkci pro čtení quadient hotfolderu a zaznamenat informace o jobu
+
+* obnovení tiskového jobu při chybě
+* přidat možnost sloučení všech reportovacích csv do jednoho velkého csv, k tomuto účelu bude třeba vytvořit samostatnou stránku ke bude možné nastavovat parametry exportu
+* vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
+* upravit proceduru pro ukončování tisku, posílat do gisu jinou sekvenci kódů
+* ošetřit aby se v hotfolderu pro gis mohlo nacházet pouze jedno pdf, vytvořit kontrolu když je již uvnitř pdf vyhodit hlášku že hotfolder není prázdný
 * ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1)
 * napojení do databáze omronu v gremser stroji
 * na základě napojení do omronu, upravit počítadla archů, která budou vyčtena 
@@ -10,15 +23,20 @@
 * Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job?
 * Upravit řídící panel pro zobrazení pouze jednoho jobu připraveného k tisku
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
-* Odstranit ze zdrojových kódů nepotřebný kód z části rozhraní příkazové řádky
 * Zpomalit tisk pokus se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
-* Kontrola síťového spojení s počítačem quadient
-* kontrola síťového spojení s počítačem pci
 
 
 
 **DONE**:
 
+* upravit funkci pro generování reportovacího csv, přidat hlavičku s informace o jobu
+* upravit zobrazení počítadel v řídícím panelu
+* přidat zobrazení stavu připojení k subsystémům stroje do řídícího panelu (quadient pc, gis pc, pci pc)
+* combobox pro nastavení pracovního režimu stroje přesunout z karty nastavení->parametry tisku do kontrolního panelu
+* v řídícím panelu dle grafické předlohy upravit zobrazování chybového stavu
+* Odstranit ze zdrojových kódů nepotřebný kód z části rozhraní příkazové řádky
+* Kontrola síťového spojení s počítačem quadient
+* kontrola síťového spojení s počítačem pci
 * Nastavení režimu stroje, nesmí být změněn při tisku
 * Napojit konfiguraci do jádra
 * Upravit kartu tiskové paramtry a přidat nastavení pro volby zdroje prokladového archu
@@ -55,8 +73,10 @@
 
 **BUG report**:
 
-* BUG: 00004 v reportovacím csv ne nezobrazuje stav PASS
+* BUG: 00004 v reportovacím csv se nezobrazuje stav PASS
  - Je zobrazován pouze stav FAIL v případě, že prokladový arch neprošel kamerovou kontrolou, vypadá to, že tento stav nebyl do datové struktury job_info vůbec při kontrole zadán.
+	-> chyba byla způsobena tím, že v datovém csv z IA quadient pro kolky byl ukončen znakem '\n' a pro prokladové archy nikoli. Chyba způsobila přeskočení naložení prokladového archu. 
+	(vis. BUG 00001)
 
 * BUG: 00003 chybné generování zpětnovazenbího csv - OPRAVENO
  - porovnávání zdá se funguje správně, ale jsou rozbyté indexy ve výstupním csv 
