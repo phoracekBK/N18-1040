@@ -1,16 +1,14 @@
 
 
 **TODO**:
+* do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
+* ošetřit stav kdy se program zasekne v tiskovém stavu po delší dobu (time out pro vykonání operace) 
 * do řídícího panelu přidat loga partnerů (cm, bk, stc)
-* v řádícím panelu dle grafické předlohy upravit zobrazování informací o dostupném jobu k tisku
-* pro úpravu zobrazování informací o dostupném jobu k tisku upravit čtení funkci read_hotfolder a vyčítat dodatečné informace z csv (počet archů, počet kolků, čas vytvoření)
-* v řídícím panelu upravit zobrazování informací o reportovacích csv (stav ukončení jobu, čas ukončení, počet kolků, počet archů, počet špatně vytištěných archů)
-* pro úpravu zobrazování informací o reportovacích csv při procesu tisku upravit část job_info kde je nutné vyčítat další informace
-* upravit podprogram pro vyčítání obsahu hotfolderu s reportovacími csv, přečíst hlavičku a zobrazit informace do řídícího panelu
-* upravit funkci pro čtení quadient hotfolderu a zaznamenat informace o jobu
+* přidat nastavení pro automatické spouštění jobu
+* přidat obsluhu události kdy se nenastaví stav feeding při nakládání archu
 
 * obnovení tiskového jobu při chybě
-* přidat možnost sloučení všech reportovacích csv do jednoho velkého csv, k tomuto účelu bude třeba vytvořit samostatnou stránku ke bude možné nastavovat parametry exportu
+* přidat možnost sloučení všech reportovacích csv do jednoho velkého csv, k tomuto účelu bude třeba vytvořit samostatnou stránku kde bude možné nastavovat parametry exportu
 * vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
 * upravit proceduru pro ukončování tisku, posílat do gisu jinou sekvenci kódů
 * ošetřit aby se v hotfolderu pro gis mohlo nacházet pouze jedno pdf, vytvořit kontrolu když je již uvnitř pdf vyhodit hlášku že hotfolder není prázdný
@@ -28,7 +26,12 @@
 
 
 **DONE**:
-
+* přepracovat architekturu projektu: monolitic architecture -> modular architecture, vytvořit moduly hotfolder, multi_lang, com_tcp, info_struct, io_card, q_job, util, řídící modul controler, grafické rozhraní view, každému modulu vytvořit komunikační API
+* v řídícím panelu upravit zobrazování informací o reportovacích csv (stav ukončení jobu, čas ukončení, počet kolků, počet archů, počet špatně vytištěných archů)
+* pro úpravu zobrazování informací o reportovacích csv při procesu tisku upravit část job_info kde je nutné vyčítat další informace
+* upravit podprogram pro vyčítání obsahu hotfolderu s reportovacími csv, přečíst hlavičku a zobrazit informace do řídícího panelu
+* pro úpravu zobrazování informací o dostupném jobu k tisku upravit čtení funkci read_hotfolder a vyčítat dodatečné informace z csv (počet archů, počet kolků, čas vytvoření)
+* v řádícím panelu dle grafické předlohy upravit zobrazování informací o dostupném jobu k tisku
 * upravit funkci pro generování reportovacího csv, přidat hlavičku s informace o jobu
 * upravit zobrazení počítadel v řídícím panelu
 * přidat zobrazení stavu připojení k subsystémům stroje do řídícího panelu (quadient pc, gis pc, pci pc)

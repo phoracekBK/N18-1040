@@ -115,10 +115,12 @@ struct _lang_
 {
 	const char * lang_name;
  	const char * win_title;
+	const char * gui_job_state;
 	const char * gui_job_name;
-	const char * gui_job_pdf_name;
-	const char * gui_job_bkcore_name;
-	const char * gui_job_camera_name;
+	const char * gui_job_order;
+	const char * gui_job_sheet_number;
+	const char * gui_job_stamp_number;
+	const char * gui_job_date_time;
 	const char * print_state_print;
 	const char * print_state_job_error;
 	const char * print_state_wait;
@@ -192,7 +194,13 @@ struct _lang_
 	const char * hot_gis_fs_label;
 	const char * hot_report_csv_fs_label;
 
-	const char * rep_csv_log_column_file_name;
+	const char * rep_csv_state;
+	const char * rep_csv_name;
+	const char * rep_csv_rejected_sheets;
+	const char * rep_csv_sheet_number;
+	const char * rep_csv_stamp_number;
+	const char * rep_csv_date_time;
+	
 
 	const char * g_status_gis_lbl;
 	const char * g_counters_label;
@@ -233,10 +241,12 @@ void multi_lang_init_czech()
 /* Czech labels */
     multi_lang[lang_cz].lang_name = "Čeština";
     multi_lang[lang_cz].win_title = "Host-BK CZ";
-    multi_lang[lang_cz].gui_job_name = "Jméno jobu";
-    multi_lang[lang_cz].gui_job_pdf_name = "Soubor pdf";
-    multi_lang[lang_cz].gui_job_bkcore_name = "BKcore csv";
-    multi_lang[lang_cz].gui_job_camera_name = "Camera csv";
+    multi_lang[lang_cz].gui_job_state = "Aktuální stav";
+    multi_lang[lang_cz].gui_job_name = "Název-ID jobu";
+    multi_lang[lang_cz].gui_job_order = "Index jobu";
+    multi_lang[lang_cz].gui_job_sheet_number = "Celkový počet archů";
+    multi_lang[lang_cz].gui_job_stamp_number = "Celkový počet kolků";
+    multi_lang[lang_cz].gui_job_date_time = "Datum a čas";
     multi_lang[lang_cz].print_state_print = "Tisk";
     multi_lang[lang_cz].print_state_job_error = "Job v chybě";
     multi_lang[lang_cz].print_state_wait = "Čeká se na start";
@@ -310,7 +320,12 @@ void multi_lang_init_czech()
     multi_lang[lang_cz].hot_gis_fs_label = "Hotfolder pro GIS:";
     multi_lang[lang_cz].hot_report_csv_fs_label = "Adresář pro reporty:";
 
-    multi_lang[lang_cz].rep_csv_log_column_file_name = "Reportové csv";
+    multi_lang[lang_cz].rep_csv_state = "Stav ukončení";
+    multi_lang[lang_cz].rep_csv_name = "Název-ID jobu";
+    multi_lang[lang_cz].rep_csv_rejected_sheets = "Celk. počet vadných archů";
+    multi_lang[lang_cz].rep_csv_sheet_number = "Celkový počet archů";
+    multi_lang[lang_cz].rep_csv_stamp_number = "Celkový počet kolků";
+    multi_lang[lang_cz].rep_csv_date_time = "Datum a čas";
 
     multi_lang[lang_cz].g_counters_label = "POČÍTADLA STROJE:";
     multi_lang[lang_cz].g_feeder_lbl = "NAKLADAČE:";
@@ -346,10 +361,12 @@ void multi_lang_init_english()
 
     multi_lang[lang_en].lang_name = "English";
     multi_lang[lang_en].win_title = "Host-BK EN";
+    multi_lang[lang_en].gui_job_state = "Actual state";
     multi_lang[lang_en].gui_job_name = "Job name";
-    multi_lang[lang_en].gui_job_pdf_name = "pdf file";
-    multi_lang[lang_en].gui_job_bkcore_name = "BKcore csv";
-    multi_lang[lang_en].gui_job_camera_name = "Camera csv";
+    multi_lang[lang_en].gui_job_order = "Job index";
+    multi_lang[lang_en].gui_job_sheet_number = "Total sheet number";
+    multi_lang[lang_en].gui_job_stamp_number = "Total stamp number";
+    multi_lang[lang_en].gui_job_date_time = "Date and time";
     multi_lang[lang_en].print_state_print = "Printing";
     multi_lang[lang_en].print_state_job_error = "Job in error";
     multi_lang[lang_en].print_state_wait = "Waiting for start";
@@ -423,7 +440,12 @@ void multi_lang_init_english()
     multi_lang[lang_en].hot_gis_fs_label = "GIS hotfolder:";
     multi_lang[lang_en].hot_report_csv_fs_label = "Report directory:";
 
-    multi_lang[lang_en].rep_csv_log_column_file_name = "Report csv";
+    multi_lang[lang_en].rep_csv_state = "Job status";
+    multi_lang[lang_en].rep_csv_name = "Job Name-ID";
+    multi_lang[lang_en].rep_csv_rejected_sheets = "Total rejected sheet number";
+    multi_lang[lang_en].rep_csv_sheet_number = "Total sheet number";
+    multi_lang[lang_en].rep_csv_stamp_number = "Total stamp number";
+    multi_lang[lang_en].rep_csv_date_time = "Date and time";
 
     multi_lang[lang_en].g_counters_label = "MACHINE COUNTERS:";
     multi_lang[lang_en].g_feeder_lbl = "FEEDERS:";

@@ -1,0 +1,310 @@
+#ifndef _CONTROLER_INTERFACE_H_
+#define _CONTROLER_INTERFACE_H_
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "com_tcp/com_states.h"
+//#include "io_card/io_card_const.h"
+#include "io_card_sim/io_card_const.h"
+#include "multi_lang/lang.h"
+
+
+
+#define CONTROLER_TEST_MODE false
+
+
+#define MACHINE_FN_OFF 0
+
+#define MACHINE_FN_E_STOP 1
+
+#define MACHINE_FN_FEEDER_MULTIFUNCTION 2
+
+#define MACHINE_FN_FEEDER_READY 3
+
+#define MACHINE_FN_READY_TO_FEED 4
+
+#define MACHINE_FN_DOUBLE_SHEET 5
+
+#define MACHINE_FN_MISSING_SHEET 6
+
+#define MACHINE_FN_FEEDING 7
+
+
+#define MACHINE_SN_OFF 0
+
+#define MACHINE_SN_STACKER_MULTIFUNCTION 1
+
+#define MACHINE_SN_BOTTOM 2
+
+#define MACHINE_SN_STACKER_READY 3 
+
+#define MACHINE_SN_STACKER_READY_TO_STACK 4
+
+#define MACHINE_SN_JAM_CONVEYOR 5
+
+#define MACHINE_SN_JAM_PILE 6
+
+#define MACHINE_SN_STACKING 7
+
+
+
+
+#define MACHINE_STATE_WAIT 0
+
+#define MACHINE_STATE_PREPARE 1
+
+#define MACHINE_STATE_PRINT_MAIN 2
+
+#define MACHINE_STATE_ERROR 3
+
+#define MACHINE_STATE_SAVE_Q_CSV 4
+
+#define MACHINE_STATE_CLEAR_HOT_FOLDER 5
+ 
+#define MACHINE_STATE_CLEAR_TO_FINISH 6
+
+#define MACHINE_STATE_NEXT 7
+
+#define MACHINE_STATE_PRINT_FINISH 8
+
+#define MACHINE_STATE_JOB_FINISH 9
+
+#define MACHINE_STATE_PAUSE 10
+
+#define MACHINE_STATE_READ_CSV_LINE 11
+
+#define MACHINE_STATE_PRINT_COMPANION 12
+
+#define MACHINE_STATE_PRINT_BREAK 13
+
+#define MACHINE_STATE_READY_TO_START 14
+
+#define MACHINE_STATE_WAIT_FOR_PRINT_FINISH 15
+
+#define MACHINE_STATE_WAIT_FOR_CONFIRMATION 16
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define MACHINE_ERR_NO_ERROR 0
+#define MACHINE_ERR_CANT_SAVE_F_CSV 1 
+#define MACHINE_ERR_ANALYZE_CAMERA_CSV 2
+#define MACHINE_ERR_CANT_LOAD_BKCORE_CSV 3
+#define MACHINE_ERR_CANT_COPY_PDF_TO_GIS 4
+#define MACHINE_ERR_CANT_COPY_CSV_TO_CAMERA 5
+#define MACHINE_ERR_JOB_ORDER_MISMATCH 6
+#define MACHINE_ERR_STACKER_JAM_PILE 7
+#define MACHINE_ERR_STACKER_JAM_CONVEYOR 8
+#define MACHINE_ERR_STACKER_BOTTOM 9
+#define MACHINE_ERR_STACKER_MULTIFUNCTION 10
+#define MACHINE_ERR_STACKER_OFF 11
+#define MACHINE_ERR_FEEDER_E_STOP 12
+#define MACHINE_ERR_FEEDER_OFF 13
+#define MACHINE_ERR_FEEDER_MULTIFUNCTION 14
+#define MACHINE_ERR_FEEDER_SHEET_MISSING 15
+#define MACHINE_ERR_FEEDER_DOUBLE_SHEET 16
+#define MACHINE_ERR_E_STOP 17
+#define MACHINE_ERR_REJECT_BIN_JAM 18
+#define MACHINE_ERR_FEEDER_JAM 19
+#define MACHINE_ERR_TI 20
+#define MACHINE_ERR_TA 21
+#define MACHINE_ERR_COUNTERS_MISMATCH 22
+#define MACHINE_ERR_LOW_PRINT_QUALITY 23
+#define MACHINE_ERR_GIS_DISCONNECTED 24
+#define MACHINE_ERR_CSV_SHEET_NUM 25
+#define MACHINE_ERR_SHEET_FEEDER_REDIRECTION 26
+#define MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING 27
+#define MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING 28
+#define MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING 29
+#define MACHINE_ERR_UNKNOWN_ERROR 255
+
+
+enum _gremser_print_mode_
+{
+	GR_SETUP=0,
+	GR_PRINT,
+	GR_INSPECTION,
+	GR_PRINT_INSPECTION,
+
+	GR_MODE_N
+};
+
+enum _sheet_source_
+{
+	SSOURCE_MAIN=0,
+	SSOURCE_COMPANION,
+
+	SSOURCE_N
+};
+
+
+
+
+struct _rep_struct_;
+typedef struct _rep_struct_ rep_struct;
+
+
+struct _rep_struct_
+{
+	char * finish_state;
+	char * job_name;
+	int rejected_sheet_number;
+	int sheet_number;
+	int stamp_number;
+	char * date_time;
+};
+
+
+
+/*********************************************** interface functions declarations ***********************************/
+
+
+
+
+
+
+
+
+int8_t controler_init();
+void controler_finalize();
+
+
+uint8_t controler_iij_network_connected();
+uint8_t controler_pci_network_connected();
+uint8_t controler_quadient_network_connected();
+
+void controler_set_interface_language(int lang_index);
+int controler_get_interface_language();
+void controler_refresh_dir_list();
+void controler_set_machine_mode(int mode);
+int controler_get_machine_mode();
+
+uint8_t controler_iij_set_ip_addr(char * ip_addr);
+uint8_t controler_iij_set_tcp_port(int port);
+char * controler_iij_get_ip_addr();
+int controler_iij_get_tcp_port();
+uint8_t controler_iij_connect();
+uint8_t controler_iij_is_connected();
+uint8_t controler_iij_disconnect();
+
+uint8_t controler_pci_set_ip_addr(char * ip_addr);
+uint8_t controler_pci_set_tcp_port(int port);
+char * controler_pci_get_ip_addr();
+int controler_pci_get_tcp_port();
+uint8_t controler_pci_connect();
+uint8_t controler_pci_is_connected();
+uint8_t controler_pci_disconnect();
+
+uint8_t controler_quadient_network_set_ip_address(char * ip_address);
+uint8_t controler_iij_network_set_ip_address(char * ip_address);
+uint8_t controler_pci_network_set_ip_address(char * ip_address);
+char * controler_quadient_network_get_ip_address();
+char * controler_iij_network_get_ip_address();
+char * controler_pci_network_get_ip_address();
+
+
+
+
+void controler_set_max_stacked_sheets(int sheet_val);
+void controler_set_max_rejected_sheet_seq(int sheet_val);
+int controler_get_max_rejected_sheet_seq();
+void controler_set_companion_sheet_source(int source);
+extern void controler_set_sheet_source_confirmation(bool confirm);
+bool controler_get_sheet_source_confirmation();
+int controler_get_sheet_source();
+int controler_get_max_stacked_sheet();
+
+
+uint8_t controler_set_q_main_hotfolder_path(const char * path);
+uint8_t controler_set_q_feedback_hotfolder_path(const char * path);
+uint8_t controler_set_q_backup_hotfolder_path(const char * path);
+uint8_t controler_set_pci_hotfolder_in_path(const char * path);
+uint8_t controler_set_pci_hotfolder_out_path(const char * path);
+uint8_t controler_set_gis_hotfolder_path(const char * path);
+uint8_t controler_set_job_report_hotfolder_path(const char * path);
+
+int32_t controler_get_stacked_sheets();
+int32_t controler_get_total_sheet_number();
+int32_t controler_get_feeded_sheets();
+int32_t controler_get_feeded_companion_sheets();
+int32_t controler_get_rejected_sheets();
+int32_t controler_get_tab_inserts();
+
+char * controler_get_gis_status();
+
+char * controler_get_q_main_hotfolder_path();
+char * controler_get_q_feedback_hotfolder_path();
+char * controler_get_q_backup_hotfolder_path();
+char * controler_get_pci_hotfolder_in_path();
+char * controler_get_pci_hotfolder_out_path();
+char * controler_get_gis_hotfolder_path();
+char * controler_get_job_report_hotfolder_path();
+
+
+uint8_t controler_print_start(const char * job_name);
+uint8_t controler_print_pause();
+uint8_t controler_print_continue();
+uint8_t controler_print_cancel();
+uint8_t controler_print_reset_error();
+
+void controler_sheet_source_confirmation();
+
+/* error messages return and translations  */
+char* controler_machine_get_state_str();
+uint8_t controler_machine_status_val();
+
+int controler_get_error_val();
+const char* controler_get_error_str();
+char * controler_get_return_val_string(uint8_t status);
+uint8_t controler_iij_status();
+uint8_t controler_pci_status();
+
+char ** controler_get_a1_input_labels();
+char ** controler_get_a2_input_labels();
+char ** controler_get_a1_output_labels();
+char ** controler_get_a2_output_labels();
+uint8_t controler_get_card_input(int card, int addr);
+uint8_t controler_get_card_output(int card, int addr);
+const char * controler_get_printed_job_name();
+
+rep_struct * hot_load_report_information(char * report_csv_name);
+
+char * controler_get_job_name(int job_index);
+char * controler_get_job_pdf_name(int job_index);
+char * controler_get_job_bkcore_csv_name(int job_index);
+char * controler_get_job_camera_csv_name(int job_index);
+char * controler_get_job_date_time(int job_index);
+int controler_get_job_stamp_number(int job_index);
+int controler_get_job_sheet_number(int job_index);
+int controler_get_job_order(int job_index);
+char controler_get_job_flag(int job_index);
+int controler_get_job_queue_size();
+
+
+
+#if CONTROLER_TEST_MODE == true
+void controler_unit_test();
+#endif
+
+#endif
