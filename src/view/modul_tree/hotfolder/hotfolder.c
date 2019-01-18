@@ -62,7 +62,7 @@ array_list * hot_copy_job_list(array_list * job_list)
 
 uint8_t hot_compare_job_lists(array_list * job_list, array_list * job_list_pre)
 {
-	if(array_list_size(job_list) != array_list_size(job_list_pre))
+	if((job_list_pre == NULL) || (array_list_size(job_list) != array_list_size(job_list_pre)))
 	{
 		return 1;
 	}

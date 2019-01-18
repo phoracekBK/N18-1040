@@ -40,12 +40,12 @@ const char * a1_out_labels[16] = {"MB0",				/* OUT 0 */
 				"RESERVE",				/* OUT 6 */
 				"XBF",					/* OUT 7 */
 				"RESERVE",				/* OUT 8 */
-				"TI_ins",				/* OUT 9 */
+				"TA_cyc",				/* OUT 9 */
 				"ENA",					/* OUT 10 */
 				"RESERVE",				/* OUT 11 */
-				"INHIBIT_NEXT_SHEET",			/* OUT 12 */
+				"TI_ins",				/* OUT 12 */
 				"RESERVE",				/* OUT 13 */
-				"RESERVE",				/* OUT 14 */
+				"INHIBIT_NEXT_SHEET",			/* OUT 14 */
 				"RESERVE"};				/* OUT 15 */
 
 const char * a2_in_labels[16] = {"TI_incyc",				/* IN 0 */

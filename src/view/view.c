@@ -186,7 +186,8 @@ struct _gui_io_vision_page_
 	GtkWidget * page;
 	GtkWidget * io_vision;
 	settings_button * btn_return;
-
+	GtkWidget ** btn_out;
+	GtkWidget * btn_manual;
 	gui_base * gui_base_ref;
 };
 
@@ -324,6 +325,8 @@ void gui_settings_page_return_callback(GtkButton *button, GdkEventButton * event
 
 gui_io_vision_page * gui_io_vision_page_new(gui_base * gui_base_ref);
 void gui_io_vision_draw_socket(cairo_t* cr, double x, double y, double w, double h, char* label);
+gboolean gui_io_vision_outputs_control(GtkWidget *widget, GdkEventButton *event, gpointer param);
+void gui_io_vision_set_manual(GtkSwitch *widget, gboolean state, gpointer param);
 gboolean gui_io_vision_draw_event(GtkWidget * widget, cairo_t * cr, gpointer param);
 
 gui_network_page * gui_network_page_new(gui_base * gui_base_ref);
@@ -431,22 +434,33 @@ gboolean gui_cyclic_interupt(gpointer param)
 
 	this->blink = !this->blink;
 
+	gtk_widget_set_visible(GTK_WIDGET(this->io_vision_page->btn_manual), controler_machine_status_val() == MACHINE_STATE_WAIT);
+	gtk_widget_set_visible(GTK_WIDGET(this->control_page->ena_switch), controler_get_manual_mode_state());
+	gtk_widget_set_visible(GTK_WIDGET(this->control_page->xbf_pulse), controler_get_manual_mode_state());
+
 	//const char * visible_page = gtk_stack_get_visible_child_name (GTK_STACK(this->page_stack));
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(this->control_page->print_mode_combo), controler_get_machine_mode());
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->print_mode_combo), controler_machine_status_val() == MACHINE_STATE_WAIT);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->print_mode_combo), (controler_machine_status_val() == MACHINE_STATE_WAIT) && controler_get_manual_mode_state() == false);
 
 	bool pause_en = (controler_machine_status_val() != MACHINE_STATE_WAIT) && (controler_machine_status_val() != MACHINE_STATE_NEXT) && 
 						(controler_machine_status_val() != MACHINE_STATE_ERROR) && (controler_machine_status_val() != MACHINE_STATE_PAUSE) && 
-						(controler_machine_status_val() != MACHINE_STATE_READY_TO_START) && (controler_machine_status_val() != MACHINE_STATE_WAIT_FOR_CONFIRMATION);
+						(controler_machine_status_val() != MACHINE_STATE_READY_TO_START) && (controler_machine_status_val() != MACHINE_STATE_WAIT_FOR_CONFIRMATION &&
+						controler_get_manual_mode_state() == false);
 
 
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PAUSE]), pause_en);
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CONTINUE]), controler_machine_status_val() == MACHINE_STATE_PAUSE);
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), controler_machine_status_val() == MACHINE_STATE_WAIT);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CONTINUE]), controler_machine_status_val() == MACHINE_STATE_PAUSE && 
+						(controler_get_manual_mode_state() == false));
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), controler_machine_status_val() == MACHINE_STATE_WAIT && 
+						(controler_get_manual_mode_state() == false));
 
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CANCEL]), (controler_machine_status_val() != MACHINE_STATE_WAIT) && (controler_machine_status_val() != MACHINE_STATE_ERROR));
-	gtk_widget_set_visible(GTK_WIDGET(this->control_page->btn[GC_BTN_FEED]), controler_machine_status_val() == MACHINE_STATE_WAIT_FOR_CONFIRMATION);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_ERROR_RESET]), (controler_get_manual_mode_state() == false));
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CANCEL]), (controler_machine_status_val() != MACHINE_STATE_WAIT) && 
+					(controler_machine_status_val() != MACHINE_STATE_ERROR) && (controler_get_manual_mode_state() == false));
+	gtk_widget_set_visible(GTK_WIDGET(this->control_page->btn[GC_BTN_FEED]), controler_machine_status_val() == MACHINE_STATE_WAIT_FOR_CONFIRMATION && 
+					(controler_get_manual_mode_state() == false));
 
 	/* set status of network control widget depend on network connection state */
 	gboolean conn = ((controler_iij_is_connected() == STATUS_CLIENT_CONNECTED) ? FALSE : TRUE);
@@ -480,11 +494,9 @@ gboolean gui_cyclic_interupt(gpointer param)
 			c_string_clear(this->error_string);
 	}
 
-
-	
 	//if(strcmp(visible_page, "control_page") == 0)
 	{
-		//if(this->core_ref->job_list_changed > 0)
+		if(controler_job_list_changed() > 0)
 			gui_control_page_load_jobs(this->control_page);
 	}
  	
@@ -605,6 +617,16 @@ void gui_signals(gui * this)
 				"button_press_event", 
 				G_CALLBACK(gui_settings_page_return_callback), 
 				this);
+	
+	g_signal_connect(G_OBJECT(this->io_vision_page->io_vision), 
+				"button_press_event", 
+				G_CALLBACK(gui_io_vision_outputs_control), 
+				this->io_vision_page);
+
+	g_signal_connect(G_OBJECT(this->io_vision_page->btn_manual), 
+				"state-set", 
+				G_CALLBACK(gui_io_vision_set_manual), 
+				NULL);
 
 	/* settings page return buttons */
 	g_signal_connect(G_OBJECT(settings_button_get_instance(this->network_page->btn_return)), 
@@ -625,6 +647,7 @@ void gui_signals(gui * this)
 				"button_press_event", 
 				G_CALLBACK(gui_settings_page_return_callback), 
 				this);
+
 
 	/* control page signals */
 	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_PRINT]),
@@ -963,28 +986,14 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	return this;
 }
 
-/*todo*/
 void gui_control_page_manual_sheet_feed(GtkWidget * widget, gpointer param)
 {
-	/*
-	core * this = (core*) param;
-	c_pulse_reset(this->ena_pulse);
-	this->manual_freed = 1;
-	*/
+	controler_manual_feed_sheet();
 }
 
-/* todo */
 void gui_control_page_set_ena_callback(GtkSwitch *widget, gboolean state, gpointer param)
 {
-/*
-	core * this = (core*) param;
-
-	if(state == TRUE)
-		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_10_ENA, 1);
-	else	
-		io_card_set_output(this->io_card_ref, IO_CARD_A1, A1_OUT_10_ENA, 0);
-*/
-	
+	controler_manual_set_ena_state(state);
 }
 
 gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gpointer param)
@@ -1087,9 +1096,9 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_show_text(cr, multi_lang->g_status_machine_lbl);
 
 	cairo_text_extents_t ext_machine_status;
-	cairo_text_extents(cr, controler_machine_get_state_str(controler_machine_status_val()), &ext_machine_status);
+	cairo_text_extents(cr, controler_machine_get_state_str(), &ext_machine_status);
 	cairo_move_to(cr, width-(width/4-350)/2-ext_machine_status.width, 5*height/24+200);
-	cairo_show_text(cr, controler_machine_get_state_str(controler_machine_status_val()));
+	cairo_show_text(cr, controler_machine_get_state_str());
 
 	cairo_move_to(cr, width/4*3+(width/4-350)/2, 5*height/24+260);
 	cairo_show_text(cr, multi_lang->g_status_gis_lbl);
@@ -1284,7 +1293,9 @@ void gui_control_page_load_jobs(gui_control_page * this)
 	GtkTreeIter iter;
 	this->job_list_store = gtk_list_store_new(JOB_LIST_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
 	
-	for(int i; i < controler_get_job_queue_size(); i++)
+	printf("%d\n",  controler_get_job_queue_size());
+
+	for(int i = 0; i < controler_get_job_queue_size(); i++)
 	{
 		gtk_list_store_append(this->job_list_store, &iter);
 		const char * job_status = NULL;		
@@ -1561,24 +1572,85 @@ gui_io_vision_page * gui_io_vision_page_new(gui_base * gui_base_ref)
 	
 	this->io_vision = gtk_drawing_area_new();
 	gtk_widget_set_size_request(GTK_WIDGET(this->io_vision), gui_base_ref->work_area_geometry.width, gui_base_ref->work_area_geometry.height);
-
+	gtk_widget_add_events (this->io_vision, GDK_BUTTON_PRESS_MASK);
 
 	this->btn_return = settings_button_new(settings_btn_fg_s, fg, bg, fg, gui_base_ref->work_area_geometry.width/2, 50);
 	settings_button_set_font_size(this->btn_return, 18);
 	settings_button_set_selected(this->btn_return, 1);
 
+	this->btn_manual = gtk_switch_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->btn_manual), 100, 35);
+
 	gtk_fixed_put(GTK_FIXED(this->page), this->io_vision, 0, 0);
 	gtk_fixed_put(GTK_FIXED(this->page), settings_button_get_instance(this->btn_return), 
 		gui_base_ref->work_area_geometry.width/4, 250);
+	gtk_fixed_put(GTK_FIXED(this->page), this->btn_manual, gui_base_ref->work_area_geometry.width/2-50, gui_base_ref->work_area_geometry.height-150);
 
 	return this;
 }
+
 void gui_settings_page_return_callback(GtkButton *button, GdkEventButton * event, gpointer param)
 {
 	gui * this = (gui*) param;
 	gtk_stack_set_visible_child_name (GTK_STACK(this->page_stack), "settings_page");
 }
 
+uint8_t gui_io_vision_in_pos(double x, double y, double x_click, double y_click, double radius)
+{
+	return ((((y_click-y) <= radius) && ((y_click - y) >=0) && ((x_click -x) >= 0) && ((x_click-x) <= radius)) ? 1 : 0);
+}
+
+
+void gui_io_vision_set_manual(GtkSwitch *widget, gboolean state, gpointer param)
+{
+	controler_set_manual_mode(state);
+}
+
+gboolean gui_io_vision_outputs_control(GtkWidget *widget, GdkEventButton *event, gpointer param)
+{
+	gui_io_vision_page * this = (gui_io_vision_page*) param;
+
+	if(controler_get_manual_mode_state() == true)
+	{
+		double width = this->gui_base_ref->work_area_geometry.width/20.0;
+		double height = this->gui_base_ref->work_area_geometry.height/1.7;
+
+		double a1_x_pos = this->gui_base_ref->work_area_geometry.width/4.0;
+		double y_pos = this->gui_base_ref->work_area_geometry.height/3.0+10;
+
+		double a2_x_pos = this->gui_base_ref->work_area_geometry.width/4.0*3 - this->gui_base_ref->work_area_geometry.width/20.0;
+	
+		for(int i = 0; i < A1_OUT_SIZE; i++)
+		{
+			if(i < 8)
+			{
+				if(gui_io_vision_in_pos((a1_x_pos+width/2.0)-20.0, y_pos + (i+11)*(((height-100)/18))+width/20, event->x, event->y, width/5) > 0)
+					controler_set_a1_output(i*2, ((controler_get_card_output(IO_CARD_A1, i*2) > 0) ? 0 : 1));
+			}
+			else
+			{
+				if(gui_io_vision_in_pos((a1_x_pos+width/2.0)+20.0, y_pos + (i+11-8)*(((height-100)/18))+width/20, event->x, event->y, width/5) > 0)
+					controler_set_a1_output((i-8)*2+1, ((controler_get_card_output(IO_CARD_A1, (i-8)*2+1) > 0) ? 0 : 1));
+			}	
+		}
+
+		for(int i = 0; i < A2_OUT_SIZE; i++)
+		{
+			if(i < 8)
+			{
+				if(gui_io_vision_in_pos((a2_x_pos+width/2.0)-20.0, y_pos + (i+11)*(((height-100)/18))+width/20, event->x, event->y, width/5) > 0)
+					controler_set_a2_output(i*2, ((controler_get_card_output(IO_CARD_A2, i*2) > 0) ? 0 : 1));
+			}
+			else
+			{
+				if(gui_io_vision_in_pos((a2_x_pos+width/2.0)+20.0, y_pos + (i+11-8)*(((height-100)/18))+width/20, event->x, event->y, width/5) > 0)
+					controler_set_a2_output((i-8)*2+1, ((controler_get_card_output(IO_CARD_A2, (i-8)*2+1) > 0) ? 0 : 1));
+			}	
+		}
+	}
+
+	return FALSE;
+}
 
 void gui_io_vision_draw_socket(cairo_t* cr, double x, double y, double w, double h, char * label)
 {
@@ -1739,7 +1811,7 @@ gboolean gui_io_vision_draw_event(GtkWidget * widget, cairo_t * cr, gpointer par
 	gui_io_vision_draw_socket(cr, a2_x_pos, y_pos, width, height, "A2");
 
 	gui_io_vision_draw_points(this, cr, a1_x_pos, y_pos, width, height, controler_get_a1_input_labels(), controler_get_a1_output_labels(), IO_CARD_A1);
-	gui_io_vision_draw_points(this, cr, a2_x_pos, y_pos, width, height, controler_get_a2_input_labels(), controler_get_a1_output_labels(), IO_CARD_A2);
+	gui_io_vision_draw_points(this, cr, a2_x_pos, y_pos, width, height, controler_get_a2_input_labels(), controler_get_a2_output_labels(), IO_CARD_A2);
 
 	gui_io_vision_state_explanation(this, cr, width, height, y_pos);
 

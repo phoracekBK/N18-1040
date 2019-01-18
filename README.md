@@ -2,7 +2,6 @@
 
 **TODO**:
 * do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
-* ošetřit stav kdy se program zasekne v tiskovém stavu po delší dobu (time out pro vykonání operace) 
 * do řídícího panelu přidat loga partnerů (cm, bk, stc)
 * přidat nastavení pro automatické spouštění jobu
 * přidat obsluhu události kdy se nenastaví stav feeding při nakládání archu
@@ -21,11 +20,19 @@
 * Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job?
 * Upravit řídící panel pro zobrazení pouze jednoho jobu připraveného k tisku
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
-* Zpomalit tisk pokus se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
+* Zpomalit tisk pokud se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 
 
 
 **DONE**:
+
+* ošetřit stav kdy se program zasekne v tiskovém stavu po delší dobu (time out pro vykonání operace) 
+* Přidat ukončovací sekvenci/povel pro korektní ukončení machine_handler vlákna při ukočnování programu
+* nastavit klávesovou zkratku pro zobrazení a skrytí rozhraní manuálního ovládání
+* přidat tlačítka pro manuální spínání jednotlivých vstupů + manuální režim spínání
+* upravit systém vyčítání hotfolderu a propojení s vrstvou view
+* na základě nastaveného režimu kontrolovat připojení sítě do gisu/iij pc a pci pc
+* upravit machine_handler pro jednodušší manuální ovládání funkce XBF a ENA Gremseru 
 * přepracovat architekturu projektu: monolitic architecture -> modular architecture, vytvořit moduly hotfolder, multi_lang, com_tcp, info_struct, io_card, q_job, util, řídící modul controler, grafické rozhraní view, každému modulu vytvořit komunikační API
 * v řídícím panelu upravit zobrazování informací o reportovacích csv (stav ukončení jobu, čas ukončení, počet kolků, počet archů, počet špatně vytištěných archů)
 * pro úpravu zobrazování informací o reportovacích csv při procesu tisku upravit část job_info kde je nutné vyčítat další informace
@@ -74,7 +81,25 @@
 
 
 
+**Poznámky**
+
+* Chyba v dopravníku Gremseru, pokud se zapne a vypne dopravníkový pás ručně z HMI, nelze jej ovládat z host-bk
+
+* Pokud je při spuštění aplikace problém se síťovým spojením a v nastavení sítě je nastavena IP adresa 48.48.48.48 došlo k pokusu o nastavení neplatné IP adresy -> je nutné zkontrolovat configurační soubor na adrese "/home/stc/host-bk/bin/sys_cfg", pravděpodobně došlo k narušení struktury konfiguračního souboru.
+
+* V případě přerušení elektrického proudu dojde k přepnutí počítačů v reku na sekundární zdroj z UPS, který slouží k bezpečnému ukončení počítačů bez ztráty dat, monitory ale nejsou na UPS napojeny a při výpadku elektrického proudu nelze s počítači pracovat -> k monitorům bude natažen prodlužovací kabel s rozdvojkou z reku, který bude napojen na UPS a bude napájet monitory při výpadku elektrického proudu.
+
+
+
+
+
+
+
+
+
 **BUG report**:
+
+* BUG 00005 při nastavování adres hotfolderů došlo k pádu prorgamu, pravděpodobně vlivem narušení paměti (program běžel bez výstupu do přákazové řádky).
 
 * BUG: 00004 v reportovacím csv se nezobrazuje stav PASS
  - Je zobrazován pouze stav FAIL v případě, že prokladový arch neprošel kamerovou kontrolou, vypadá to, že tento stav nebyl do datové struktury job_info vůbec při kontrole zadán.

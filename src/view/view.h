@@ -18,7 +18,7 @@
 #define MAIN_WINDOW_TITLE "Host-bk"
 
 /** @ingroup configuration Application system icon path (icon shown in system application list panel widget). */
-#define PROGRAM_ICON_PATH "./icons/icon.png"
+#define PROGRAM_ICON_PATH "./icons/bk.png"
 
 
 

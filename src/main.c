@@ -13,8 +13,9 @@ int main(int argv, char ** argc)
 	multi_lang_init();
 
 	gtk_init(&argv, &argc);
+	int controler_init_res = controler_init();
 
-	if(controler_init() == 0)
+	if(controler_init_res == 0)
 	{
 		gui * view = gui_new();
 		gui_signals(view);
@@ -27,7 +28,8 @@ int main(int argv, char ** argc)
 	gtk_main();
 	
 	/* safety exit the core instance */
-	controler_finalize();	
+	if(controler_init_res == 0)
+		controler_finalize();	
 	
 	
 #else

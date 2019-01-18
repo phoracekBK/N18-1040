@@ -5,10 +5,20 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <platform.h>
+
+
+#ifdef PLATFORM_STC_PC
+#include "io_card/io_card_const.h"
+#include "io_card/io_mapping.h"
+#else
+#include "io_card/io_card_const.h"
+#include "io_card/io_mapping.h"
+//#include "io_card_sim/io_card_const.h"
+//#include "io_card_sim/io_mapping.h"
+#endif
 
 #include "com_tcp/com_states.h"
-//#include "io_card/io_card_const.h"
-#include "io_card_sim/io_card_const.h"
 #include "multi_lang/lang.h"
 
 
@@ -223,6 +233,7 @@ char * controler_quadient_network_get_ip_address();
 char * controler_iij_network_get_ip_address();
 char * controler_pci_network_get_ip_address();
 
+uint8_t controler_job_list_changed();
 
 
 
@@ -267,6 +278,8 @@ uint8_t controler_print_pause();
 uint8_t controler_print_continue();
 uint8_t controler_print_cancel();
 uint8_t controler_print_reset_error();
+void controler_manual_feed_sheet();
+void controler_manual_set_ena_state(bool state);
 
 void controler_sheet_source_confirmation();
 
@@ -280,10 +293,14 @@ char * controler_get_return_val_string(uint8_t status);
 uint8_t controler_iij_status();
 uint8_t controler_pci_status();
 
+
+/* io_card public interface */
 char ** controler_get_a1_input_labels();
 char ** controler_get_a2_input_labels();
 char ** controler_get_a1_output_labels();
 char ** controler_get_a2_output_labels();
+void controler_set_a1_output(uint8_t index, uint8_t state);
+void controler_set_a2_output(uint8_t index, uint8_t state);
 uint8_t controler_get_card_input(int card, int addr);
 uint8_t controler_get_card_output(int card, int addr);
 const char * controler_get_printed_job_name();
@@ -300,8 +317,8 @@ int controler_get_job_sheet_number(int job_index);
 int controler_get_job_order(int job_index);
 char controler_get_job_flag(int job_index);
 int controler_get_job_queue_size();
-
-
+void controler_set_manual_mode(bool state);
+bool controler_get_manual_mode_state();
 
 #if CONTROLER_TEST_MODE == true
 void controler_unit_test();
