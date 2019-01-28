@@ -18,6 +18,8 @@
 #include <sys/time.h>
 #include <math.h>
 
+
+int util_dir_is_empty(char * address);
 int32_t util_file_size(char * path, char * file_name);
 int32_t util_save_csv(char* addr, char* name, char* buff);
 char * util_load_csv(char * addr, char* name, int32_t* size);

@@ -69,6 +69,10 @@ struct _lang_
 	const char * err_pci_computer_not_responding;
 	const char * err_iij_computer_not_responding;
 	const char * err_quadient_computer_not_responding;
+	const char * err_print_main_freeze;
+	const char * err_print_companion_freeze;
+	const char * err_print_initialization_freeze;
+	const char * err_print_finalizing_freeze;
 	const char * err_unknown_error;
 
 	const char * set_lan_label;
@@ -134,6 +138,24 @@ struct _lang_
 	const char * par_mm_inspection_comb;
 	const char * par_mm_print_comb;
 	const char * par_mm_print_inspection_comb;
+	const char * par_stacker_status;
+	const char * par_feeder_status;
+	const char * feeder_status_ready;
+	const char * feeder_status_ready_to_feed;
+	const char * feeder_status_feeding;
+	const char * stacker_status_ready;
+	const char * stacker_status_ready_to_stack;
+	const char * stacker_status_stacking;	
+	const char * gui_go_to_csv_manage_page_label;
+	
+	const char * filter_day;
+	const char * filter_year;
+	const char * filter_month;
+	const char * csv_manage_return;
+	const char * csv_manage_export;
+	const char * to;
+	const char * from;
+	const char * print_active;
 };
 
 

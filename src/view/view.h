@@ -20,6 +20,10 @@
 /** @ingroup configuration Application system icon path (icon shown in system application list panel widget). */
 #define PROGRAM_ICON_PATH "./icons/bk.png"
 
+#define BK_ICON_PATH "./icons/bk.png"
+#define KM_ICON_PATH "./icons/km_icon.png"
+#define STC_ICON_PATH "./icons/stc_icon.png"
+
 
 
 struct _gui_;

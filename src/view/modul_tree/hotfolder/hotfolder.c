@@ -100,6 +100,7 @@ q_job * hot_find_job(array_list * job_list, char * name, int32_t *index)
 	for(int i = 0; i < array_list_size(job_list); i++)
 	{
 		q_job * job = array_list_get(job_list, i);
+
 		if(strcmp(q_job_get_job_name(job), name) == 0)
 		{	
 			if(index != NULL)

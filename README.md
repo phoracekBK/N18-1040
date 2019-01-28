@@ -1,13 +1,15 @@
 
 
-**TODO**:
+**TODO**
+* při signálu z nakladače missing sheet, nebo double sheet, nebo feeder jam přejít do stavu feeder_error ve kterém se čeká na odstranění problému a na opětovné zahájení nakládání
+* přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
+* přidat do controleru funkci pro nastřelování oddělovacích proužků
 * do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
-* do řídícího panelu přidat loga partnerů (cm, bk, stc)
-* přidat nastavení pro automatické spouštění jobu
-* přidat obsluhu události kdy se nenastaví stav feeding při nakládání archu
+* ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
+* přidat upozornění na chybu nakladače jako warning
 
+* vytvořit dokumentaci zdrojových kódů
 * obnovení tiskového jobu při chybě
-* přidat možnost sloučení všech reportovacích csv do jednoho velkého csv, k tomuto účelu bude třeba vytvořit samostatnou stránku kde bude možné nastavovat parametry exportu
 * vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
 * upravit proceduru pro ukončování tisku, posílat do gisu jinou sekvenci kódů
 * ošetřit aby se v hotfolderu pro gis mohlo nacházet pouze jedno pdf, vytvořit kontrolu když je již uvnitř pdf vyhodit hlášku že hotfolder není prázdný
@@ -16,16 +18,24 @@
 * na základě napojení do omronu, upravit počítadla archů, která budou vyčtena 
 * přidat informace o jobu do reportovacího csv, vytvořit v něm informační hlavičku, tu pak načíst a zobrazit v okně se seznamem reportů v ovládacím panelu
 * Vytvořit skript pro spouštění GIS serveru a bufferovací aplikace
-* Vytvořit automatizované unit testy pro krytické funkce a vyladit jádro
-* Ošetřit aby se v hotfolderu mohl nacházet pouze jeden job?
-* Upravit řídící panel pro zobrazení pouze jednoho jobu připraveného k tisku
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
 * Zpomalit tisk pokud se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 
 
 
-**DONE**:
+**DONE**
 
+* vytvořit opatření aby se do hotfolderu gisu nedalo poslat pdf v případě, že hotfolder není prázdný
+* Nastavit, aby si program při spuštění vyčistil hotfolder, při spuštění se v něm nesmějí nacházet žádné joby (mohou být již částečně vytištěné), v průběhu tisku pak již němůže nastat, že by se job nevymazal
+* Nastavit signál PRN_rdy hned po spuštění programu na true a do řídícího panelu vytáhnout informativní signál o jeho stavu
+* Do řídícího panelu přidat tlačtko na vyčištění hotfolderu
+* přidat možnost sloučení všech reportovacích csv do jednoho velkého csv, k tomuto účelu bude třeba vytvořit samostatnou stránku kde bude možné nastavovat parametry exportu
+* přidat obsluhu události kdy se nenastaví stav feeding při nakládání archu
+* do řídícího panelu přidat loga partnerů (km, bk, stc)
+* upravit reset chyby nastavení E-STOP aby se vyresetovala ihned po tom co stroj přejde zpět do provozního režimu
+* zobrazit stavy nakladače a vykladače na hlavní obrazovku
+* v režimu printing main a printing companion dát časový interval ve kterém stroj dá odpověď FEEDING pokud nedá do dané doby odpověď, přejít do chyby
+* při inicializaci stroje přidat časový interval ve kterém se může nastavit a pokud tento interval překročí, přejít do chyby
 * ošetřit stav kdy se program zasekne v tiskovém stavu po delší dobu (time out pro vykonání operace) 
 * Přidat ukončovací sekvenci/povel pro korektní ukončení machine_handler vlákna při ukočnování programu
 * nastavit klávesovou zkratku pro zobrazení a skrytí rozhraní manuálního ovládání
@@ -83,6 +93,11 @@
 
 **Poznámky**
 
+* stav nakladače sheet missing, neshoda počítadel, co nastane když se korektně nepodá
+
+
+* signály z reject binu nepřicházeji a nebo je v programu chyba -> zeptat se Gremseru na stav -> nebylo naprogramováno
+
 * Chyba v dopravníku Gremseru, pokud se zapne a vypne dopravníkový pás ručně z HMI, nelze jej ovládat z host-bk
 
 * Pokud je při spuštění aplikace problém se síťovým spojením a v nastavení sítě je nastavena IP adresa 48.48.48.48 došlo k pokusu o nastavení neplatné IP adresy -> je nutné zkontrolovat configurační soubor na adrese "/home/stc/host-bk/bin/sys_cfg", pravděpodobně došlo k narušení struktury konfiguračního souboru.
@@ -99,16 +114,40 @@
 
 **BUG report**:
 
-* BUG 00005 při nastavování adres hotfolderů došlo k pádu prorgamu, pravděpodobně vlivem narušení paměti (program běžel bez výstupu do přákazové řádky).
+* BUG 00009 na konci jobu systém vyhodí chybu nesoulad pořadových indexů jobu - 
+  - chyba vzniká pouze při ukončování jobu ve stavu kdy se očekává ukončovací csv s příznakem 'e'. Tato chyba se nastaví ve stavu read_hotfolder kde se kontroluje zda aktuální soubory 
+	tisknutého jobu mají správnou hodnotu inkrementu. Požadovaný soubor se správným inkrementem a příznakem 'e' se v hotfolderu nachází, ale obsah hotfolderu nebyl aktualizován a 
+	pořadový index je porovnáván se soubory z předchozíjo jobu.
+	-> Chyba byla způsobena úpravou funkce controler_machine_state_read_hotfolder, aby bylo možné manuálně posálat archy. Funkce je vykonávána v plném taktu stavového automatu programu (1ms),
+	 	ale čtení hotfolderu je v každém stavu pouze v intervalu 1000ms pomocí funkce c_timer_delay, problém tak byl způsoben tím že se tak výpis hotfolderu nestihl znova načíst, protože od
+		posledního čtení hotfolderu neuplynulo více jak 1000ms, ale při tisku archů je tato doba mnohem delší a tak se při následujícím průchodu nejprve aktualizuje obsah hotfoleru a teprve 
+		poté se rozhodne co se bude dít (to by mohlo dělat problémy při mírném zpoždění). Problém jsem odstranil tak, že se ve stavu MACHINE_STATE_NEXT hotfolder vyčítá v plném taktu 
+		stavového automatu
 
-* BUG: 00004 v reportovacím csv se nezobrazuje stav PASS
+* BUG 00008 zamrznutí grafického rozhraní při pauze a pokračování v tisku, jádro běželo grafické rozhraní neodpovídalo - OPRAVENO
+  - při opětovném obnovení tiskového jobu ze stavu pauze jádro reagovalo správně, ale grafické rozhraní přestalo reagovat
+	-> Chyba byla způsobena logckou chybou podmínky	v cyklu který kontroloval zda bylo obnovení tisku v dané době úspěšné, došlo tak k zaciklení a zamrznutí hlavního vlákna
+
+* BUG 00007 parametry nastavení jsou uloženy do konfiguračního souboru, ale při opětovném spuštění nejsou načteny, jsou načteny předchozí hodnoty - OPREAVENO 
+ - To se stává pouze u adresy datového hotfolder pro quadient, hotfolder pro gis a hotfolder pro reportovací csv. Bližším zkoumáním bylo zjištěno, že nastává pouze problém při 
+	nastavování adresy pro datový hotfolder pro quadient a hotfolder pro reportovací csv. Při nastavení nové adresy pro reportovací csv, dojde v konfiguračním souboru k přepsání 
+	adresy datového hotfolderu pro quadient a adresa pro reportovací hotfolder je nezměněná, dochází tedy k záměně cíle pro ukládání konfigurace do souboru
+	-> chyba byla způsobena chybným identifikátorem pro ukládání konfigurace do souboru
+
+* BUG 00006 nelze aktualizovat výpis jobů v adresáři, ani automaticky ani manuálně - OPRAVENO
+	-> chyba byla způsobena chybným relačním znaménkem nerovnosti při porovnání času a resetování timeru po uplynutí dané doby
+
+* BUG 00005 při nastavování adres hotfolderů došlo k pádu prorgamu, pravděpodobně vlivem narušení paměti (program běžel bez výstupu do přákazové řádky) - NEAKTIVNÍ
+	chyba se objevila pouze jednou a od té doby již při nastavování adres nedošlo k potížím, problém mohl souviset s BUG 00007
+
+* BUG: 00004 v reportovacím csv se nezobrazuje stav PASS - OPRAVENO
  - Je zobrazován pouze stav FAIL v případě, že prokladový arch neprošel kamerovou kontrolou, vypadá to, že tento stav nebyl do datové struktury job_info vůbec při kontrole zadán.
 	-> chyba byla způsobena tím, že v datovém csv z IA quadient pro kolky byl ukončen znakem '\n' a pro prokladové archy nikoli. Chyba způsobila přeskočení naložení prokladového archu. 
 	(vis. BUG 00001)
 
 * BUG: 00003 chybné generování zpětnovazenbího csv - OPRAVENO
  - porovnávání zdá se funguje správně, ale jsou rozbyté indexy ve výstupním csv 
- -> při úpravě systému pro ukládání indexů archů jsem neupravil jejich načítání v čísti pro generování, nebyl čten řetězec obsahující index archu ale adresa na strukturu ve které byl uložen
+ -> při úpravě systému pro ukládání indexů archů jsem neupravil jejich načítání v části pro generování, nebyl čten řetězec obsahující index archu ale adresa na strukturu ve které byl uložen
 
 
 * BUG: 00002 při generování zpětnovazebního csv dojde po nějaké době k narušení paměti - OPRAVENO

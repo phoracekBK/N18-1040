@@ -1,5 +1,29 @@
 #include "util.h"
 
+int util_dir_is_empty(char * address)
+{
+        DIR * dir_ref = opendir(address);
+        int res = -1;
+
+        if(dir_ref != NULL)
+        {
+                struct dirent * dir_cont = NULL;
+                res = 0;
+
+                while((dir_cont =readdir(dir_ref)) != NULL)
+                {
+                        if(dir_cont->d_type != DT_DIR)
+                        {
+				printf("%s\n", dir_cont->d_name);
+                                res ++;
+                        }
+                }
+
+                closedir(dir_ref);
+        }
+ 
+        return res;
+}
 
 uint8_t util_move_file(char * src, char* dest, char* name)
 {

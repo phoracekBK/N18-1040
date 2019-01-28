@@ -15,6 +15,7 @@ const double settings_btn_fg_s[3] = {0.7, 0.7, 0.7};
 
 
 
+
 enum _gui_job_list_items_
 {
 	JOB_STATE= 0,
@@ -94,6 +95,10 @@ typedef struct _gui_base_ gui_base;
 struct _gui_control_page_;
 typedef struct _gui_control_page_ gui_control_page;
 
+
+struct _gui_csv_manage_;
+typedef struct _gui_csv_manage_ gui_csv_manage;
+
 struct _gui_settings_page_;
 typedef struct _gui_settings_page_ gui_settings_page;
 
@@ -130,8 +135,13 @@ struct _gui_
 	GtkWidget * status_bar;
 	c_string * error_string;
 
+	GtkWidget * bk_logo;
+	GtkWidget * km_logo;
+	GtkWidget * stc_logo;
+
 	gui_base * gui_base_ref;
 	gui_control_page * control_page;
+	gui_csv_manage * csv_manage_page;
 	gui_settings_page * settings_page;
 	gui_io_vision_page * io_vision_page;
 	gui_network_page * network_page;
@@ -154,8 +164,6 @@ struct _gui_control_page_
 
 	GtkWidget * info_box;
 	
-	array_list * report_csv_list;
-	
 	GtkWidget * ena_switch;
 	GtkWidget * xbf_pulse;
 
@@ -167,6 +175,38 @@ struct _gui_control_page_
 */
 	GtkWidget * btn_settings;
 	GtkWidget * btn_export;
+
+	gui_base * gui_base_ref;
+};
+
+struct _gui_csv_manage_
+{
+	GtkWidget * page;
+
+	GtkWidget * btn_return;
+	GtkWidget * spin_year_to;
+	GtkWidget * spin_month_to;
+	GtkWidget * spin_day_to;
+	GtkWidget * list_report_csv;
+	GtkListStore * job_list_store;
+	GtkWidget * scroll_report_list_csv;
+	GtkWidget * btn_export;
+	GtkWidget * lbl_year_to;
+	GtkWidget * lbl_month_to;
+	GtkWidget * lbl_day_to;
+	
+	GtkWidget * lbl_year_from;
+	GtkWidget * lbl_month_from;
+	GtkWidget * lbl_day_from;
+
+	GtkWidget * spin_year_from;
+	GtkWidget * spin_month_from;
+	GtkWidget * spin_day_from;
+
+	GtkWidget * separator_from;
+	GtkWidget * separator_to;
+	GtkWidget * lbl_from;
+	GtkWidget * lbl_to;
 
 	gui_base * gui_base_ref;
 };
@@ -277,6 +317,7 @@ struct _gui_info_window_
 struct _gui_base_
 {
 	GdkRectangle work_area_geometry;
+	array_list * report_csv_list;
 };
 
 
@@ -299,7 +340,6 @@ void gui_control_page_load_jobs(gui_control_page * this);
 GtkTreeViewColumn * gui_control_page_new_tree_column(char * label, int index);
 void gui_control_page_delete_columns(GtkWidget * list);
 void gui_control_page_load_report_csv_list(gui_control_page * this);
-void gui_control_page_update_report_csv_list(gui_control_page * this);
 void gui_control_page_open_report_csv (GtkTreeView *tree_view, gpointer param);
 
 void gui_control_page_btn_feed_sheet_callback(GtkWidget * widget, gpointer param);
@@ -312,6 +352,9 @@ void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer pa
 void gui_control_page_set_machine_mode_callback (GtkComboBox *widget, gpointer param);
 void gui_control_page_set_ena_callback(GtkSwitch *widget, gboolean state, gpointer param);
 void gui_control_page_manual_sheet_feed(GtkWidget * widget, gpointer param);
+void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param);
+void gui_control_page_clear_hotfolder(GtkWidget * widget, gpointer param);
+
 
 gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref);
 void gui_settings_page_language(gui_settings_page * this, lang * multi_lang);
@@ -322,6 +365,21 @@ void gui_settings_page_btn_go_to_hotfolder_settings_callback(GtkWidget* widget, 
 void gui_settings_page_btn_go_to_network_settings_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_btn_back_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_return_callback(GtkButton *button, GdkEventButton * event, gpointer param);
+
+
+gui_csv_manage * gui_csv_manage_new(gui_base * gui_base_ref);
+void gui_csv_manage_return_to_control_page(GtkWidget* widget, gpointer param);
+void gui_csv_manage_language(gui_csv_manage * this, lang * multi_lang);
+uint8_t gui_csv_manage_check_day(int8_t day, int16_t year, int8_t month);
+void gui_csv_manage_set_day_to (GtkSpinButton *spin_button, gpointer param);
+void gui_csv_manage_set_year_to (GtkSpinButton *spin_button, gpointer param);
+void gui_csv_manage_set_month_to (GtkSpinButton *spin_button, gpointer param);
+void gui_csv_manage_set_day_from (GtkSpinButton *spin_button, gpointer param);
+void gui_csv_manage_set_year_from (GtkSpinButton *spin_button, gpointer param);
+void gui_csv_manage_set_month_from (GtkSpinButton *spin_button, gpointer param);
+array_list * gui_csv_manage_filter_report_csv(array_list * report_csv_list, 
+					uint8_t day_from, uint8_t month_from, uint16_t year_from, 
+					uint8_t day_to, uint8_t month_to, uint16_t year_to);
 
 gui_io_vision_page * gui_io_vision_page_new(gui_base * gui_base_ref);
 void gui_io_vision_draw_socket(cairo_t* cr, double x, double y, double w, double h, char* label);
@@ -364,6 +422,8 @@ void gui_info_window_callback(GtkWidget * widget, gpointer param);
 
 gui_base * gui_base_new();
 GdkPixbuf * gui_base_load_icon(char * addr);
+GdkPixbuf * gui_base_scale_icon(GdkPixbuf * icon, uint8_t dim, double new_size);
+void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_csv_list, GtkListStore * job_report_list_store);
 
 
 
@@ -394,6 +454,9 @@ gui * gui_new()
 	
 	/* create control page */
 	this->control_page = gui_control_page_new(this->gui_base_ref);
+
+	/* create csv manage page */
+	this->csv_manage_page = gui_csv_manage_new(this->gui_base_ref);
 
 	/* create settings page */
 	this->settings_page = gui_settings_page_new(this->gui_base_ref);
@@ -441,19 +504,26 @@ gboolean gui_cyclic_interupt(gpointer param)
 	//const char * visible_page = gtk_stack_get_visible_child_name (GTK_STACK(this->page_stack));
 
 	gtk_combo_box_set_active(GTK_COMBO_BOX(this->control_page->print_mode_combo), controler_get_machine_mode());
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->print_mode_combo), (controler_machine_status_val() == MACHINE_STATE_WAIT) && controler_get_manual_mode_state() == false);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->print_mode_combo),((controler_machine_status_val() == MACHINE_STATE_ERROR) || 
+				(controler_machine_status_val() == MACHINE_STATE_WAIT)) && 
+				controler_get_manual_mode_state() == false);
 
 	bool pause_en = (controler_machine_status_val() != MACHINE_STATE_WAIT) && (controler_machine_status_val() != MACHINE_STATE_NEXT) && 
 						(controler_machine_status_val() != MACHINE_STATE_ERROR) && (controler_machine_status_val() != MACHINE_STATE_PAUSE) && 
 						(controler_machine_status_val() != MACHINE_STATE_READY_TO_START) && (controler_machine_status_val() != MACHINE_STATE_WAIT_FOR_CONFIRMATION &&
 						controler_get_manual_mode_state() == false);
 
-
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PAUSE]), pause_en);
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CONTINUE]), controler_machine_status_val() == MACHINE_STATE_PAUSE && 
 						(controler_get_manual_mode_state() == false));
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), controler_machine_status_val() == MACHINE_STATE_WAIT && 
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), (controler_machine_status_val() == MACHINE_STATE_WAIT) && 
 						(controler_get_manual_mode_state() == false));
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_DELETE_JOB]), (controler_machine_status_val() == MACHINE_STATE_WAIT) && 
+						(controler_get_manual_mode_state() == false));
+
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_DELETE_JOB]), controler_machine_status_val() == MACHINE_STATE_WAIT);
 
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_ERROR_RESET]), (controler_get_manual_mode_state() == false));
 
@@ -496,7 +566,7 @@ gboolean gui_cyclic_interupt(gpointer param)
 
 	//if(strcmp(visible_page, "control_page") == 0)
 	{
-		if(controler_job_list_changed() > 0)
+		if((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT))
 			gui_control_page_load_jobs(this->control_page);
 	}
  	
@@ -527,6 +597,8 @@ void gui_set_language(gui * this)
 		gui_hotfolder_page_language(this->hotfolder_page, multi_lang);
 
 		gui_network_page_language(this->network_page, multi_lang);
+
+		gui_csv_manage_language(this->csv_manage_page, multi_lang);
 
 		gui_lang_page_language(this->lang_page, multi_lang);
 	}
@@ -700,6 +772,40 @@ void gui_signals(gui * this)
 				"clicked", 
 				G_CALLBACK(gui_control_page_manual_sheet_feed),
 				NULL);
+	g_signal_connect(G_OBJECT(this->control_page->btn_export), 
+				"clicked", 
+				G_CALLBACK(gui_control_page_go_to_csv_manage_page), 
+				this);
+	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_DELETE_JOB]), 
+				"clicked", 
+				G_CALLBACK(gui_control_page_clear_hotfolder), 
+				NULL);
+
+
+	/* csv manage page signals */
+	g_signal_connect(G_OBJECT(this->csv_manage_page->btn_return), 
+				"clicked", 
+				G_CALLBACK(gui_csv_manage_return_to_control_page), 
+				this);
+	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_day_to),
+			 	"value_changed",
+				G_CALLBACK(gui_csv_manage_set_day_to), this->csv_manage_page);
+	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_month_to),
+			 	"value_changed",
+				G_CALLBACK(gui_csv_manage_set_month_to), this->csv_manage_page);
+	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_year_to),
+			 	"value_changed",
+				G_CALLBACK(gui_csv_manage_set_year_to), this->csv_manage_page);
+	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_day_from),
+			 	"value_changed",
+				G_CALLBACK(gui_csv_manage_set_day_from), this->csv_manage_page);
+	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_month_from),
+			 	"value_changed",
+				G_CALLBACK(gui_csv_manage_set_month_from), this->csv_manage_page);
+	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_year_from),
+			 	"value_changed",
+				G_CALLBACK(gui_csv_manage_set_year_from), this->csv_manage_page);
+
 
 	/* settings page signals */
 	g_signal_connect(G_OBJECT(settings_button_get_instance(this->settings_page->btn[S_BTN_IO_VISION])), 
@@ -828,6 +934,11 @@ void gui_create_main_window(gui * this)
 	//gtk_window_set_resizable(GTK_WINDOW(this->main_win), FALSE);
 	gtk_window_set_decorated (GTK_WINDOW(this->main_win), FALSE);
 
+	double icon_heigh = 75;
+	this->bk_logo = gtk_image_new_from_pixbuf(gui_base_scale_icon(gui_base_load_icon(BK_ICON_PATH), 0, icon_heigh));
+	this->km_logo = gtk_image_new_from_pixbuf(gui_base_scale_icon(gui_base_load_icon(KM_ICON_PATH), 0, icon_heigh));
+	this->stc_logo = gtk_image_new_from_pixbuf(gui_base_scale_icon(gui_base_load_icon(STC_ICON_PATH), 0, icon_heigh));
+
 
 	this->drawing_area = gtk_drawing_area_new();
         gtk_widget_set_size_request(GTK_WIDGET(this->drawing_area), this->gui_base_ref->work_area_geometry.width, this->gui_base_ref->work_area_geometry.height);
@@ -873,6 +984,7 @@ char * gui_def_file_chooser(gui* this, char * title)
 void gui_pack(gui * this)
 {
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->control_page->page, "control_page");
+	gtk_stack_add_named(GTK_STACK(this->page_stack), this->csv_manage_page->page, "csv_manage_page");
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->settings_page->page, "settings_page");
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->io_vision_page->page, "io_vision_page");
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->lang_page->page, "lang_page");
@@ -888,10 +1000,24 @@ void gui_pack(gui * this)
 	gtk_fixed_put(GTK_FIXED(this->window_container), this->status_bar, 0, this->gui_base_ref->work_area_geometry.height/12);
 	gtk_fixed_put(GTK_FIXED(this->window_container), this->page_stack, 0, 0);
 
+	gtk_fixed_put(GTK_FIXED(this->window_container), 
+			this->bk_logo, 
+			this->gui_base_ref->work_area_geometry.width-100-gdk_pixbuf_get_width(gtk_image_get_pixbuf(GTK_IMAGE(this->bk_logo))), 
+			5);
+
+	gtk_fixed_put(GTK_FIXED(this->window_container), 
+			this->stc_logo, 
+			this->gui_base_ref->work_area_geometry.width/2-gdk_pixbuf_get_width(gtk_image_get_pixbuf(GTK_IMAGE(this->stc_logo))), 
+			5);
+
+	gtk_fixed_put(GTK_FIXED(this->window_container), 
+			this->km_logo, 
+			100, 
+			5);
+
 	gtk_container_add(GTK_CONTAINER(this->main_win), this->window_container);
 }
 
-/* todo ena button */
 gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 {
 	gui_control_page * this = (gui_control_page *) malloc(sizeof(gui_control_page));
@@ -902,11 +1028,8 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	double width = gui_base_ref->work_area_geometry.width;
 	double height = gui_base_ref->work_area_geometry.height;
 
-	this->report_csv_list = array_list_new();
-
 	this->ena_switch = gtk_switch_new();
 	gtk_widget_set_size_request(GTK_WIDGET(this->ena_switch), 100, 35);
-	//gtk_switch_set_active(GTK_SWITCH(this->ena_switch), controler_Get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0);	
 
 	this->xbf_pulse = gtk_button_new_with_label("XBF");
 	gtk_widget_set_size_request(GTK_WIDGET(this->xbf_pulse), 100, 35);
@@ -930,6 +1053,7 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	this->btn_export = gtk_button_new();
 	gtk_widget_set_size_request(GTK_WIDGET(this->btn_export), 350, 35);
 
+
 	this->job_list_store = NULL;
 	this->job_report_list_store = NULL;
 
@@ -951,8 +1075,8 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	gtk_fixed_put(GTK_FIXED(this->page), this->btn_settings, width/4*3+(width/4-350)/2, height-130);	
 	gtk_fixed_put(GTK_FIXED(this->page), this->btn_export, width/4*3-350, height-130);	
 	gtk_fixed_put(GTK_FIXED(this->page), this->log_report_scroll_area, width/4, (5*height/24)+(height/8)+220);
-	gtk_fixed_put(GTK_FIXED(this->page), this->ena_switch, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+350);
-	gtk_fixed_put(GTK_FIXED(this->page), this->xbf_pulse, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+410);
+	gtk_fixed_put(GTK_FIXED(this->page), this->ena_switch, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+470);
+	gtk_fixed_put(GTK_FIXED(this->page), this->xbf_pulse, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+530);
 
 	for(int i = 0; i < GC_BTN_N; i++)
 	{
@@ -967,7 +1091,7 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 		else if(i == GC_BTN_ERROR_RESET)
 			this->btn[i] = gtk_button_new_with_label("reset");
 		else if(i == GC_BTN_DELETE_JOB)
-			this->btn[i] = gtk_button_new_with_label ("Delete");
+			this->btn[i] = gtk_button_new_with_label ("Clear");
 		else if(i == GC_BTN_FEED)
 			this->btn[i] = gtk_button_new_with_label ("Feed");
 
@@ -984,6 +1108,36 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	}
 
 	return this;
+}
+
+
+void gui_control_page_clear_hotfolder(GtkWidget * widget, gpointer param)
+{
+	controler_total_clear_hotfolder();
+}
+
+void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param)
+{
+	gui * this = (gui*) param;
+
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_day_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_day_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_to)));
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->csv_manage_page->list_report_csv, 
+						filtered_job_list, 
+						this->csv_manage_page->job_list_store);
+	
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+
+
+	gtk_stack_set_visible_child_name(GTK_STACK(this->page_stack), "csv_manage_page");
 }
 
 void gui_control_page_manual_sheet_feed(GtkWidget * widget, gpointer param)
@@ -1117,6 +1271,12 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_move_to(cr, width/4*3+(width/4-350)/2, 5*height/24+440);
 	cairo_show_text(cr, "TCP/IP status QUADIENT:");
 	
+	cairo_move_to(cr,width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+360);
+	cairo_show_text(cr, multi_lang->print_active);
+	
+
+
+	cairo_save(cr);
 	/* network connection status points */
 	if(controler_pci_network_connected() != STATUS_CLIENT_CONNECTED)
 		cairo_set_source_rgb(cr,1,0,0);
@@ -1139,8 +1299,66 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 		cairo_set_source_rgb(cr,1,0,0);
 	else
 		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+
 	cairo_arc(cr, width-(width/4-350)/2-15, 5*height/24+440, 10, 0, 2*M_PI);
+
 	cairo_fill(cr);
+
+
+	if(controler_get_card_output(IO_CARD_A1, A1_OUT_3_PRN_rdy) == 0)
+		cairo_set_source_rgb(cr,1,0,0);
+	else
+		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+
+	cairo_arc(cr, width-(width/4-350)/2-15, (5*height/24)+(height/8)+360, 10, 0, 2*M_PI);
+
+	cairo_fill(cr);
+	cairo_restore(cr);
+
+	cairo_move_to(cr,width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+410);
+	cairo_show_text(cr, multi_lang->par_stacker_status);
+	cairo_stroke(cr);
+
+	cairo_save(cr);
+	cairo_text_extents_t ext_stacker_status;
+	cairo_text_extents(cr, controler_get_stacker_status_string(controler_get_stacker_status()), &ext_stacker_status);
+
+	if((controler_get_stacker_status() == MACHINE_SN_STACKER_READY) || 
+		(controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK) ||
+		(controler_get_stacker_status() == MACHINE_SN_STACKING))
+	{
+		cairo_set_source_rgb(cr, 0.2,0.2,0.2);
+	}
+	else
+	{
+		cairo_set_source_rgb(cr,1,0,0);
+	}
+
+	cairo_move_to(cr, width-(width/4-350)/2-ext_stacker_status.width, (5*height/24)+(height/8)+410);
+	cairo_show_text(cr, controler_get_stacker_status_string(controler_get_stacker_status()));
+	cairo_stroke(cr);
+	cairo_restore(cr);
+
+	cairo_move_to(cr,width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+450);
+	cairo_show_text(cr, multi_lang->par_feeder_status);
+	cairo_stroke(cr);
+
+	cairo_text_extents_t ext_feeder_status;
+	cairo_text_extents(cr, controler_get_feeder_status_string(controler_get_feeder_status()), &ext_feeder_status);
+	
+	if((controler_get_feeder_status() == MACHINE_FN_FEEDER_READY) || 
+		(controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED) ||
+		(controler_get_feeder_status() == MACHINE_FN_FEEDING))
+	{
+		cairo_set_source_rgb(cr, 0.2,0.2,0.2);
+	}
+	else
+	{
+		cairo_set_source_rgb(cr,1,0,0);
+	}
+
+	cairo_move_to(cr,width-(width/4-350)/2-ext_feeder_status.width, (5*height/24)+(height/8)+450);
+	cairo_show_text(cr, controler_get_feeder_status_string(controler_get_feeder_status()));
 
 	return FALSE;
 }
@@ -1149,6 +1367,9 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 void gui_control_page_language(gui_control_page * this)
 {
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
+
+
+	gtk_button_set_label(GTK_BUTTON(this->btn_export), multi_lang->gui_go_to_csv_manage_page_label);
 
 	/* columns for the job list tree widget */
 	gui_control_page_delete_columns(this->job_list);
@@ -1219,21 +1440,15 @@ void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer pa
 
 void gui_control_page_btn_pause_callback(GtkButton *button, gpointer param)
 {
+	/* set pause */
 	if(controler_machine_status_val() != MACHINE_STATE_ERROR)
-	{
-		/* set pause */
 		controler_print_pause();
-	}
 }
 
 void gui_control_page_btn_continue_callback(GtkButton *button, gpointer param)
 {
-	gui_control_page * this = (gui_control_page*) param;
-	if(controler_print_continue() == 0)
-	{
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_CONTINUE]), FALSE);
-		gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PAUSE]), TRUE);
-	}
+	if(controler_machine_status_val() == MACHINE_STATE_PAUSE)
+		controler_print_continue();
 }
 
 void gui_control_page_btn_print_callback(GtkButton *button, gpointer param)
@@ -1252,15 +1467,13 @@ void gui_control_page_btn_print_callback(GtkButton *button, gpointer param)
         	{
         	        gtk_tree_model_get (model, &iter, JOB_NAME, &job_name, -1);
 
-			if(controler_print_start((const char*) job_name) == 0)
-			{
-				gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PAUSE]), TRUE);
-				gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_CONTINUE]), FALSE);
-				gtk_widget_set_sensitive(GTK_WIDGET(this->btn[GC_BTN_PRINT]), FALSE);
-			}
-
+			controler_print_start((const char*) job_name);
         	        g_free(job_name);
         	}
+		else
+		{
+			controler_print_start(NULL);
+		}
 	}
 }
 
@@ -1331,123 +1544,51 @@ void gui_control_page_load_jobs(gui_control_page * this)
 
 void gui_control_page_load_report_csv_list(gui_control_page * this)
 {
-	DIR * dir_ref = opendir(controler_get_job_report_hotfolder_path());
-	
-	bool list_changed = false;
-	array_list * temp_csv_list = array_list_new();
+	array_list * current_csv_list = controler_get_report_csv_list();
 
-	if(dir_ref != NULL)
+	if(current_csv_list != NULL)
 	{
-		struct dirent * dir_cont;
-
-		while((dir_cont = readdir(dir_ref)) != NULL)
+		if(this->gui_base_ref->report_csv_list == NULL)
 		{
-			if(dir_cont->d_type != DT_DIR)
+				this->gui_base_ref->report_csv_list = current_csv_list;
+				gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
+		}
+		else
+		{
+			if(array_list_size(current_csv_list) != array_list_size(this->gui_base_ref->report_csv_list))	
+			{			
+				array_list_destructor_with_release(&(this->gui_base_ref->report_csv_list), c_string_finalize_v2);
+				this->gui_base_ref->report_csv_list = current_csv_list;
+				gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
+			}
+			else
 			{
-				//if(util_str_ends_with(dir_cont->d_name, ".csv", 0) == 0)
+				bool list_changed = false;
+	
+				for(int i = 0; i < array_list_size(current_csv_list); i++)
 				{
-					int report_csv_list_index = 0;
-					c_string* csv_file_name = c_string_new_with_init(dir_cont->d_name);
-					array_list_add(temp_csv_list, csv_file_name);
-					bool presence = false;
-
-					while(report_csv_list_index < array_list_size(this->report_csv_list))
-					{
-						if(strcmp(c_string_get_char_array(array_list_get(this->report_csv_list, report_csv_list_index)), dir_cont->d_name) == 0)
-						{
-							presence = true;
-							break;
-						}
-						else
-						{
-							presence = false;
-						}
-
-						report_csv_list_index++;
-					}
-					
-					if(presence == false)
+					if(strcmp(array_list_get(current_csv_list, i), array_list_get(this->gui_base_ref->report_csv_list, i)) != 0)
 					{
 						list_changed = true;
-						array_list_add(this->report_csv_list, c_string_new_with_init(dir_cont->d_name));
+						break;
 					}
 				}
-				//else
-				//{
-			//		printf("removed file: %s\n", dir_cont->d_name);
-					//util_delete_file(core_get_job_report_hotfolder_path(this->gui_base_ref->core_ref), dir_cont->d_name);
-			//	}
-			}
-		}
 
-		closedir(dir_ref);
-	}
-
-
-	if(list_changed == true)
-	{
-		int report_csv_list_index = 0;
-		int local_csv_list_index = 0;
-	
-
-		while(report_csv_list_index < array_list_size(this->report_csv_list))
-		{
-			bool presence = false;
-			while(local_csv_list_index < array_list_size(temp_csv_list))
-			{
-				printf(" %s - %s", c_string_get_char_array(array_list_get(this->report_csv_list, report_csv_list_index)), 
-					c_string_get_char_array(array_list_get(temp_csv_list, local_csv_list_index)));
-
-				if(strcmp(c_string_get_char_array(array_list_get(this->report_csv_list, report_csv_list_index)), 
-					c_string_get_char_array(array_list_get(temp_csv_list, local_csv_list_index))) == 0)
+				if(list_changed == true)
 				{
-					presence = true;
-					break;
+					array_list_destructor_with_release(&this->gui_base_ref->report_csv_list, c_string_finalize_v2);
+					this->gui_base_ref->report_csv_list = current_csv_list;
+					gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
 				}
-
-				local_csv_list_index ++;
+				else
+				{
+					array_list_destructor_with_release(&current_csv_list, c_string_finalize_v2);
+				}
 			}
-
-			if(presence == false)
-				array_list_remove_with_release(this->report_csv_list, report_csv_list_index, c_string_finalize_v2);
-			else
-				report_csv_list_index++;
 		}
-
-		gui_control_page_update_report_csv_list(this);
 	}
-
-	array_list_destructor_with_release(&temp_csv_list, c_string_finalize_v2);
 }
 
-void gui_control_page_update_report_csv_list(gui_control_page * this)
-{
-	GtkTreeIter iter;
-	this->job_report_list_store = gtk_list_store_new(REPO_ITEM_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
-	int index = 0;
-
-	while(index < array_list_size(this->report_csv_list))
-	{
-		rep_struct * job_report = hot_load_report_information(array_list_get(this->report_csv_list, index));
-		if(job_report != NULL)
-		{
-			gtk_list_store_append(this->job_report_list_store, &iter);
-
-               		gtk_list_store_set (this->job_report_list_store, &iter, REP_NAME, job_report->job_name, -1);
-               		gtk_list_store_set (this->job_report_list_store, &iter, REP_FINISH_STATE, job_report->finish_state, -1);
-               		gtk_list_store_set (this->job_report_list_store, &iter, REP_REJECTED_SHEET_NUMBER, job_report->rejected_sheet_number, -1);
-               		gtk_list_store_set (this->job_report_list_store, &iter, REP_SHEET_NUMBER, job_report->sheet_number, -1);
-        		gtk_list_store_set (this->job_report_list_store, &iter, REP_STAMP_NUMBER, job_report->stamp_number, -1);
-			gtk_list_store_set (this->job_report_list_store, &iter, REP_DATE_TIME, job_report->date_time, -1);
-
-			free(job_report);
-		}
-		index++;
-	}
-
-	gtk_tree_view_set_model(GTK_TREE_VIEW(this->job_report_list), GTK_TREE_MODEL(this->job_report_list_store));
-	g_object_unref(G_OBJECT(this->job_report_list_store));
-}
 
 
 void gui_control_page_set_machine_mode_callback (GtkComboBox *widget, gpointer param)
@@ -1480,6 +1621,348 @@ void gui_control_page_open_report_csv (GtkTreeView *tree_view, gpointer param)
                 g_free (csv_name);
         }	
 }
+
+gui_csv_manage * gui_csv_manage_new(gui_base * gui_base_ref)
+{
+	gui_csv_manage * this = (gui_csv_manage*) malloc(sizeof(gui_csv_manage));
+
+	this->gui_base_ref = gui_base_ref;
+	double width = gui_base_ref->work_area_geometry.width;
+	double height = gui_base_ref->work_area_geometry.height;
+
+	this->btn_return = gtk_button_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->btn_return), 150, 35);
+
+	this->spin_year_to = gtk_spin_button_new_with_range(2018,2100,1);
+	gtk_widget_set_size_request(GTK_WIDGET(this->spin_year_to), 100, 35);
+
+	this->spin_month_to = gtk_spin_button_new_with_range(1,12,1);
+	gtk_widget_set_size_request(GTK_WIDGET(this->spin_month_to), 100, 35);
+
+	this->spin_day_to = gtk_spin_button_new_with_range(1,31,1);
+	gtk_widget_set_size_request(GTK_WIDGET(this->spin_day_to), 100, 35);
+
+	this->spin_year_from = gtk_spin_button_new_with_range(2018,2100,1);
+	gtk_widget_set_size_request(GTK_WIDGET(this->spin_year_to), 100, 35);
+
+	this->spin_month_from = gtk_spin_button_new_with_range(1,12,1);
+	gtk_widget_set_size_request(GTK_WIDGET(this->spin_month_to), 100, 35);
+
+	this->spin_day_from = gtk_spin_button_new_with_range(1,31,1);
+	gtk_widget_set_size_request(GTK_WIDGET(this->spin_day_to), 100, 35);
+
+
+	this->separator_from = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_widget_set_size_request(GTK_WIDGET(this->separator_from), 400, 2);
+
+	this->separator_to = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_widget_set_size_request(GTK_WIDGET(this->separator_to), 400, 2);
+
+	this->lbl_from = gtk_label_new(NULL);
+	this->lbl_to = gtk_label_new(NULL);
+
+
+	this->list_report_csv = gtk_tree_view_new();
+	this->job_list_store = NULL;
+
+	this->scroll_report_list_csv = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(this->scroll_report_list_csv), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_widget_set_size_request(GTK_WIDGET(this->scroll_report_list_csv), width/2, height/2-185);
+	gtk_container_add(GTK_CONTAINER(this->scroll_report_list_csv), this->list_report_csv);
+
+	this->btn_export = gtk_button_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->btn_export), 150, 35);
+
+	this->lbl_year_to = gtk_label_new(NULL);
+	this->lbl_month_to = gtk_label_new(NULL);
+	this->lbl_day_to = gtk_label_new(NULL);
+
+	this->lbl_year_from = gtk_label_new(NULL);
+	this->lbl_month_from = gtk_label_new(NULL);
+	this->lbl_day_from = gtk_label_new(NULL);
+
+	this->page = gtk_fixed_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->page), width, height);
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->btn_return, width/4, height/2+(height/2-185)/2+30);
+	gtk_fixed_put(GTK_FIXED(this->page), this->scroll_report_list_csv, width/4, height/2-(height/2-185)/2);
+	gtk_fixed_put(GTK_FIXED(this->page), this->btn_export, (width*3/4)-150, height/2+(height/2-185)/2+30);
+	gtk_fixed_put(GTK_FIXED(this->page), this->spin_year_to, (width*3/4)-115, height/2-(height/2-185)/2-50);
+	gtk_fixed_put(GTK_FIXED(this->page), this->spin_month_to, (width*3/4)-265, height/2-(height/2-185)/2-50);
+	gtk_fixed_put(GTK_FIXED(this->page), this->spin_day_to, (width*3/4)-415, height/2-(height/2-185)/2-50);
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_year_to, (width*3/4)-115, height/2-(height/2-185)/2-70);
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_month_to, (width*3/4)-265, height/2-(height/2-185)/2-70);
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_day_to, (width*3/4)-415, height/2-(height/2-185)/2-70);
+
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->spin_year_from, (width/4)+300, height/2-(height/2-185)/2-50);
+	gtk_fixed_put(GTK_FIXED(this->page), this->spin_month_from, (width/4)+150, height/2-(height/2-185)/2-50);
+	gtk_fixed_put(GTK_FIXED(this->page), this->spin_day_from, (width/4), height/2-(height/2-185)/2-50);
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_year_from, (width/4)+300, height/2-(height/2-185)/2-70);
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_month_from, (width/4)+150, height/2-(height/2-185)/2-70);
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_day_from, (width/4), height/2-(height/2-185)/2-70);
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->separator_from, width/4, height/2-(height/2-185)/2-80);
+	gtk_fixed_put(GTK_FIXED(this->page), this->separator_to, (width*3/4)-400, height/2-(height/2-185)/2-80);
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_to, (width*3/4)-400, height/2-(height/2-185)/2-100);
+	gtk_fixed_put(GTK_FIXED(this->page), this->lbl_from, (width/4), height/2-(height/2-185)/2-100);
+
+	return this;
+}
+
+
+uint8_t gui_csv_manage_check_day(int8_t day, int16_t year, int8_t month)
+{
+	if(month == 2)
+	{
+		if((year % 4) == 0)
+		{
+			if(day > 29)
+				day = 29;
+		}
+		else
+		{
+			if(day > 28)
+				day = 28;
+		}
+	
+	}
+	else if(month == 4 || month == 6 || month == 9 || month == 10 || month == 11)
+	{
+		if(day > 30)
+			day = 30;
+	}	
+
+	return day;
+}
+
+
+array_list * gui_csv_manage_filter_report_csv(array_list * report_csv_list, 
+					uint8_t day_from, uint8_t month_from, uint16_t year_from, 
+					uint8_t day_to, uint8_t month_to, uint16_t year_to)
+{
+	array_list * filtered_job_list = array_list_new();
+
+	return filtered_job_list;
+}
+
+void gui_csv_manage_set_day_from (GtkSpinButton *spin_button, gpointer param)
+{
+	gui_csv_manage * this = (gui_csv_manage*) param;
+	uint8_t day = gtk_spin_button_get_value_as_int (spin_button);
+
+	gtk_spin_button_set_value (spin_button, 
+				(gdouble) gui_csv_manage_check_day(day, 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)), 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from))));
+	
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										day,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->list_report_csv, 
+						filtered_job_list, 
+						this->job_list_store);
+
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+}
+
+
+void gui_csv_manage_set_year_from (GtkSpinButton *spin_button, gpointer param)
+{
+	gui_csv_manage * this = (gui_csv_manage*) param;
+	uint8_t year = gtk_spin_button_get_value_as_int (spin_button);
+
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_from), 
+				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)), 
+					year, 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from))));
+
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
+										year,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->list_report_csv, 
+						filtered_job_list, 
+						this->job_list_store);
+	
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+}
+
+void gui_csv_manage_set_month_from (GtkSpinButton *spin_button, gpointer param)
+{
+	gui_csv_manage * this = (gui_csv_manage*) param;
+	uint8_t month = gtk_spin_button_get_value_as_int (spin_button);
+
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_from), 
+				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)), 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)), 
+					month));
+
+
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
+										month,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->list_report_csv, 
+						filtered_job_list, 
+						this->job_list_store);
+	
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+}
+
+
+
+void gui_csv_manage_set_day_to (GtkSpinButton *spin_button, gpointer param)
+{
+	gui_csv_manage * this = (gui_csv_manage*) param;
+	uint8_t day = gtk_spin_button_get_value_as_int (spin_button);
+
+	gtk_spin_button_set_value (spin_button, 
+				(gdouble) gui_csv_manage_check_day(day, 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)), 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to))));
+
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										day,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->list_report_csv, 
+						filtered_job_list, 
+						this->job_list_store);
+
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+}
+
+
+void gui_csv_manage_set_year_to (GtkSpinButton *spin_button, gpointer param)
+{
+	gui_csv_manage * this = (gui_csv_manage*) param;
+	uint8_t year = gtk_spin_button_get_value_as_int (spin_button);
+
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_to), 
+				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)), 
+					year, 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to))));
+
+
+
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
+										year,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->list_report_csv, 
+						filtered_job_list, 
+						this->job_list_store);
+	
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+}
+
+void gui_csv_manage_set_month_to (GtkSpinButton *spin_button, gpointer param)
+{
+	gui_csv_manage * this = (gui_csv_manage*) param;
+	uint8_t month = gtk_spin_button_get_value_as_int (spin_button);
+
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_to), 
+				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)), 
+					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)), 
+					month));
+
+	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
+										month);
+	if(filtered_job_list != NULL)
+	{
+		gui_base_update_report_csv_list(this->list_report_csv, 
+						filtered_job_list, 
+						this->job_list_store);
+	
+		array_list_destructor_with_release(&filtered_job_list, c_string_finalize_v2);
+	}
+}
+
+
+void gui_csv_manage_language(gui_csv_manage * this, lang * multi_lang)
+{
+
+	gtk_label_set_text(GTK_LABEL(this->lbl_to), multi_lang->to);
+	gtk_label_set_text(GTK_LABEL(this->lbl_from), multi_lang->from);
+
+	gtk_label_set_text(GTK_LABEL(this->lbl_year_to), multi_lang->filter_year);
+	gtk_label_set_text(GTK_LABEL(this->lbl_month_to), multi_lang->filter_month);
+	gtk_label_set_text(GTK_LABEL(this->lbl_day_to), multi_lang->filter_day);
+
+	gtk_button_set_label(GTK_BUTTON(this->btn_export), multi_lang->csv_manage_export);
+	gtk_button_set_label(GTK_BUTTON(this->btn_return), multi_lang->csv_manage_return);
+
+
+	gtk_label_set_text(GTK_LABEL(this->lbl_year_from), multi_lang->filter_year);
+	gtk_label_set_text(GTK_LABEL(this->lbl_month_from), multi_lang->filter_month);
+	gtk_label_set_text(GTK_LABEL(this->lbl_day_from), multi_lang->filter_day);
+
+	gui_control_page_delete_columns(this->list_report_csv);
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->list_report_csv), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->rep_csv_state, REP_FINISH_STATE)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->list_report_csv), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->rep_csv_name, REP_NAME)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->list_report_csv), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->rep_csv_rejected_sheets, REP_REJECTED_SHEET_NUMBER)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->list_report_csv), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->rep_csv_sheet_number, REP_SHEET_NUMBER)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->list_report_csv), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->rep_csv_stamp_number, REP_STAMP_NUMBER)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->list_report_csv), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->rep_csv_date_time, REP_DATE_TIME)));
+}
+
+void gui_csv_manage_return_to_control_page(GtkWidget* widget, gpointer param)
+{
+	gui * this = (gui*) param;
+	gtk_stack_set_visible_child_name(GTK_STACK(this->page_stack), "control_page");
+
+}
+
 
 gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref)
 {
@@ -2415,8 +2898,43 @@ gui_base * gui_base_new()
 	GdkDisplay* display = gdk_display_get_default(); 
 	GdkMonitor* monitor = gdk_display_get_monitor(display, 0); 
 	gdk_monitor_get_workarea(monitor, &(this->work_area_geometry));
+	this->report_csv_list = NULL;
 
 	return this; 
+}
+
+
+void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_csv_list, GtkListStore * job_report_list_store)
+{
+	GtkTreeIter iter;
+	job_report_list_store = gtk_list_store_new(REPO_ITEM_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
+
+	if(report_csv_list != NULL)
+	{
+		for(int index = 0; index < array_list_size(report_csv_list); index++)
+		{
+			
+			rep_struct * job_report = controler_load_report_information(array_list_get(report_csv_list, index));
+
+			if(job_report != NULL)
+			{
+				gtk_list_store_append(job_report_list_store, &iter);
+	
+	               		gtk_list_store_set (job_report_list_store, &iter, REP_NAME, job_report->job_name, -1);
+	               		gtk_list_store_set (job_report_list_store, &iter, REP_FINISH_STATE, job_report->finish_state, -1);
+	               		gtk_list_store_set (job_report_list_store, &iter, REP_REJECTED_SHEET_NUMBER, job_report->rejected_sheet_number, -1);
+	               		gtk_list_store_set (job_report_list_store, &iter, REP_SHEET_NUMBER, job_report->sheet_number, -1);
+	        		gtk_list_store_set (job_report_list_store, &iter, REP_STAMP_NUMBER, job_report->stamp_number, -1);
+				gtk_list_store_set (job_report_list_store, &iter, REP_DATE_TIME, job_report->date_time, -1);
+	
+				free(job_report);
+			}
+
+		}
+	}
+	
+	gtk_tree_view_set_model(GTK_TREE_VIEW(tree_view), GTK_TREE_MODEL(job_report_list_store));
+	g_object_unref(G_OBJECT(job_report_list_store));
 }
 
 /**
@@ -2429,6 +2947,27 @@ GdkPixbuf * gui_base_load_icon(char * addr)
 	GdkPixbuf * icon = gdk_pixbuf_new_from_file(addr, &error);
 
 	return icon;
+}
+
+GdkPixbuf * gui_base_scale_icon(GdkPixbuf * icon, uint8_t dim, double new_size)
+{
+	GdkPixbuf* scaled_icon = NULL;
+
+	if(icon != NULL)
+	{
+		if(dim == 0)
+		{
+			double scale = (((double) new_size)/((double)gdk_pixbuf_get_height(icon))) * ((double)gdk_pixbuf_get_width(icon));
+			scaled_icon = gdk_pixbuf_scale_simple (icon, (int) scale, new_size, GDK_INTERP_HYPER);
+		}
+		else
+		{
+			double scale = (((double) new_size)/((double)gdk_pixbuf_get_width(icon))) * ((double)gdk_pixbuf_get_height(icon));
+			scaled_icon = gdk_pixbuf_scale_simple (icon, (int) new_size, scale, GDK_INTERP_HYPER);
+		}
+	}
+
+	return scaled_icon;
 }
 
 gui_info_window * gui_info_window_new(char * title, char * info_label, void (*callback) (void*), void * param)

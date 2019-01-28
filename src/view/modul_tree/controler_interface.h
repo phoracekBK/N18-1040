@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <platform.h>
+#include <array_list.h>
 
 
 #ifdef PLATFORM_STC_PC
@@ -61,7 +62,6 @@
 
 
 
-
 #define MACHINE_STATE_WAIT 0
 
 #define MACHINE_STATE_PREPARE 1
@@ -96,6 +96,7 @@
 
 #define MACHINE_STATE_WAIT_FOR_CONFIRMATION 16
 
+#define MACHINE_STATE_FEEDER_ERROR 17
 
 
 
@@ -147,6 +148,10 @@
 #define MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING 27
 #define MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING 28
 #define MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING 29
+#define MACHINE_ERR_PRINT_MAIN_FREEZE 30
+#define MACHINE_ERR_PRINT_COMPANION_FREEZE 31
+#define MCAHINE_ERR_PRINT_INITIALIZATION_FREEZE 32
+#define MACHINE_ERR_PRINT_FINALIZING_FREEZE 33
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
 
@@ -234,7 +239,7 @@ char * controler_iij_network_get_ip_address();
 char * controler_pci_network_get_ip_address();
 
 uint8_t controler_job_list_changed();
-
+void controler_total_clear_hotfolder();
 
 
 void controler_set_max_stacked_sheets(int sheet_val);
@@ -255,15 +260,6 @@ uint8_t controler_set_pci_hotfolder_out_path(const char * path);
 uint8_t controler_set_gis_hotfolder_path(const char * path);
 uint8_t controler_set_job_report_hotfolder_path(const char * path);
 
-int32_t controler_get_stacked_sheets();
-int32_t controler_get_total_sheet_number();
-int32_t controler_get_feeded_sheets();
-int32_t controler_get_feeded_companion_sheets();
-int32_t controler_get_rejected_sheets();
-int32_t controler_get_tab_inserts();
-
-char * controler_get_gis_status();
-
 char * controler_get_q_main_hotfolder_path();
 char * controler_get_q_feedback_hotfolder_path();
 char * controler_get_q_backup_hotfolder_path();
@@ -272,6 +268,20 @@ char * controler_get_pci_hotfolder_out_path();
 char * controler_get_gis_hotfolder_path();
 char * controler_get_job_report_hotfolder_path();
 
+
+uint8_t controler_get_feeder_status();
+uint8_t controler_get_stacker_status();
+const char * controler_get_feeder_status_string(uint8_t status);
+const char * controler_get_stacker_status_string(uint8_t status);
+
+int32_t controler_get_stacked_sheets();
+int32_t controler_get_total_sheet_number();
+int32_t controler_get_feeded_sheets();
+int32_t controler_get_feeded_companion_sheets();
+int32_t controler_get_rejected_sheets();
+int32_t controler_get_tab_inserts();
+
+char * controler_get_gis_status();
 
 uint8_t controler_print_start(const char * job_name);
 uint8_t controler_print_pause();
@@ -293,6 +303,8 @@ char * controler_get_return_val_string(uint8_t status);
 uint8_t controler_iij_status();
 uint8_t controler_pci_status();
 
+array_list * controler_get_report_csv_list();
+
 
 /* io_card public interface */
 char ** controler_get_a1_input_labels();
@@ -305,7 +317,7 @@ uint8_t controler_get_card_input(int card, int addr);
 uint8_t controler_get_card_output(int card, int addr);
 const char * controler_get_printed_job_name();
 
-rep_struct * hot_load_report_information(char * report_csv_name);
+rep_struct * controler_load_report_information(char * report_csv_name);
 
 char * controler_get_job_name(int job_index);
 char * controler_get_job_pdf_name(int job_index);

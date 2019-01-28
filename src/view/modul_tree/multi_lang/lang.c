@@ -74,6 +74,10 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->err_pci_computer_not_responding = "Počítač PCI neodpovídá!";
     cz_lang->err_iij_computer_not_responding = "Počítač IIJ neodpovídá!";
     cz_lang->err_quadient_computer_not_responding = "Počítač Quadient neodpovídá!";
+    cz_lang->err_print_main_freeze = "Nakládání hlavního archu je zablokováno";
+    cz_lang->err_print_companion_freeze = "Nakládání prokladového archu je zablokováno";
+    cz_lang->err_print_initialization_freeze = "Inicializace tisku je zablokována";
+    cz_lang->err_print_finalizing_freeze = "Ukončování tisku je zablokováno";
     cz_lang->err_unknown_error = "Neznámá chyba!";
 
     cz_lang->set_lan_label = "Jazyk rozhraní:";
@@ -138,6 +142,29 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->par_mm_inspection_comb = "INSPEKCE";
     cz_lang->par_mm_print_comb = "TISK";
     cz_lang->par_mm_print_inspection_comb = "TISK S INSPEKCÍ";
+    cz_lang->par_stacker_status = "Stav vykladače:";
+    cz_lang->par_feeder_status = "Stav nakladače:";
+
+    cz_lang->feeder_status_ready = "Připraven";
+    cz_lang->feeder_status_ready_to_feed = "Připraven k nakládání";
+    cz_lang->feeder_status_feeding = "Nakládání";
+    cz_lang->stacker_status_ready = "Připraven";
+    cz_lang->stacker_status_ready_to_stack = "Připraven k vykládání";
+    cz_lang->stacker_status_stacking = "Vykládání";	
+	
+    cz_lang->gui_go_to_csv_manage_page_label = "Exportovat csv";
+
+    cz_lang->filter_day = "Den:";
+    cz_lang->filter_year = "Rok:";
+    cz_lang->filter_month = "Měsíc:";
+
+    cz_lang->csv_manage_return = "Zpět";
+    cz_lang->csv_manage_export = "Exportovat";
+
+    cz_lang->to = "Do data:";
+    cz_lang->from = "Od data:";
+
+    cz_lang->print_active = "Tiskový modul aktivní";
 }
 
 void lang_init_english(lang * en_lang)
@@ -193,6 +220,11 @@ void lang_init_english(lang * en_lang)
     en_lang->err_pci_computer_not_responding = "PCI computer not responding!";
     en_lang->err_iij_computer_not_responding = "IIJ computer not responding!";
     en_lang->err_quadient_computer_not_responding = "Quadient computer not responding!";
+    en_lang->err_print_main_freeze = "Feeding of main sheet is blocked";
+    en_lang->err_print_companion_freeze = "Feeding of companion sheet is blocked";
+    en_lang->err_print_initialization_freeze = "Printing intialization is blocked";
+    en_lang->err_print_finalizing_freeze = "Printing finalizing is blocked";
+
     en_lang->err_unknown_error = "Unknown error!";
 
     en_lang->set_lan_label = "Interface language:";
@@ -257,6 +289,30 @@ void lang_init_english(lang * en_lang)
     en_lang->par_mm_inspection_comb = "INSPECTION";
     en_lang->par_mm_print_comb = "PRINT";
     en_lang->par_mm_print_inspection_comb = "PRINT INSPECTION";
+    en_lang->par_stacker_status = "Stacker status:";
+    en_lang->par_feeder_status = "Feeder status:";
+
+    en_lang->feeder_status_ready = "Feeder ready";
+    en_lang->feeder_status_ready_to_feed = "Feeder ready to feed";
+    en_lang->feeder_status_feeding = "Feeding";
+    en_lang->stacker_status_ready = "Stacker ready";
+    en_lang->stacker_status_ready_to_stack = "Stacker ready to stack";
+    en_lang->stacker_status_stacking = "Stacking";	
+
+    en_lang->gui_go_to_csv_manage_page_label = "Export csv";
+
+    en_lang->filter_day = "Day:";
+    en_lang->filter_year = "Year:";
+    en_lang->filter_month = "Month:";
+	
+    en_lang->csv_manage_return = "Back";
+    en_lang->csv_manage_export = "Export";
+
+    en_lang->to = "From date:";
+    en_lang->from = "To date:";
+
+
+    en_lang->print_active = "Printer module active";
 }
 
 void multi_lang_init()
