@@ -17,6 +17,7 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <math.h>
+#include <wchar.h>
 
 
 int util_dir_is_empty(char * address);
@@ -28,6 +29,8 @@ uint8_t util_copy_file(char * src, char *dest, char *name);
 void util_delete_file(char *addr, char* name);
 int32_t util_str_ends_with(char* str, const char * suffix, int offset);
 char * util_get_time_string();
-
+void util_replace_characters(wchar_t * input, wchar_t * char_to_replace, wchar_t * new_char);
+char * util_wstr_to_str(wchar_t * wstr);
+wchar_t * util_str_to_wstr(char * str);
 
 #endif

@@ -25,7 +25,7 @@
 
 
 /** @ingroup configuration Time interva for correct receave the respond from TCP socket in microseconds. */
-#define TCP_NETWORK_TTL_U 100000 
+#define TCP_NETWORK_TTL_U 10000 
 
 /** @ingroup configuration Time interva for correct receave the respond from TCP socket in seconds. */
 #define TCP_NETWORK_TTL_S 0

@@ -26,13 +26,9 @@
 #include <unistd.h>
 
 
-#include <c_log.h>
-#include <c_string.h>
-#include <array_list.h>
 #include <c_freq.h>
-#include <c_unit_lib.h>
 #include <platform.h>
-
+#include <aclib.h>
 
 /* system configuration */
 #include "config.h"

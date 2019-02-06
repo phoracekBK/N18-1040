@@ -73,6 +73,8 @@ struct _lang_
 	const char * err_print_companion_freeze;
 	const char * err_print_initialization_freeze;
 	const char * err_print_finalizing_freeze;
+	const char * err_stacker_full;
+	const char * err_reject_bin_full;
 	const char * err_unknown_error;
 
 	const char * set_lan_label;

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <gtk/gtk.h>
+#include <locale.h>
 
 #include "view/view.h"
 
@@ -9,6 +10,9 @@
 
 int main(int argv, char ** argc)
 {
+	setlocale(LC_ALL , "cs_CZ.UTF-8");
+
+
 #if CONTROLER_TEST_MODE == false
 	multi_lang_init();
 

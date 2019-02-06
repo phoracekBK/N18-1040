@@ -93,6 +93,7 @@ int32_t util_save_csv(char* addr, char * name, char* buff)
 		//printf("csv content - %s\n", buff);
 		int32_t size_out = fwrite(buff, sizeof(char), strlen(buff), csv_out);
 		fclose(csv_out);
+
 		return size_out;
 	}
 
@@ -105,17 +106,13 @@ int32_t util_file_size(char * path, char * file_name)
         sprintf(file_path,"%s/%s", path, file_name);
 
         struct stat buffer;
-        int status;
+        int status = -1;
         status = stat(file_path, &buffer);
 
         if(status == 0)
-        {
                 return buffer.st_size;
-        }
         else
-        {
                 return 0;
-        }
 }
 
 /**
@@ -132,23 +129,26 @@ char * util_load_csv(char * addr, char* name, int32_t * size)
 	sprintf(csv_addr, "%s/%s", addr,name);
     	int file_size = util_file_size(addr, name);
 
-	FILE * csv_in = fopen(csv_addr, "r");
-
-	if (csv_in != NULL)
+	if(file_size >= 0)
 	{
-		char * csv_content = (char *) malloc(sizeof(char)*(file_size+1));
+		FILE * csv_in = fopen(csv_addr, "r");
 
-		fread(csv_content, sizeof(char), file_size, csv_in);
-		csv_content[file_size] = 0;
+		if (csv_in != NULL)
+		{
+			char * csv_content = (char *) malloc(sizeof(char)*(file_size+1));
 
-		if(size != NULL)
-			*size = file_size;
+			fread(csv_content, sizeof(char), file_size, csv_in);
+			csv_content[file_size] = 0;
+
+			if(size != NULL)
+				*size = file_size;
 		
-		fclose(csv_in);
+			fclose(csv_in);
 
-		return csv_content;
-	}
-		
+			return csv_content;
+		}
+	}	
+
 	return NULL;
 }
 
@@ -162,13 +162,9 @@ int32_t util_str_ends_with(char* str, const char * suffix, int offset)
 	int32_t suffix_len = strlen(suffix);
 
 	if(str_len-offset >= suffix_len)
-	{
 		return (int32_t) strncmp(str+str_len-suffix_len-offset, suffix, suffix_len);
-	}
 	else
-	{
 		return -1;
-	}
 }	
 
 char * util_get_time_string()
@@ -185,4 +181,77 @@ char * util_get_time_string()
 
 	return time_str;
 }
+
+
+wchar_t * util_str_to_wstr(char * str)
+{
+	int len = strlen(str)+1;
+	wchar_t * wstr = (wchar_t*) malloc(sizeof(wchar_t)*len);
+
+	swprintf(wstr, len, L"%hs", str);
+
+	return wstr;
+}
+
+char * util_wstr_to_str(wchar_t * wstr)
+{
+	int len = wcslen(wstr);
+	char * str = (char*) malloc(sizeof(char)*len);	
+	char * str_ref = str;
+
+	for(int index = 0; index < len; index++)
+	{
+		int i = wctomb(str_ref, wstr[index]);
+		str_ref += (sizeof(char)*i);
+	}
+
+	*str_ref = 0;
+
+	return str;
+}
+
+void util_replace_characters(wchar_t * input, wchar_t * char_to_replace, wchar_t * new_char)
+{
+	int in_index = 0;
+	int out_index = 0;
+
+	wchar_t * apos = util_str_to_wstr("\"");
+
+	while(input[in_index] != 0)
+	{
+		uint8_t replace_index = 0;
+
+		while(char_to_replace[replace_index] != 0)
+		{
+			if(input[out_index] == char_to_replace[replace_index])
+			{
+				input[out_index] = new_char[replace_index];
+			}
+
+			replace_index++;
+		}
+
+		if(input[in_index] != *apos)
+		{
+			input[out_index] = input[in_index];
+			out_index++;
+		}
+		
+		in_index++;
+	}
+
+	input[out_index] = 0;
+
+	if(apos != NULL)
+		free(apos);
+}
+
+
+
+
+
+
+
+
+
 

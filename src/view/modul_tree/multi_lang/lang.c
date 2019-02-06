@@ -54,11 +54,11 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->err_stacker_jam_pile = "Vykladač zahlcen!";
     cz_lang->err_stacker_jam_conveyor = "Vykladač ucpán!";
     cz_lang->err_stacker_bottom = "Vykladač Bottom!";
-    cz_lang->err_stacker_multifunction = "Vykladač multifunkce!";
+    cz_lang->err_stacker_multifunction = "Vykladač v chybovém stavu!";
     cz_lang->err_stacker_off = "Vykladač není aktivní!";
     cz_lang->err_feeder_e_stop = "Podavač hlásí E-stop!";
     cz_lang->err_feeder_off = "Podavač není aktivní!";
-    cz_lang->err_feeder_multifunction = "Podavač multifunkce!";
+    cz_lang->err_feeder_multifunction = "Podavač v chybovém stavu!";
     cz_lang->err_feeder_sheet_missing = "Podavač nepodává archy!";
     cz_lang->err_feeder_double_sheet = "Podavač podal více archů současně!";
     cz_lang->err_machine_e_stop = "Stroj hlásí E-stop!";
@@ -77,7 +77,9 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->err_print_main_freeze = "Nakládání hlavního archu je zablokováno";
     cz_lang->err_print_companion_freeze = "Nakládání prokladového archu je zablokováno";
     cz_lang->err_print_initialization_freeze = "Inicializace tisku je zablokována";
-    cz_lang->err_print_finalizing_freeze = "Ukončování tisku je zablokováno";
+    cz_lang->err_print_finalizing_freeze = "Nesoulad naložených a vyložených archů!";
+    cz_lang->err_stacker_full = "Plný vykladač";
+    cz_lang->err_reject_bin_full = "Plná výhybka";
     cz_lang->err_unknown_error = "Neznámá chyba!";
 
     cz_lang->set_lan_label = "Jazyk rozhraní:";
@@ -200,11 +202,11 @@ void lang_init_english(lang * en_lang)
     en_lang->err_stacker_jam_pile = "Stacker jam pile!";
     en_lang->err_stacker_jam_conveyor = "Stacker jam conveyer!";
     en_lang->err_stacker_bottom = "Stakcer bottom!";
-    en_lang->err_stacker_multifunction = "Stacker multifunction!";
+    en_lang->err_stacker_multifunction = "Stacker mulfunction!";
     en_lang->err_stacker_off = "Stacker in off state!";
     en_lang->err_feeder_e_stop = "Feeder E-stop!";
     en_lang->err_feeder_off = "Feeder in off state!";
-    en_lang->err_feeder_multifunction = "Feeder multifunction!";
+    en_lang->err_feeder_multifunction = "Feeder mulfunction!";
     en_lang->err_feeder_sheet_missing = "Feeder sheet missing!";
     en_lang->err_feeder_double_sheet = "Feeder double sheet!";
     en_lang->err_machine_e_stop = "Machine E-stop!";
@@ -223,8 +225,9 @@ void lang_init_english(lang * en_lang)
     en_lang->err_print_main_freeze = "Feeding of main sheet is blocked";
     en_lang->err_print_companion_freeze = "Feeding of companion sheet is blocked";
     en_lang->err_print_initialization_freeze = "Printing intialization is blocked";
-    en_lang->err_print_finalizing_freeze = "Printing finalizing is blocked";
-
+    en_lang->err_print_finalizing_freeze = "Mismatch of feeded and stacked sheets!";
+    en_lang->err_stacker_full = "Stacker full!";
+    en_lang->err_reject_bin_full = "Reject bin full!";
     en_lang->err_unknown_error = "Unknown error!";
 
     en_lang->set_lan_label = "Interface language:";

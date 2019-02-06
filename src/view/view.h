@@ -21,6 +21,7 @@
 #define PROGRAM_ICON_PATH "./icons/bk.png"
 
 #define BK_ICON_PATH "./icons/bk.png"
+#define MACHINE_ICON_PATH "./icons/machine_icon.png"
 #define KM_ICON_PATH "./icons/km_icon.png"
 #define STC_ICON_PATH "./icons/stc_icon.png"
 

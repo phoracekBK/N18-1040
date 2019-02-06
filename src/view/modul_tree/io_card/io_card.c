@@ -23,7 +23,7 @@ struct _io_card_
 
 const char * a1_in_labels[16] = {"MBR0", 				/* IN 0 */
 				"MBR1",					/* IN 1 */
-				"RESERVE",				/* IN 2 */
+				"FEEDING_SENSOR",			/* IN 2 */
 				"Non active",				/* IN 3 */
 				"Non acvite",				/* IN 4 */
 				"FN2",					/* IN 5 */

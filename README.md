@@ -1,22 +1,22 @@
 
 
 **TODO**
-* při signálu z nakladače missing sheet, nebo double sheet, nebo feeder jam přejít do stavu feeder_error ve kterém se čeká na odstranění problému a na opětovné zahájení nakládání
+* při stavu sheet messing z nakladače po přechodu do stavu feeder_error po x vteřinách vypnout nakladač -> přejít do pauzy pro opětovné spuštění jobu
+* do reportovacího csv doplnit celkový počet naložených archů a celkový počet vyložených archů
+* při stavu low print quality nepřerušovat tisk, ale pouze pozastavit a počkat na potvrzení, že byl problém vyřešen
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
 * přidat do controleru funkci pro nastřelování oddělovacích proužků
 * do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
-* přidat upozornění na chybu nakladače jako warning
 
+* vytvořit kartu pro přehled stroje kde budou zobrazeny podrobnosti o stavu stroje (počítadla, režim, stav nakladače, vykladače, ...)
 * vytvořit dokumentaci zdrojových kódů
-* obnovení tiskového jobu při chybě
+* refaktorovat kód pro větší přehlednost
 * vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
-* upravit proceduru pro ukončování tisku, posílat do gisu jinou sekvenci kódů
 * ošetřit aby se v hotfolderu pro gis mohlo nacházet pouze jedno pdf, vytvořit kontrolu když je již uvnitř pdf vyhodit hlášku že hotfolder není prázdný
 * ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1)
 * napojení do databáze omronu v gremser stroji
 * na základě napojení do omronu, upravit počítadla archů, která budou vyčtena 
-* přidat informace o jobu do reportovacího csv, vytvořit v něm informační hlavičku, tu pak načíst a zobrazit v okně se seznamem reportů v ovládacím panelu
 * Vytvořit skript pro spouštění GIS serveru a bufferovací aplikace
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
 * Zpomalit tisk pokud se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
@@ -25,6 +25,16 @@
 
 **DONE**
 
+* upravit kontrolu csv z kamery a quadientu tak aby bylo možné přistupovat k jednotlivým řádků a buňkám v řádku a porovnávat jednotlivé parametry archu
+* při signálu z nakladače missing sheet, nebo double sheet, nebo feeder jam přejít do stavu feeder_error ve kterém se čeká na odstranění problému a na opětovné zahájení nakládání
+* pokud se nacházím nějakou dobu v pauze, pak vypnout ENA a potom opět spustit ENA když se chci navrátit do procesu tisku
+* když se tisk pozastaví po chvíli se vyplne nakladač, aby mohl tisk poračovat je nutné aby se nakladač nejprvě opět zapnul, v případě, že se nejprve dá pokračovat v tisku a pak zapne nakladač je nutné nastavit čekací dobu aktivace nakladače -> urgentní
+* prozkoumat počítání archu při nastavení stavu pause a obnovení z pause
+* při přerušení tisku nechat dojet všechny archy ze stroje (a nebo to byl gerhard kdo vypnul dopravník?)
+* když se zasekne tisk, pak po x vteřinách přejít do pauzy 
+* upravit proceduru pro ukončování tisku, posílat do gisu jinou sekvenci kódů
+* přidat upozornění na chybu nakladače jako warning
+* přidat informace o jobu do reportovacího csv, vytvořit v něm informační hlavičku, tu pak načíst a zobrazit v okně se seznamem reportů v ovládacím panelu
 * vytvořit opatření aby se do hotfolderu gisu nedalo poslat pdf v případě, že hotfolder není prázdný
 * Nastavit, aby si program při spuštění vyčistil hotfolder, při spuštění se v něm nesmějí nacházet žádné joby (mohou být již částečně vytištěné), v průběhu tisku pak již němůže nastat, že by se job nevymazal
 * Nastavit signál PRN_rdy hned po spuštění programu na true a do řídícího panelu vytáhnout informativní signál o jeho stavu
@@ -93,12 +103,13 @@
 
 **Poznámky**
 
-* stav nakladače sheet missing, neshoda počítadel, co nastane když se korektně nepodá
+*
 
+* stav nakladače sheet missing, neshoda počítadel, co nastane když se korektně nepodá -> vyřešeno
 
 * signály z reject binu nepřicházeji a nebo je v programu chyba -> zeptat se Gremseru na stav -> nebylo naprogramováno
 
-* Chyba v dopravníku Gremseru, pokud se zapne a vypne dopravníkový pás ručně z HMI, nelze jej ovládat z host-bk
+* Chyba v dopravníku Gremseru, pokud se zapne a vypne dopravníkový pás ručně z HMI, nelze jej ovládat z host-bk -> vyřešeno
 
 * Pokud je při spuštění aplikace problém se síťovým spojením a v nastavení sítě je nastavena IP adresa 48.48.48.48 došlo k pokusu o nastavení neplatné IP adresy -> je nutné zkontrolovat configurační soubor na adrese "/home/stc/host-bk/bin/sys_cfg", pravděpodobně došlo k narušení struktury konfiguračního souboru.
 
@@ -113,6 +124,15 @@
 
 
 **BUG report**:
+
+* BUG 00011 v některých případech je přeskočen tisk prokladových archů z hlavního nakladače
+  - podle výpislu logu je korektně inicializován stroj a čten řádek z přečteného csv souboru, ale následně je přeskočen krok tisku a přejde se rovnou do dokončování daného jobu,
+	to může být způsobeno chybným načtením obsahu csv souboru
+
+* BUG 00010 při tisku dojde k narušení paměti a pádu softwaru
+  - chyba je velice ojedinělá a nastane pouze při procesu automatického tisku. Následkem narušení paměti je pád programu. Podle výpisu z logu dojde k narušení paměti ve stavu read_hotfolder. 
+	Chyba může souvisest s BUG 00011. Příčinou chyby by mohl být proces čtení hotfolderu, kdy jsou soubory jobu kopírovány do hotfolderu, ale kopírování samotné není ještě dokončeno (při vzorkovací 	
+	frekvenci 1KHz, každou 1ms se provede jeden cyklus) je pravděpodobné, že čtení hotfolderu trefí do stavu kdy je modifikován souborový systém, ale data ještě nejsou nakopírována.
 
 * BUG 00009 na konci jobu systém vyhodí chybu nesoulad pořadových indexů jobu - 
   - chyba vzniká pouze při ukončování jobu ve stavu kdy se očekává ukončovací csv s příznakem 'e'. Tato chyba se nastaví ve stavu read_hotfolder kde se kontroluje zda aktuální soubory 

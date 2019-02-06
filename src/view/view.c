@@ -175,6 +175,9 @@ struct _gui_control_page_
 */
 	GtkWidget * btn_settings;
 	GtkWidget * btn_export;
+	
+	GtkWidget * img_machine;
+
 
 	gui_base * gui_base_ref;
 };
@@ -1028,6 +1031,9 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	double width = gui_base_ref->work_area_geometry.width;
 	double height = gui_base_ref->work_area_geometry.height;
 
+	
+	this->img_machine = gtk_image_new_from_pixbuf(gui_base_scale_icon(gui_base_load_icon(MACHINE_ICON_PATH), 1, width/4-100));
+
 	this->ena_switch = gtk_switch_new();
 	gtk_widget_set_size_request(GTK_WIDGET(this->ena_switch), 100, 35);
 
@@ -1076,7 +1082,8 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	gtk_fixed_put(GTK_FIXED(this->page), this->btn_export, width/4*3-350, height-130);	
 	gtk_fixed_put(GTK_FIXED(this->page), this->log_report_scroll_area, width/4, (5*height/24)+(height/8)+220);
 	gtk_fixed_put(GTK_FIXED(this->page), this->ena_switch, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+470);
-	gtk_fixed_put(GTK_FIXED(this->page), this->xbf_pulse, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+530);
+	gtk_fixed_put(GTK_FIXED(this->page), this->xbf_pulse, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+510);
+	gtk_fixed_put(GTK_FIXED(this->page), this->img_machine, 50, height/4*3-50);
 
 	for(int i = 0; i < GC_BTN_N; i++)
 	{
@@ -1436,8 +1443,6 @@ void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer pa
 	gtk_stack_set_visible_child_name (GTK_STACK(this->page_stack), "settings_page");
 }
 
-
-
 void gui_control_page_btn_pause_callback(GtkButton *button, gpointer param)
 {
 	/* set pause */
@@ -1505,8 +1510,6 @@ void gui_control_page_load_jobs(gui_control_page * this)
 
 	GtkTreeIter iter;
 	this->job_list_store = gtk_list_store_new(JOB_LIST_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
-	
-	printf("%d\n",  controler_get_job_queue_size());
 
 	for(int i = 0; i < controler_get_job_queue_size(); i++)
 	{
@@ -1567,14 +1570,20 @@ void gui_control_page_load_report_csv_list(gui_control_page * this)
 	
 				for(int i = 0; i < array_list_size(current_csv_list); i++)
 				{
-					if(strcmp(array_list_get(current_csv_list, i), array_list_get(this->gui_base_ref->report_csv_list, i)) != 0)
+					for(int j = 0; j < array_list_size(this->gui_base_ref->report_csv_list); j++)
 					{
-						list_changed = true;
-						break;
+						if(strcmp(array_list_get(current_csv_list, i), array_list_get(this->gui_base_ref->report_csv_list, j)) == 0)
+						{
+							list_changed = true;
+							break;
+						}
 					}
+
+					if(list_changed == false)
+						break;
 				}
 
-				if(list_changed == true)
+				if(list_changed == false)
 				{
 					array_list_destructor_with_release(&this->gui_base_ref->report_csv_list, c_string_finalize_v2);
 					this->gui_base_ref->report_csv_list = current_csv_list;
@@ -2912,24 +2921,35 @@ void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_
 	if(report_csv_list != NULL)
 	{
 		for(int index = 0; index < array_list_size(report_csv_list); index++)
-		{
-			
-			rep_struct * job_report = controler_load_report_information(array_list_get(report_csv_list, index));
+		{		
+			rep_struct * job_report = controler_load_report_information(c_string_get_char_array(array_list_get(report_csv_list, index)));
 
 			if(job_report != NULL)
 			{
 				gtk_list_store_append(job_report_list_store, &iter);
-	
-	               		gtk_list_store_set (job_report_list_store, &iter, REP_NAME, job_report->job_name, -1);
-	               		gtk_list_store_set (job_report_list_store, &iter, REP_FINISH_STATE, job_report->finish_state, -1);
+							
+				if(job_report->job_name != NULL)
+	               			gtk_list_store_set (job_report_list_store, &iter, REP_NAME, job_report->job_name, -1);
+				else
+	               			gtk_list_store_set (job_report_list_store, &iter, REP_NAME, "", -1);
+
+				if(job_report->finish_state != NULL)
+		               		gtk_list_store_set (job_report_list_store, &iter, REP_FINISH_STATE, job_report->finish_state, -1);
+				else
+		               		gtk_list_store_set (job_report_list_store, &iter, REP_FINISH_STATE, "", -1);
+
 	               		gtk_list_store_set (job_report_list_store, &iter, REP_REJECTED_SHEET_NUMBER, job_report->rejected_sheet_number, -1);
 	               		gtk_list_store_set (job_report_list_store, &iter, REP_SHEET_NUMBER, job_report->sheet_number, -1);
 	        		gtk_list_store_set (job_report_list_store, &iter, REP_STAMP_NUMBER, job_report->stamp_number, -1);
-				gtk_list_store_set (job_report_list_store, &iter, REP_DATE_TIME, job_report->date_time, -1);
-	
+
+				if(job_report->date_time != NULL)
+					gtk_list_store_set (job_report_list_store, &iter, REP_DATE_TIME, job_report->date_time, -1);
+				else
+					gtk_list_store_set (job_report_list_store, &iter, REP_DATE_TIME, "", -1);
+				
 				free(job_report);
 			}
-
+			
 		}
 	}
 	

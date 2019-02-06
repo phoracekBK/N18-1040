@@ -27,7 +27,7 @@
 
 
 /** @ingroup configuration Interval for content reading of quadient hot folder */
-#define HOT_FOLDER_READING_INTERVAL 1000 // 1000ms
+#define HOT_FOLDER_READING_INTERVAL 300 // 300ms
 
 #define MACHINE_CYCLE_TIMING 1000 //1ms
 
@@ -119,6 +119,8 @@ c_freq * ti_freq;
 
 c_timer * hot_reading_interval;
 
+c_timer * switch_off_ena_in_feeder_error;
+
 /* machine handler internal state */
 int machine_state;
 int machine_state_pre;
@@ -133,7 +135,7 @@ bool machine_pause_req;
 bool machine_print_req;
 bool machine_error_reset_req;
 bool machine_cancel_req;
-
+bool machine_jam_req;
 
 uint32_t rejected_sheet_for_stop;
 uint32_t max_stacked_sheets;
@@ -143,14 +145,17 @@ bool sheet_source_confirmation;
 bool print_confirmation_req;
 
 /* printing counters */
-uint32_t feeded_main_sheet_counter;
-uint32_t feeded_companion_sheet_counter;
+uint32_t main_sheet_feed_request_counter;
+uint32_t companion_sheet_feed_request_counter;
 uint32_t stacked_sheet_counter;
+uint32_t stacked_sheet_counter_in_job;
+uint32_t rejected_sheet_counter_in_job;
 uint32_t rejected_sheet_counter;
 uint32_t rejected_sheet_seq_counter;
 uint32_t tab_insert_counter;
-uint32_t inspected_sheet_counter;
+uint32_t camera_sensor_trigger_counter;
 uint32_t feeded_sheet_counter;
+uint32_t feeded_sheet_counter_in_job;
 
 int32_t non_stacked_upper_limit;
 int32_t non_revided_upper_limit;
@@ -188,7 +193,6 @@ int32_t bkcore_csv_pos;
 uint8_t lang_index;
 uint64_t timer;
 
-c_pulse * ena_pulse;
 
 uint64_t manual_feed_xbf;
 bool manual_feed;
@@ -206,6 +210,14 @@ uint8_t clear_on_startup;
 
 uint64_t delay_on_end;
 uint8_t sheet_sensor_pre;
+
+uint8_t print_finishing_step;
+c_timer * feed_sensor_timer;
+
+c_timer * network_connection_timer;
+uint64_t ena_timer;
+uint64_t ena_start_timer;
+uint64_t file_delay;
 
 /**************************************************** functions declarations *****************************************************/
 
@@ -225,10 +237,9 @@ void controler_safety_system_out();
 int8_t controler_printer_abbort_print(uint8_t step);
 void controler_set_machine_error(uint8_t code);
 
-/* todo: make unit tests */
-int8_t controler_csv_analyze();
-void controler_csv_compare(char * q_csv, char * c_csv);
-int32_t controler_save_response_csv(char * name);
+
+c_csv_struct * controler_analyze_csv(c_csv_struct * q_csv, c_csv_struct * c_csv);
+c_string * controler_compare_csv(q_job * job);
 
 
 void  controler_clear_hotfolder();
@@ -236,14 +247,15 @@ uint8_t controler_check_job_consistency(char * name,  uint8_t mod);
 uint8_t controler_load_bkcore_csv();
 
 void * controler_machine_handler(void * param);
-/* todo: make unit tests */
 void controler_machine_state_read_hotfolder();
 void controler_machine_state_print_main();
 void controler_machine_state_error();
 void controler_machine_state_print_companion();
 void controler_machine_state_wait_for_confirmation();
+void controler_machine_state_clear_belt_after_jam();
 void controler_machine_state_feeder_error();
 void controler_machine_state_read_csv_line();
+void controler_machine_state_wait_for_ena_ready();
 void controler_machine_state_pause();
 void controler_machine_state_clear_hotfolder();
 void controler_machine_state_prepare();
@@ -305,6 +317,7 @@ int8_t controler_init()
 		ti_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 		ta_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 		hot_reading_interval = c_timer_new();
+		switch_off_ena_in_feeder_error = c_timer_new();
 
 		info = job_info_new(JOB_INFO_CSV_PATH);
 
@@ -458,8 +471,6 @@ void controler_set_interface_language(int lang)
 {
 	lang_index = lang;
 }
-
-
 
 uint8_t controler_iij_network_connected()
 {
@@ -687,6 +698,7 @@ uint8_t controler_print_reset_error()
 	machine_cancel_req = false;
 	machine_print_req = false;
 	machine_pause_req = false;
+	machine_jam_req = false;
 
 	while((machine_state == MACHINE_STATE_ERROR) && (ttl < 2))
 	{
@@ -717,15 +729,27 @@ void controler_manual_feed_sheet()
 	manual_feed = true;
 }
 
-
+/*
+** once per 50ms check the state of the feeding sensor
+*/
 void contorler_sheet_counter()
 {
-	uint8_t sheet_sensor_state = io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_2_RESERVE);
+	if(c_timer_delay(feed_sensor_timer, 50) > 0) 
+	{
+		uint8_t sheet_sensor_state = io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_2_FEEDING_SENSOR);
 
-	if((sheet_sensor_state != sheet_sensor_pre) && (sheet_sensor_state > 0))
-		feeded_main_sheet_counter++;
+		if(machine_state != MACHINE_STATE_WAIT)
+		{
+			if((sheet_sensor_state != sheet_sensor_pre) && (sheet_sensor_state > 0))
+			{
+				feeded_sheet_counter++;
+				feeded_sheet_counter_in_job++;
+				printf("%d\n", feeded_sheet_counter);
+			}
+		}
 
-	sheet_sensor_pre = sheet_sensor_state;
+		sheet_sensor_pre = sheet_sensor_state;
+	}
 }
 
 void controler_feed_sheet()
@@ -1323,55 +1347,59 @@ void * controler_machine_handler(void * param)
 			controler_safety_system_in();
 
 			controler_print_break_req();
-
-			contorler_sheet_counter();
-
+			
 			controler_machine_log_monitor();
 
 			if((machine_state == MACHINE_STATE_WAIT) || (machine_state == MACHINE_STATE_NEXT))
 				controler_machine_state_read_hotfolder();
 
-			if(machine_state == MACHINE_STATE_PREPARE)
+			else if(machine_state == MACHINE_STATE_PREPARE)
 				controler_machine_state_prepare();
 		
-			if(machine_state == MACHINE_STATE_READY_TO_START)
+			else if(machine_state == MACHINE_STATE_READY_TO_START)
 				controler_machine_state_ready_to_start();
 
-			if(machine_state == MACHINE_STATE_READ_CSV_LINE)
+			else if(machine_state == MACHINE_STATE_READ_CSV_LINE)
 				controler_machine_state_read_csv_line();
 
-			if(machine_state == MACHINE_STATE_FEEDER_ERROR)
+			else if(machine_state == MACHINE_STATE_FEEDER_ERROR)
 				controler_machine_state_feeder_error();
 
-			if(machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION)
+			else if(machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION)
 				controler_machine_state_wait_for_confirmation();
 
-			if(machine_state == MACHINE_STATE_PRINT_COMPANION)
+			else if(machine_state == MACHINE_STATE_PRINT_COMPANION)
 				controler_machine_state_print_companion();
 
-			if(machine_state == MACHINE_STATE_PRINT_MAIN)
+			else if(machine_state == MACHINE_STATE_PRINT_MAIN)
 				controler_machine_state_print_main();
 		
-			if(machine_state == MACHINE_STATE_PAUSE)
+			else if(machine_state == MACHINE_STATE_CLEAR_BELT_AFTER_JAM)
+				controler_machine_state_clear_belt_after_jam();
+
+			else if(machine_state == MACHINE_STATE_WAIT_FOR_ENA_START)
+				controler_machine_state_wait_for_ena_ready();
+
+			else if((machine_state == MACHINE_STATE_PAUSE) || (machine_state == MACHINE_STATE_JAM_EVENT))
 				controler_machine_state_pause();
 
-			if(machine_state == MACHINE_STATE_WAIT_FOR_PRINT_FINISH)
+			else if(machine_state == MACHINE_STATE_WAIT_FOR_PRINT_FINISH)
 				controler_machine_state_wait_for_print_finish();
 
-			if(machine_state == MACHINE_STATE_SAVE_Q_CSV)
+			else if(machine_state == MACHINE_STATE_SAVE_Q_CSV)
 				controler_machine_state_save_q_csv();
 
-			if(machine_state == MACHINE_STATE_PRINT_BREAK)
+			else if(machine_state == MACHINE_STATE_PRINT_BREAK)
 				controler_machine_state_print_break();
 
-			if((machine_state == MACHINE_STATE_CLEAR_HOT_FOLDER) || (machine_state == MACHINE_STATE_CLEAR_TO_FINISH))
+			else if((machine_state == MACHINE_STATE_CLEAR_HOT_FOLDER) || (machine_state == MACHINE_STATE_CLEAR_TO_FINISH))
 				controler_machine_state_clear_hotfolder();
 
-			if((machine_state == MACHINE_STATE_PRINT_FINISH) || (machine_state == MACHINE_STATE_JOB_FINISH))
+			else if((machine_state == MACHINE_STATE_PRINT_FINISH) || (machine_state == MACHINE_STATE_JOB_FINISH))
 				controler_machine_state_finish();
 
 			/* machine error state handling */
-			if(machine_state == MACHINE_STATE_ERROR)
+			else if(machine_state == MACHINE_STATE_ERROR)
 				controler_machine_state_error();
 
 			/* write all outputs */
@@ -1555,6 +1583,14 @@ const char* controler_get_error_str()
 		case MACHINE_ERR_PRINT_FINALIZING_FREEZE:
 			error_str = multi_lang->err_print_finalizing_freeze;
 			break;
+	
+		case MACHINE_ERR_STACKER_FULL:
+   			error_str = multi_lang->err_stacker_full;
+			break;
+
+		case MACHINE_ERR_REJECT_BIN_FULL:
+    			error_str = multi_lang->err_reject_bin_full;
+			break;
 
 		default:
 			error_str = multi_lang->err_unknown_error;
@@ -1612,7 +1648,8 @@ void controler_print_break_req()
 {
 	if(machine_state == MACHINE_STATE_NEXT || machine_state == MACHINE_STATE_PREPARE ||
 		machine_state == MACHINE_STATE_PAUSE || machine_state == MACHINE_STATE_READY_TO_START || 
-		machine_state == MACHINE_STATE_WAIT_FOR_PRINT_FINISH || machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION)
+		machine_state == MACHINE_STATE_WAIT_FOR_PRINT_FINISH || machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION || 
+		machine_state == MACHINE_STATE_FEEDER_ERROR)
 	{
 		if((machine_cancel_req) == true)
 		{
@@ -1645,13 +1682,11 @@ uint8_t controler_job_list_changed()
 	}
 }
 
-
-
 void controler_machine_state_read_hotfolder()
 {
 	if(machine_print_req == false)
 	{
-		if((c_timer_delay(hot_reading_interval, HOT_FOLDER_READING_INTERVAL) > 0) || (machine_state == MACHINE_STATE_WAIT))
+		if((c_timer_delay(hot_reading_interval, HOT_FOLDER_READING_INTERVAL) > 0) || (machine_state == MACHINE_STATE_NEXT))
 		{	
 			if(job_list != NULL)
 				array_list_destructor_with_release_v2(job_list, q_job_finalize);
@@ -1680,36 +1715,43 @@ void controler_machine_state_read_hotfolder()
 		if(((machine_print_req == true) && (machine_state == MACHINE_STATE_WAIT)) || (machine_state == MACHINE_STATE_NEXT))
 		{
 			int job_index = -1;
-			q_job * job = hot_find_job(job_list, c_string_get_char_array(printed_job_name), &job_index);
+			
+			q_job * job = NULL;
+			job = hot_find_job(job_list, c_string_get_char_array(printed_job_name), &job_index);
 
 			if((job != NULL) && (q_job_get_bkcore_csv_name(job) != NULL))
 			{	
+				printf("found job in job list\n");
 				if(q_job_get_job_order(job) == (job_info_get_job_index(info)+2))
 				{
+					printf("checked job index\n");
 					if(q_job_get_flag(job) == 'e')
 					{
+						printf("job jump to finish\n");
 						machine_state = MACHINE_STATE_PRINT_BREAK;
 						printed_job_index = job_index;
 					}
 					else
 					{
-						if((((machine_mode != GR_PRINT_INSPECTION) && (machine_mode != GR_PRINT)) || (q_job_get_pdf_name(job) != NULL)) && 
-							(((machine_mode != GR_PRINT_INSPECTION) && (machine_mode != GR_INSPECTION)) ||(q_job_get_camera_csv_name(job) != NULL)))
+						if(((io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) == 0) || (q_job_get_pdf_name(job) != NULL)) &&
+							((io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) == 0) || (q_job_get_camera_csv_name(job) != NULL)))
 						{	
+							printf("job files available for given mode\n ");
 							if(machine_state == MACHINE_STATE_WAIT)
-							{
+							{	
+								printf("set job name\n");
 								job_info_set_order_name(info, q_job_get_job_name(job));
 								job_info_generate_csv_name(info);
 							}
 	
 							printed_job_index = job_index;
 							job_info_add_job_record(info);
+							printf("add new record and move to prepare\n");
 							machine_state = MACHINE_STATE_PREPARE;
+							file_delay = c_freq_millis();
+
+							system("sh /home/stc/script.sh");
 						}
-						else
-						{
-							printf("null\n");
-						}	
 					}
 				}
 				else
@@ -1717,11 +1759,40 @@ void controler_machine_state_read_hotfolder()
 					controler_set_machine_error(MACHINE_ERR_JOB_ORDER_MISMATCH);
 				}
 			}
-			else
-			{
-				printf("job not found\n");
-			}
 		}
+	}
+}
+
+void controler_machine_state_wait_for_ena_ready()
+{
+	if(feeder_status == MACHINE_FN_READY_TO_FEED)
+	{	
+		if((ena_start_timer + 5000) <= c_freq_millis())
+			machine_state = MACHINE_STATE_READ_CSV_LINE;
+	}
+	else
+	{
+		ena_start_timer = c_freq_millis();
+	}
+}
+
+void controler_machine_state_clear_belt_after_jam()
+{
+	if(feeder_status == MACHINE_FN_READY_TO_FEED)
+	{	
+		if((ena_start_timer + 15000) <= c_freq_millis())
+		{
+			machine_state = MACHINE_STATE_READ_CSV_LINE;
+			//bkcore_csv_pos = stacked_sheet_counter_in_job+rejected_sheet_counter_in_job;
+			//feeded_sheet_counter = stacked_sheet_counter_in_job+rejected_sheet_counter_in_job;
+			//feeded_sheet_counter_in_job = stacked_sheet_counter+rejected_sheet_counter;
+
+			machine_jam_req = false;
+		}
+	}
+	else
+	{
+		ena_start_timer = c_freq_millis();
 	}
 }
 
@@ -1734,7 +1805,18 @@ void controler_machine_state_pause()
 		(io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) == 0) && 
 		(io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_2_SN_full) == 0))
 		{
-			machine_state = MACHINE_STATE_READ_CSV_LINE;
+			feed_sheet = 0;
+			error_code = MACHINE_ERR_NO_ERROR;
+			
+			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_7_XBF, 0);
+			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_9_TA_cyc, 0);
+
+			bkcore_csv_pos = feeded_sheet_counter;
+
+			if(machine_jam_req == true)
+				machine_state = MACHINE_STATE_CLEAR_BELT_AFTER_JAM;
+			else
+				machine_state = MACHINE_STATE_WAIT_FOR_ENA_START;
 		}
 	}
 }
@@ -1742,109 +1824,164 @@ void controler_machine_state_pause()
 void controler_machine_state_prepare()
 {
 	/* load bkcore csv content */
-	if(controler_load_bkcore_csv() == STATUS_SUCCESS)
-	{	
-		q_job * job = NULL;
-
-		if(job_list != NULL)
-			job = array_list_get(job_list, printed_job_index);
-		
-		if(job != NULL)
+	if(file_delay+2000 < c_freq_millis())
+	{
+		if(controler_load_bkcore_csv() == STATUS_SUCCESS)
 		{	
-			uint8_t status = 0;
-
-			/* copy pdf to gis hotfolder or based on MB0 input status */
-			if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)
-			{
-				status = util_dir_is_empty(c_string_get_char_array(gis_hotfolder_path));
-				printf("dis dir empty: %d\n", status);
-				if(status == 0)
-				{
-					status = util_copy_file(c_string_get_char_array(q_hotfolder_main_path), 
-											c_string_get_char_array(gis_hotfolder_path), 
-											q_job_get_pdf_name(job));
-				}
-			}
+			q_job * job = NULL;
+	
+			if(job_list != NULL)
+				job = array_list_get(job_list, printed_job_index);
 		
-			if(status == 0)
-			{
-				if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
-					status = util_copy_file(c_string_get_char_array(q_hotfolder_main_path), 
-											c_string_get_char_array(pci_hotfolder_in_path), 
-											q_job_get_camera_csv_name(job));
+			if(job != NULL)
+			{	
+				uint8_t status = 0;
 
-				if(status == 0)
+				/* copy pdf to gis hotfolder or based on MB0 input status */
+				if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)
 				{
-					machine_state = MACHINE_STATE_READY_TO_START;
-					timer = c_freq_millis();
-
-					/* prepare job info structure for current job */
-					int rows = 0, csv_line_index = 0, csv_pos = 0;
-					char sheet_index[255];
-					int total_sheet_number = 0;
-					int total_stamp_number = 0;
-
-					while(bkcore_csv_content[csv_pos] != 0)
+					status = util_dir_is_empty(c_string_get_char_array(gis_hotfolder_path));
+					printf("gis dir empty: %d\n", status);
+	
+					if(status == 0)
 					{
-						if(isdigit(bkcore_csv_content[csv_pos]))	
-						{
-							if((rows == 0) && (q_job_get_flag(job) == 'k'))
-							{
-								total_stamp_number = ((total_stamp_number*10) + (bkcore_csv_content[csv_pos]-'0'));
-							}	
-							else if((rows == 1) && (q_job_get_flag(job) == 'k'))
-							{
-								if(q_job_get_job_order(job) == 1)
-									total_sheet_number = ((total_sheet_number*10) + 
-													(bkcore_csv_content[csv_pos]-'0'));					
-							}
-							else
-							{
-								printf("%c", bkcore_csv_content[csv_pos]);
-								sheet_index[csv_line_index] = bkcore_csv_content[csv_pos];
-								csv_line_index++;
-							}
-						}
-
-						if((bkcore_csv_content[csv_pos]) == '\n')
-						{
-							if((rows > 1) || (q_job_get_flag(job) != 'k'))
-							{	
-								sheet_index[csv_line_index] = 0;
-								job_info_add_sheet_record(info, sheet_index);
-								csv_line_index = 0;
-							}
-						
-							rows ++;
-						}
-
-						csv_pos++;
-					}
-
-					job_info_set_total_sheet_number(info, total_sheet_number);
-					job_info_set_total_stamp_number(info, total_stamp_number);
-
-					if(csv_line_index > 0)
-					{
-						printf("add sheet record\n");
-						sheet_index[csv_line_index] = 0;
-						job_info_add_sheet_record(info, sheet_index);
+						status = util_copy_file(c_string_get_char_array(q_hotfolder_main_path), 
+												c_string_get_char_array(gis_hotfolder_path), 
+												q_job_get_pdf_name(job));
 					}
 				}
+		
+				if(status == 0)
+				{
+					if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
+					{
+						/* only for testing replace czech character */
+						/*
+						char * camera_csv_content = NULL;
+						camera_csv_content = util_load_csv(c_string_get_char_array(q_hotfolder_main_path), 
+											q_job_get_camera_csv_name(job),
+											NULL);
+						if(camera_csv_content != NULL)
+						{
+							wchar_t * template_char = util_str_to_wstr("Čč");
+							wchar_t * replacement_char = util_str_to_wstr("Cc");
+							wchar_t * temp_str = util_str_to_wstr(camera_csv_content);
+							free(camera_csv_content);
+	
+							util_replace_characters(temp_str, template_char, replacement_char);
+							camera_csv_content = util_wstr_to_str(temp_str);
+
+							free(temp_str);
+							free(template_char);
+							free(replacement_char);
+							
+						
+							uint32_t csv_len = strlen(camera_csv_content)+1;
+							
+							
+							char * new_camera_csv_content = (char*) malloc(sizeof(char)*csv_len);
+
+							uint32_t new_csv_index = 0;
+
+							for(uint32_t i=0; i < csv_len-1; i++)
+							{
+								if(camera_csv_content[i] != '"')
+								{
+									new_camera_csv_content[new_csv_index] = camera_csv_content[i];
+									new_csv_index++;
+								}	
+							}
+	
+							new_camera_csv_content[new_csv_index] = 0;
+									
+							util_save_csv(c_string_get_char_array(q_hotfolder_main_path), 
+										q_job_get_camera_csv_name(job), 
+										camera_csv_content);
+
+
+							util_save_csv("/home/stc/JOBCSV/ORIG", 
+										q_job_get_camera_csv_name(job), 
+										camera_csv_content);
+								
+							free(camera_csv_content);
+						}	
+				//*/
+						status = util_copy_file(c_string_get_char_array(q_hotfolder_main_path), 
+												c_string_get_char_array(pci_hotfolder_in_path), 
+												q_job_get_camera_csv_name(job));
+					}
+
+					if(status == 0)
+					{
+						machine_state = MACHINE_STATE_READY_TO_START;
+						timer = c_freq_millis();
+
+						/* prepare job info structure for current job */
+						int rows = 0, csv_line_index = 0, csv_pos = 0;
+						char sheet_index[255];
+						int total_sheet_number = 0;
+						int total_stamp_number = 0;
+
+						while(bkcore_csv_content[csv_pos] != 0)
+						{
+							if(isdigit(bkcore_csv_content[csv_pos]))	
+							{
+								if((rows == 0) && (q_job_get_flag(job) == 'k'))
+								{
+									total_stamp_number = ((total_stamp_number*10) + 
+											(bkcore_csv_content[csv_pos]-'0'));
+								}	
+								else if((rows == 1) && (q_job_get_flag(job) == 'k'))
+								{
+									if(q_job_get_job_order(job) == 1)
+										total_sheet_number = ((total_sheet_number*10) + 
+														(bkcore_csv_content[csv_pos]-'0'));					
+								}
+								else
+								{
+									printf("%c", bkcore_csv_content[csv_pos]);
+									sheet_index[csv_line_index] = bkcore_csv_content[csv_pos];
+									csv_line_index++;
+								}
+							}
+				
+							if((bkcore_csv_content[csv_pos] == '\n') || (bkcore_csv_content[csv_pos+1] == 0))
+							{
+								if((rows > 1) || (q_job_get_flag(job) != 'k'))
+								{	
+									printf("add sheet record\n");
+									sheet_index[csv_line_index] = 0;
+									job_info_add_sheet_record(info, sheet_index);
+									csv_line_index = 0;
+									}
+							
+								rows ++;
+							}
+	
+							csv_pos++;
+						}
+										
+						if((q_job_get_flag(job) == 'k') && (q_job_get_job_order(job) == 1))
+						{
+							job_info_set_total_sheet_number(info, total_sheet_number);
+							job_info_set_total_stamp_number(info, total_stamp_number);
+						}
+					}
+					else
+					{
+						controler_set_machine_error(MACHINE_ERR_CANT_COPY_CSV_TO_CAMERA);
+					}
+				}			
 				else
 				{
-					controler_set_machine_error(MACHINE_ERR_CANT_COPY_CSV_TO_CAMERA);
+					controler_set_machine_error(MACHINE_ERR_CANT_COPY_PDF_TO_GIS);
 				}
-			}			
-			else
-			{
-				controler_set_machine_error(MACHINE_ERR_CANT_COPY_PDF_TO_GIS);
 			}
 		}
-	}
-	else
-	{
-		controler_set_machine_error(MACHINE_ERR_CANT_LOAD_BKCORE_CSV);
+		else
+		{
+			controler_set_machine_error(MACHINE_ERR_CANT_LOAD_BKCORE_CSV);
+		}
 	}
 }
 int8_t controler_machine_slow_down()
@@ -1853,7 +1990,7 @@ int8_t controler_machine_slow_down()
 	int8_t slmx = (stacked_sheet_counter < (max_stacked_sheets - x));
 	int8_t sgemx = (stacked_sheet_counter >= (max_stacked_sheets - x));
 	int8_t sgem = !(stacked_sheet_counter >= max_stacked_sheets);
-	int8_t fes = ((feeded_main_sheet_counter+feeded_companion_sheet_counter) == stacked_sheet_counter+rejected_sheet_counter);
+	int8_t fes = (feeded_sheet_counter_in_job == stacked_sheet_counter+rejected_sheet_counter);
 
 	return ((!slmx) && sgemx && sgem && fes) || (slmx && (!sgemx) && sgem);
 }
@@ -1871,72 +2008,79 @@ void controler_machine_state_read_csv_line()
 	}
 	else
 	{
-		if(controler_machine_slow_down() > 0)
+		if(feeder_status == MACHINE_FN_READY_TO_FEED)
 		{
-			/* load line from csv */
-			q_job * job = NULL;
-			
-			if(job_list != NULL)
-				job = array_list_get(job_list, printed_job_index);
-
-			if(job != NULL)
+			if(controler_machine_slow_down() > 0)
 			{
-				/* process csv line */
-				if(bkcore_csv_pos < job_info_get_job_sheet_number(info, job_info_get_job_index(info)))
+				/* load line from csv */
+				q_job * job = NULL;
+			
+				if(job_list != NULL)
+					job = array_list_get(job_list, printed_job_index);
+	
+				if(job != NULL)
 				{
-					c_timer_reset(print_timer);
+					/* process csv line */
+					if(bkcore_csv_pos < job_info_get_job_sheet_number(info, job_info_get_job_index(info)))
+					{
+						c_timer_reset(print_timer);
 
-					if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) == 0)
-						job_info_set_sheet_record_result(info, "PASS", bkcore_csv_pos);
+						if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) == 0)
+							job_info_set_sheet_record_result(info, "PASS", bkcore_csv_pos);
 
-					if((q_job_get_flag(job) == 'k') || ((q_job_get_flag(job) == 'p') && 
-						(sheet_source_confirmation == false) && (companion_sheet_source == SSOURCE_MAIN))) 
-					{
-						machine_state = MACHINE_STATE_PRINT_MAIN;
-						printf("go to print main\n");
-					}
-					else if((q_job_get_flag(job) == 'p') && (companion_sheet_source == SSOURCE_COMPANION))
-					{
-						printf("go to print compation\n");
-						machine_state = MACHINE_STATE_PRINT_COMPANION;
-					}
-					else if((q_job_get_flag(job) == 'p') && (companion_sheet_source == SSOURCE_MAIN) && (sheet_source_confirmation == true))
-					{
-						printf("go to wait for confirmation\n");
-						machine_state = MACHINE_STATE_WAIT_FOR_CONFIRMATION;
+						if((q_job_get_flag(job) == 'k') || ((q_job_get_flag(job) == 'p') && 
+							(sheet_source_confirmation == false) && (companion_sheet_source == SSOURCE_MAIN))) 
+						{
+							machine_state = MACHINE_STATE_PRINT_MAIN;
+							printf("go to print main\n");
+						}
+						else if((q_job_get_flag(job) == 'p') && (companion_sheet_source == SSOURCE_COMPANION))
+						{
+							printf("go to print compation\n");
+							machine_state = MACHINE_STATE_PRINT_COMPANION;
+						}
+						else if((q_job_get_flag(job) == 'p') && (companion_sheet_source == SSOURCE_MAIN) && (sheet_source_confirmation == true))
+						{
+							printf("go to wait for confirmation\n");
+							machine_state = MACHINE_STATE_WAIT_FOR_CONFIRMATION;
+						}
+						else
+						{
+							controler_set_machine_error(MACHINE_ERR_SHEET_FEEDER_REDIRECTION);
+						}
+
+						printf("%d = %d -> %d -> %d\n", job_info_get_job_sheet_number(info, job_info_get_job_index(info)), feeded_sheet_counter, bkcore_csv_pos, main_sheet_feed_request_counter);
+
+						bkcore_csv_pos++;
 					}
 					else
 					{
-						controler_set_machine_error(MACHINE_ERR_SHEET_FEEDER_REDIRECTION);
+						machine_state = MACHINE_STATE_WAIT_FOR_PRINT_FINISH;
+						delay_on_end = c_freq_millis();
 					}
-
-					bkcore_csv_pos++;
-					printf("%d -> %d\n", bkcore_csv_pos, feeded_main_sheet_counter);
 				}
 				else
 				{
-					machine_state = MACHINE_STATE_WAIT_FOR_PRINT_FINISH;
-					delay_on_end = c_freq_millis();
+					controler_set_machine_error(MACHINE_ERR_UNKNOWN_ERROR);
 				}
 			}
-			else
+			else if(stacked_sheet_counter >= max_stacked_sheets)
 			{
-				controler_set_machine_error(MACHINE_ERR_UNKNOWN_ERROR);
+				machine_state = MACHINE_STATE_PAUSE;
+				machine_pause_req = true;
 			}
 		}
-		else if(stacked_sheet_counter >= max_stacked_sheets)
+		else
 		{
-			machine_state = MACHINE_STATE_PAUSE;
+			timer = c_freq_millis();
 		}
 	}
 }
 
-
-
 void controler_machine_state_wait_for_confirmation()
 {
-	if(print_confirmation_req == true)
-	{
+	if((print_confirmation_req == true) && (feeder_status == MACHINE_FN_READY_TO_FEED))
+	{	
 		machine_state = MACHINE_STATE_PRINT_MAIN;
 		print_confirmation_req = false;
 	}
@@ -1947,8 +2091,31 @@ void controler_machine_state_feeder_error()
 {
 	if(feeder_status == MACHINE_FN_READY_TO_FEED)
 	{
-		machine_state = MACHINE_STATE_READ_CSV_LINE;
-		printf("%d -> %d\n", bkcore_csv_pos, feeded_main_sheet_counter);
+		if((timer + 5000) <= c_freq_millis())
+		{
+			printf("old: %d\n", bkcore_csv_pos);
+			bkcore_csv_pos = feeded_sheet_counter;
+			printf("new: %d\n", bkcore_csv_pos);
+			
+			if(error_code == MACHINE_ERR_FEEDER_SHEET_MISSING || error_code == MACHINE_ERR_FEEDER_DOUBLE_SHEET  || (error_code == MACHINE_ERR_FEEDER_MULTIFUNCTION))
+				error_code = MACHINE_ERR_NO_ERROR;
+
+			machine_state = MACHINE_STATE_READ_CSV_LINE;
+			
+			c_timer_reset(switch_off_ena_in_feeder_error);
+			
+			printf("%d: %d -> %d\n",feeder_status, bkcore_csv_pos, main_sheet_feed_request_counter);
+		}
+	}
+	else
+	{
+		if(c_timer_delay(switch_off_ena_in_feeder_error, 20000) > 0)
+		{
+			machine_pause_req = true;
+			machine_state = MACHINE_STATE_PAUSE;
+		}
+
+		timer = c_freq_millis();
 	}
 }
 
@@ -1956,7 +2123,11 @@ void controler_machine_state_feeder_error()
 void controler_machine_state_print_main()
 {
 	if(c_timer_delay(print_timer, 10000) > 0)
-		controler_set_machine_error(MACHINE_ERR_PRINT_MAIN_FREEZE);
+	{
+		error_code = MACHINE_ERR_PRINT_COMPANION_FREEZE;
+		machine_state = MACHINE_STATE_PAUSE;
+		machine_pause_req = true;
+	}
 
 	/* wait for feeder ready */	
 	if((feed_sheet == 0))
@@ -1972,7 +2143,6 @@ void controler_machine_state_print_main()
 		{
 			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_7_XBF, 0);
 			feed_sheet = 2;
-			//feed_sheet = 3;	//only for testing skip the point 2
 			timer = c_freq_millis();
 		}
 
@@ -1997,7 +2167,7 @@ void controler_machine_state_print_main()
 		if(timer + 700 < c_freq_millis())
 		{
 			feed_sheet = 0;
-			feeded_main_sheet_counter++;
+			main_sheet_feed_request_counter++;
 			
 			machine_state = MACHINE_STATE_READ_CSV_LINE;
 			c_timer_reset(print_timer);
@@ -2012,25 +2182,28 @@ void controler_machine_state_print_main()
 
 void controler_machine_state_print_companion()
 {
-	if(c_timer_delay(print_timer, 10000) > 0)
-		controler_set_machine_error(MACHINE_ERR_PRINT_COMPANION_FREEZE );
+	if(c_timer_delay(print_timer, 20000) > 0)
+	{
+		error_code = MACHINE_ERR_PRINT_COMPANION_FREEZE;
+		machine_state = MACHINE_STATE_PAUSE;
+		machine_pause_req = true;
+	}
 
-	/* check the state of companion feeder, TI_incyc must be in false state */
+	/* check the state of companion feeder, TA_BF must be in false state */
 	if((feed_sheet == 0) && (io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) == 0))
 	{
-		/* set output TI_ins to true state */
+		/* set output TA_cyc to true state */
 		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_9_TA_cyc, 1);
 		timer = c_freq_millis();
 		feed_sheet = 1;
 	}
 	else if(feed_sheet == 1)
 	{	
-		/* wait for TI_incyc true state or given time */
+		/* wait for TA_BF true state or given time */
 		if(((timer+MACHINE_XBF_INTERVAL) <= c_freq_millis()))
 		{
 			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_9_TA_cyc, 0);
 			feed_sheet = 2;
-			//feed_sheet = 3; // only for testing
 		}
 
 		if(io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc) > 0)
@@ -2041,20 +2214,142 @@ void controler_machine_state_print_companion()
 	}
 	else if(feed_sheet == 2)
 	{	
-		/* wait for TI_incyc true state */
+		/* wait for TA_BF true state */
 		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) > 0)
 		{
 			feed_sheet = 3;
+			timer = c_freq_millis();
 		}
 	}
 	else if((feed_sheet == 3) && (io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) == 0))
 	{
-		/* wait for TI_incyc true state, incremet the counter state and go to READ_CSV_LINE state */	
-		feed_sheet = 0;
-		feeded_companion_sheet_counter++;
-		machine_state = MACHINE_STATE_READ_CSV_LINE;
-		c_timer_reset(print_timer);
+		/* wait 3s for sure, that the companion sheet was successfuly feeded (response 2Hz flashing) */
+		if((timer+3000) <= c_freq_millis())
+		{
+			/* wait for TA_BF true state, incremet the counter state and go to READ_CSV_LINE state */	
+			feed_sheet = 0;
+			companion_sheet_feed_request_counter++;
+			machine_state = MACHINE_STATE_READ_CSV_LINE;
+			c_timer_reset(print_timer);
+		}
 	}
+
+	if((roundf(c_freq_measure_current(ta_freq, io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF)))) >= 2.0)
+		controler_set_machine_error(MACHINE_ERR_TA);
+}
+
+
+
+c_csv_struct * controler_analyze_csv(c_csv_struct * q_csv, c_csv_struct * c_csv)
+{
+        if((q_csv != NULL)  && (c_csv != NULL))
+        {
+
+                c_csv_struct * resp_csv = c_csv_new(',', '\n');
+
+                if(resp_csv != NULL)
+                {
+                        c_csv_set_line_focuse(q_csv, 0);
+                        c_csv_set_line_focuse(c_csv, 0);
+
+                        while((c_csv_set_next_line(q_csv) != C_CSV_ERROR))
+                        {
+                                c_csv_set_next_line(c_csv);
+
+                                c_string * q_ceel = NULL;
+                                c_string * c_ceel = NULL;
+
+                                while((q_ceel = c_csv_get_next_ceel_in_line(q_csv)) != NULL)
+                                {
+                                        if((c_ceel = c_csv_get_next_ceel_in_line(c_csv)) != NULL)
+                                        {						
+                                                if(c_csv_get_focused_ceel_index_in_line(q_csv) > 1)
+                                                {
+                                                        if(strcmp(c_string_get_char_array(q_ceel), c_string_get_char_array(c_ceel)) != 0)
+                                                        {
+                                                                printf("%s <> %s\n", c_string_get_char_array(q_ceel), c_string_get_char_array(c_ceel));
+
+                                                                c_csv_add_line(resp_csv);
+								
+								c_csv_add_ceel_to_line_with_init(resp_csv,
+                                                                                  c_csv_get_line_number(resp_csv)-1,
+                                                                                  c_string_get_char_array(c_csv_get_ceel_content_from_focused_line(q_csv, 0)));
+
+								job_info_set_sheet_record_result(info, "FAIL", c_csv_get_focused_line_index(q_csv)-1);
+                                                                break;
+                                                        }
+							else
+							{
+								job_info_set_sheet_record_result(info, "PASS", c_csv_get_focused_line_index(q_csv)-1);
+							}
+                                                }
+                                        }
+                                        else
+                                        {
+                                               char * str = c_string_get_char_array(q_ceel);
+                                               printf("%s -> NULL\n", str);
+                                               c_csv_add_line(resp_csv);
+
+					       c_csv_add_ceel_to_line_with_init(resp_csv,
+                                                                                c_csv_get_line_number(resp_csv)-1,
+                                                                                c_string_get_char_array(c_csv_get_ceel_content_from_focused_line(q_csv, 0)));
+					       
+						job_info_set_sheet_record_result(info, "FAIL", c_csv_get_focused_line_index(q_csv)-1);
+
+                                               break;
+                                        }
+                                }
+                        }
+
+                        return resp_csv;
+                }
+        }
+
+	return NULL;
+}
+
+
+
+c_string * controler_compare_csv(q_job * job)
+{
+	/* end job in Job */
+	c_string * address = c_string_new_with_init(c_string_get_char_array(q_hotfolder_main_path));
+	c_string_concat(address, "/");
+	c_string_concat(address, q_job_get_camera_csv_name(job));
+
+	c_csv_struct * q_csv = c_csv_parse_csv_from_file(c_string_get_char_array(address), ',', '\n');
+
+	c_string_set_string(address, c_string_get_char_array(pci_hotfolder_out_path));
+	c_string_concat(address, "/");
+	c_string_concat(address, q_job_get_camera_csv_name(job));
+				
+
+	c_csv_struct * c_csv = c_csv_parse_csv_from_file(c_string_get_char_array(address), ',', '\n');
+
+	c_string_finalize_v3(address);
+
+	if((c_csv != NULL) && (q_csv != NULL))
+	{
+		c_csv_struct * q_feedback_csv = controler_analyze_csv(q_csv, c_csv);
+
+		c_csv_finalize(c_csv);
+		c_csv_finalize(q_csv);
+				
+		if(q_feedback_csv != NULL)
+		{
+			c_string * q_feedback_csv_content = c_csv_get_content(q_feedback_csv);
+			
+			free(q_feedback_csv);
+
+			if(q_feedback_csv_content != NULL)
+			{
+				return q_feedback_csv_content;
+	
+			}
+		}
+	}
+	
+	return NULL;
 }
 
 void controler_machine_state_save_q_csv()
@@ -2069,15 +2364,23 @@ void controler_machine_state_save_q_csv()
 		if(job != NULL)
 		{
 			/* if the camera is disabled don't do the camera and quadient csv analyzing */
-			if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
+			if((io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0))
 			{
-				/* end job in Job */
-				if(controler_csv_analyze() == STATUS_SUCCESS)
-				{	 
-					if(controler_save_response_csv(q_job_get_bkcore_csv_name(job)) >= 0)
-						machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
-					else
-						controler_set_machine_error(MACHINE_ERR_CANT_SAVE_F_CSV);
+				c_string * q_feedback_csv_content = controler_compare_csv(job);
+
+				if(q_feedback_csv_content != NULL)
+				{
+					util_save_csv(c_string_get_char_array(q_hotfolder_feedback_path), 
+							q_job_get_bkcore_csv_name(job), 
+							c_string_get_char_array(q_feedback_csv_content));
+	
+					util_save_csv("/home/stc", 
+							q_job_get_bkcore_csv_name(job), 
+							c_string_get_char_array(q_feedback_csv_content));
+
+					c_string_finalize_v3(q_feedback_csv_content);	
+
+					machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
 				}
 				else
 				{
@@ -2098,50 +2401,53 @@ void controler_machine_state_save_q_csv()
 	}
 }
 
-
-int32_t controler_save_response_csv(char * name)
-{
-	if(feedback_csv != NULL)
-	{	
-		int32_t res = util_save_csv(c_string_get_char_array(q_hotfolder_feedback_path), name, c_string_get_char_array(feedback_csv));
-
-		util_save_csv("/home/stc", name, c_string_get_char_array(feedback_csv));
-		c_string_finalize(&(feedback_csv));
-
-		return res;
-	}
-
-	return -1;
-}
-
-
-
 void controler_machine_state_ready_to_start()
 {
-	if(((strcmp(c_string_get_char_array(print_controler_status), "Printing") == 0) || 
-		(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) == 0)) && 
-		(feeder_status == MACHINE_FN_READY_TO_FEED))
-	{	
-		c_timer_reset(print_timer);
-		if((timer + 1000) < c_freq_millis())
+	if(c_timer_delay(print_timer, 40000) > 0)
+		controler_set_machine_error(MCAHINE_ERR_PRINT_INITIALIZATION_FREEZE);
+
+	if((feeder_status == MACHINE_FN_READY_TO_FEED))
+	{
+		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
 		{
-			c_pulse_reset(ena_pulse);
-			machine_state = MACHINE_STATE_READ_CSV_LINE;
+			if(((timer + 10000) < c_freq_millis()) && 
+				((((strcmp(c_string_get_char_array(print_controler_status), "Printing") == 0) && 
+				(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)) || 
+				io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) == 0)))
+			{
+				c_timer_reset(print_timer);
+				machine_state = MACHINE_STATE_READ_CSV_LINE;
+			}
+		}
+		else if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)
+		{	
+			if((strcmp(c_string_get_char_array(print_controler_status), "Printing") == 0) && ((timer + 3000) < c_freq_millis()))
+			{
+				c_timer_reset(print_timer);
+				machine_state = MACHINE_STATE_READ_CSV_LINE;
+			}
+		}
+		else
+		{
+			if((timer + 5000) < c_freq_millis())
+			{
+				c_timer_reset(print_timer);
+				machine_state = MACHINE_STATE_READ_CSV_LINE;
+			}
 		}
 	}
 	else
 	{
-		if(c_timer_delay(print_timer, 20000) > 0)
-			controler_set_machine_error(MCAHINE_ERR_PRINT_INITIALIZATION_FREEZE);
+		timer = c_freq_millis();
 	}
 }
 
 void controler_machine_state_wait_for_print_finish()
 {
-	if(c_timer_delay(print_timer, 10000) > 0)
+	if(c_timer_delay(print_timer, 20000) > 0)
 		controler_set_machine_error(MACHINE_ERR_PRINT_FINALIZING_FREEZE);
-
-	if(((feeded_main_sheet_counter+feeded_companion_sheet_counter)  == (stacked_sheet_counter + rejected_sheet_counter)) || ((delay_on_end+9000) < c_freq_millis()))
+//(feeded_sheet_counter_in_job == (stacked_sheet_counter + rejected_sheet_counter)) 
+	if(((delay_on_end+5000) < c_freq_millis()))
 	{
 		timer = c_freq_millis();
 		machine_state = MACHINE_STATE_SAVE_Q_CSV;
@@ -2151,63 +2457,90 @@ void controler_machine_state_wait_for_print_finish()
 
 void controler_machine_state_print_break()
 {
-	if(printed_job_index >= 0)
+	if(print_finishing_step  == 0)
 	{
-		q_job * job = NULL;
-		
-		if(job_list != NULL)
-			job = array_list_get(job_list, printed_job_index);
-
-		if(job != NULL)
+		if(strcmp(c_string_get_char_array(print_controler_status), "Ready") != 0)
+			print_finishing_step = 1;
+		else
+			print_finishing_step = 3;
+		printf("Recognize state of print breaking\n");
+	}
+	else if(print_finishing_step == 1)
+	{
+		controler_printer_abbort_print(0);
+		printf("Send P,A\n");
+		timer = c_freq_millis();
+		print_finishing_step = 2;
+	}
+	else if(print_finishing_step == 2)
+	{
+		if((timer + 500) <= c_freq_millis())
 		{
+			printf("Send R,A\n");
+			controler_printer_abbort_print(1);
+			print_finishing_step = 3;
+		}
+	}
+	else
+	{
+		if(printed_job_index >= 0)
+		{
+			q_job * job = NULL;
+			
+			if(job_list != NULL)
+				job = array_list_get(job_list, printed_job_index);
 
-			if(c_timer_delay(print_timer, 10000) > 0)
-				controler_set_machine_error(MACHINE_ERR_PRINT_FINALIZING_FREEZE);
-
-			/* wait for machine done the printing */
-			//if((feeded_main_sheet_counter+feeded_companion_sheet_counter)  == (stacked_sheet_counter + rejected_sheet_counter))
+			if(job != NULL)
 			{
-				/* analyze the output csv */
-				if(q_job_get_flag(job) != 'e')
+
+				/* wait for machine done the printing */
+				if((feeded_sheet_counter_in_job == (stacked_sheet_counter + rejected_sheet_counter)) || (c_timer_delay(print_timer, 10000) > 0))
 				{
-					job_info_set_end_status(info, false);
+					printf("Finish\n");
 
-					if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
+					/* analyze the output csv */
+					if(q_job_get_flag(job) != 'e')
 					{
-						controler_csv_analyze();
-						job_info_generate_missing_sheet_records(info);
+						job_info_set_end_status(info, false);
+	
+						if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
+						{
+							c_string * q_feedback_csv_content = controler_compare_csv(job);
+							
+							job_info_generate_missing_sheet_records(info);
+					
+							util_copy_file(c_string_get_char_array(pci_hotfolder_out_path), "/home/stc/JOBCSV/CAM", q_job_get_camera_csv_name(job));
+							util_delete_file(c_string_get_char_array(pci_hotfolder_out_path), q_job_get_camera_csv_name(job));
+							c_string_finalize_v3(q_feedback_csv_content);
+						}
 					}
-				}
 
-				/* save feedback csv file with 'e' flag */
-				char * const_char = "_xxxx_e_bkcore.csv";
-				char * csv_name = (char*) malloc(sizeof(char)*(strlen(q_job_get_job_name(job))+strlen(const_char)+1));
+					/* save feedback csv file with 'e' flag */
+					char * const_char = "_xxxx_e_bkcore.csv";
+					char * csv_name = (char*) malloc(sizeof(char)*(strlen(q_job_get_job_name(job))+strlen(const_char)+1));
 
-				sprintf(csv_name, "%s_%d_e_bkcore_.csv", q_job_get_job_name(job), q_job_get_job_order(job));
-				util_save_csv(c_string_get_char_array(q_hotfolder_feedback_path), csv_name, "");
+					sprintf(csv_name, "%s_%d_e_bkcore_.csv", q_job_get_job_name(job), q_job_get_job_order(job));
+					util_save_csv(c_string_get_char_array(q_hotfolder_feedback_path), csv_name, "");
 
-				free(csv_name);
+					free(csv_name);
 		
-				if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)
-					controler_printer_abbort_print(0);
-
-				/* end Job */
-				c_timer_reset(print_timer);
+					/* end Job */
+					c_timer_reset(print_timer);
+					machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
+				}
+			}
+			else
+			{
 				machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
 			}
 		}
 		else
 		{
+			/* end Job */
 			machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
 		}
 	}
-	else
-	{
-		/* end Job */
-		machine_state = MACHINE_STATE_CLEAR_TO_FINISH;
-	}
 }
-
 
 void controler_clear_hotfolder_base(q_job * job)
 {
@@ -2261,40 +2594,42 @@ void controler_machine_state_clear_hotfolder()
 	/* delete csv from camera hotfolder */
 	if((printed_job_index >= 0) && (io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0))
 	{
-		q_job * job = array_list_get(job_list, printed_job_index);
+		q_job * job = NULL;
+		job = array_list_get(job_list, printed_job_index);
+
 		if(job != NULL)
+		{
+			util_copy_file(c_string_get_char_array(pci_hotfolder_out_path), "/home/stc/JOBCSV/CAM", q_job_get_camera_csv_name(job));
 			util_delete_file(c_string_get_char_array(pci_hotfolder_out_path), q_job_get_camera_csv_name(job));
+		}
 	}
 
 	if((c_string_len(printed_job_name) > 0))
 		controler_clear_hotfolder();
 
 	if(machine_state == MACHINE_STATE_CLEAR_HOT_FOLDER)
-	{
 		machine_state = MACHINE_STATE_JOB_FINISH;
-	}
 	else
-	{
 		machine_state = MACHINE_STATE_PRINT_FINISH;
-	}
 }
 
-
-void controler_machine_state_finish()
-{	
+void controler_machine_finish_job()
+{
 	printed_job_index = -1;
 	bkcore_csv_pos = 0;
 
 	feed_sheet = 0;
+
+	print_finishing_step = 0;
+
+	print_finishing_step = 0;
+	timer = 0;
 
 	sn_trig = 0;					
 	camera_trig = 0;					
 	rj_trig = 0;					
 	ti_trig = 0;
 	
-	if(ena_pulse != NULL)
-		c_pulse_reset(ena_pulse);
-
 	if(print_timer != NULL)
 		c_timer_reset(print_timer);
 
@@ -2302,8 +2637,56 @@ void controler_machine_state_finish()
 	machine_print_req = false;
 	machine_pause_req = false;
 	print_confirmation_req = false;
+	machine_jam_req = false;
 
 	feeded_sheet_counter = 0;
+
+	stacked_sheet_counter_in_job = 0;
+	rejected_sheet_counter_in_job = 0;
+}
+
+void controler_machine_finish_print()
+{
+	if((info != NULL) && (c_string_len(printed_job_name) > 0))
+	{
+		char * time_date = util_get_time_string();
+		c_string * report_csv_content = job_info_generate_csv(info, time_date);
+
+		if(report_csv_content != NULL)
+		{
+			util_save_csv(c_string_get_char_array(job_log_path), 
+				c_string_get_char_array(job_info_get_csv_name(info)), 
+				c_string_get_char_array(report_csv_content));
+		}
+
+			free(time_date);
+			job_info_clear(info);
+	}
+
+	if(printed_job_name != NULL)
+		c_string_clear(printed_job_name);
+
+	if(bkcore_csv_content != NULL)
+	{
+		free(bkcore_csv_content);
+		bkcore_csv_content = NULL;
+	}
+
+	main_sheet_feed_request_counter = 0;
+	companion_sheet_feed_request_counter = 0;
+	stacked_sheet_counter = 0;
+	rejected_sheet_counter = 0;
+	rejected_sheet_seq_counter = 0;
+	tab_insert_counter = 0;
+	camera_sensor_trigger_counter = 0;
+	feeded_sheet_counter_in_job = 0;
+	error_code = MACHINE_ERR_NO_ERROR;
+}
+
+
+void controler_machine_state_finish()
+{	
+	controler_machine_finish_job();
 
 	if(machine_state == MACHINE_STATE_JOB_FINISH)
 	{
@@ -2311,25 +2694,7 @@ void controler_machine_state_finish()
 	}
 	else
 	{
-		if(info != NULL)
-		{
-			char * time_date = util_get_time_string();
-			job_info_generate_csv(info, time_date);
-			free(time_date);
-			job_info_clear(info);
-		}
-
-		if(printed_job_name != NULL)
-			c_string_clear(printed_job_name);
-
-		feeded_main_sheet_counter = 0;
-		feeded_companion_sheet_counter = 0;
-		stacked_sheet_counter = 0;
-		rejected_sheet_counter = 0;
-		rejected_sheet_seq_counter = 0;
-		tab_insert_counter = 0;
-		inspected_sheet_counter = 0;
-
+		controler_machine_finish_print();
 		machine_state = MACHINE_STATE_WAIT;		
 	}
 }
@@ -2454,13 +2819,13 @@ int32_t controler_get_total_sheet_number()
 
 int32_t controler_get_feeded_sheets()
 {
-	return feeded_main_sheet_counter;
+	return feeded_sheet_counter_in_job;
 }
 
 
 int32_t controler_get_feeded_companion_sheets()
 {
-	return feeded_companion_sheet_counter;
+	return companion_sheet_feed_request_counter;
 }
 
 
@@ -2484,23 +2849,18 @@ void controler_feeder_error_handler(uint8_t feeder_status)
 {
 	if((feeder_status == MACHINE_FN_DOUBLE_SHEET) || (feeder_status == MACHINE_FN_MISSING_SHEET) || (feeder_status == MACHINE_FN_FEEDER_MULTIFUNCTION))
 	{
-		if(feeder_status == MACHINE_FN_MISSING_SHEET)
-		{
-			bkcore_csv_pos -= 2; 
-			feeded_main_sheet_counter--;
-			printf("%d -> %d\n", bkcore_csv_pos, feeded_main_sheet_counter);
-		}
-		else
-		{
-			bkcore_csv_pos -= 1; 
-			feeded_main_sheet_counter--;
-			printf("%d -> %d\n", bkcore_csv_pos, feeded_main_sheet_counter);
-		}
+		feed_sheet = 0;
+		/* set only error code for error identifying but without error state for print recovery */
+		if(feeder_status == MACHINE_FN_DOUBLE_SHEET)
+			error_code = MACHINE_ERR_FEEDER_DOUBLE_SHEET;
+		else if(feeder_status == MACHINE_FN_MISSING_SHEET)
+			error_code = MACHINE_ERR_FEEDER_SHEET_MISSING;
+		else if(feeder_status == MACHINE_FN_FEEDER_MULTIFUNCTION)
+			error_code = MACHINE_ERR_FEEDER_MULTIFUNCTION;
 
 		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_7_XBF, 0);
 		machine_state = MACHINE_STATE_FEEDER_ERROR;
 	}
-
 
 	if(feeder_status == MACHINE_FN_OFF)
 		controler_set_machine_error(MACHINE_ERR_FEEDER_OFF);
@@ -2514,16 +2874,28 @@ void controler_safety_system_in()
 	/* ena state control */
 	if((machine_state != MACHINE_STATE_WAIT) && (machine_state != MACHINE_STATE_ERROR) && (machine_state != MACHINE_STATE_PRINT_BREAK) && 
 		(machine_state != MACHINE_STATE_PRINT_FINISH) && 
-		(machine_state != MACHINE_STATE_CLEAR_TO_FINISH))
+		(machine_state != MACHINE_STATE_CLEAR_TO_FINISH) && machine_state != MACHINE_STATE_PAUSE)
 	{
-		if(((feeder_status == MACHINE_FN_FEEDER_READY) || (feeder_status == MACHINE_FN_FEEDING) || (feeder_status == MACHINE_FN_READY_TO_FEED)) &&
+		if(((feeder_status == MACHINE_FN_FEEDER_READY) || (feeder_status == MACHINE_FN_FEEDER_MULTIFUNCTION) || (feeder_status == MACHINE_FN_FEEDING) || (feeder_status == MACHINE_FN_READY_TO_FEED)) &&
 			 ((stacker_status == MACHINE_SN_STACKER_READY) || (stacker_status == MACHINE_SN_STACKER_READY_TO_STACK) || stacker_status == MACHINE_SN_STACKING))
+		{
 			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_10_ENA, 1);
-		
+			ena_timer = c_freq_millis();
+		}
 	}
 	else
 	{	if(ena_force == false)
-			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_10_ENA, 0);
+		{
+			if(io_card_get_output(io_card_ref, IO_CARD_A1, A1_OUT_10_ENA) > 0)
+			{
+				if(((ena_timer+10000) <= c_freq_millis()) || (machine_state == MACHINE_STATE_WAIT))
+					io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_10_ENA, 0);
+			}
+			else
+			{
+				ena_timer = c_freq_millis();
+			}
+		}
 	}
 
 
@@ -2547,77 +2919,112 @@ void controler_safety_system_in()
 
 	if(machine_state == MACHINE_STATE_READ_CSV_LINE)
 	{
-		if((io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) > 0) || (io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_2_SN_full) > 0))
+		if((io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) > 0))
+		{
+			error_code = MACHINE_ERR_REJECT_BIN_FULL;
 			machine_pause_req = true;
+		}
+		else if(io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_2_SN_full))
+		{
+			error_code = MACHINE_ERR_STACKER_FULL;
+			machine_pause_req = true;
+		}
 	}
-
+/*
 	if(rejected_sheet_seq_counter >= rejected_sheet_for_stop)
 		controler_set_machine_error(MACHINE_ERR_LOW_PRINT_QUALITY);
-
+*/
 	/* if some got error then the counters on the end are ignored */
-	if(io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_4_RJ_jam) > 0)
-		controler_set_machine_error(MACHINE_ERR_REJECT_BIN_JAM);
+	if(machine_state != MACHINE_STATE_WAIT)
+	{
+		if(io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_4_RJ_jam) > 0)
+		{
+			error_code = MACHINE_ERR_REJECT_BIN_JAM;
+			machine_pause_req = true;
 
-	if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_9_FN_jam) > 0)
-		controler_set_machine_error(MACHINE_ERR_FEEDER_JAM);
+			machine_jam_req = true;
+		}
+
+		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_9_FN_jam) > 0)
+		{
+			error_code = MACHINE_ERR_FEEDER_JAM;
+			machine_pause_req = true;
+
+			machine_jam_req = true;
+		}
 	
-	if((roundf(c_freq_measure_current(ti_freq, io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc)))) >= 2.0)
-		controler_set_machine_error(MACHINE_ERR_TI);
+		if((roundf(c_freq_measure_current(ti_freq, io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc)))) >= 2.0)
+		{
+			error_code = MACHINE_ERR_TI;
+			machine_pause_req = true;
+		}
+	}
 
-	if((roundf(c_freq_measure_current(ta_freq, io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF)))) >= 2.0)
-		controler_set_machine_error(MACHINE_ERR_TA);
 
 	/* network connection checking */
-	if(controler_quadient_network_connected() == STATUS_CLIENT_CONNECTED)
-	{	
-		if(error_code == MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING)
-			error_code = MACHINE_ERR_NO_ERROR;
-	}
-	else
+	if(c_timer_delay(network_connection_timer, 500) > 0)
 	{
-		if(error_code == MACHINE_ERR_NO_ERROR)
-			controler_set_machine_error(MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING);
-	}
-
-	if(controler_pci_network_connected() == STATUS_CLIENT_CONNECTED)
-	{
-		if(error_code == MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING)
-			error_code = MACHINE_ERR_NO_ERROR;
-	}
-	else
-	{	
-		if((machine_mode == GR_PRINT_INSPECTION) || (machine_mode == GR_INSPECTION))
-		{
-			if(error_code == MACHINE_ERR_NO_ERROR)
-				controler_set_machine_error(MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING);
+		if(controler_quadient_network_connected() == STATUS_CLIENT_CONNECTED)
+		{	
+			if(error_code == MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING)
+			
+				machine_error_reset_req = true;
+			else
+				machine_error_reset_req = false;
 		}
-	}
-
-	if(controler_iij_network_connected() == STATUS_CLIENT_CONNECTED)
-	{
-		if(error_code == MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING)
-			error_code = MACHINE_ERR_NO_ERROR;
-	}
-	else
-	{	
-		if(machine_mode == GR_PRINT_INSPECTION || machine_mode == GR_PRINT)
+		else
 		{
 			if(error_code == MACHINE_ERR_NO_ERROR)
-				controler_set_machine_error(MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING);
+				controler_set_machine_error(MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING);
 		}
-	}
 
-	if(controler_iij_is_connected() == STATUS_CLIENT_CONNECTED)
-	{
-		if(error_code == MACHINE_ERR_GIS_DISCONNECTED)
-			error_code = MACHINE_ERR_NO_ERROR;
-	}
-	else
-	{
-		if(machine_mode == GR_PRINT_INSPECTION || machine_mode == GR_PRINT)
+		if(controler_pci_network_connected() == STATUS_CLIENT_CONNECTED)
 		{
-			if(error_code == MACHINE_ERR_NO_ERROR)
-				controler_set_machine_error(MACHINE_ERR_GIS_DISCONNECTED);
+			if(error_code == MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING)
+				machine_error_reset_req = true;
+			else
+				machine_error_reset_req = false;
+		}
+		else
+		{	
+			if((machine_mode == GR_PRINT_INSPECTION) || (machine_mode == GR_INSPECTION))
+			{
+				if(error_code == MACHINE_ERR_NO_ERROR)
+					controler_set_machine_error(MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING);
+			}
+		}
+
+		if(controler_iij_network_connected() == STATUS_CLIENT_CONNECTED)
+		{
+			if(error_code == MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING)
+				machine_error_reset_req = true;
+			else	
+				machine_error_reset_req = false;
+		}
+		else
+		{	
+			if(machine_mode == GR_PRINT_INSPECTION || machine_mode == GR_PRINT)
+			{
+				if(error_code == MACHINE_ERR_NO_ERROR)
+					controler_set_machine_error(MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING);
+			}
+		}
+
+		if(controler_iij_is_connected() == STATUS_CLIENT_CONNECTED)
+		{
+			if(error_code == MACHINE_ERR_GIS_DISCONNECTED)
+				machine_error_reset_req = true;
+			else
+				machine_error_reset_req = false;
+	
+		}
+		else
+		{
+			if(machine_mode == GR_PRINT_INSPECTION || machine_mode == GR_PRINT)
+			{
+				if(error_code == MACHINE_ERR_NO_ERROR)
+					controler_set_machine_error(MACHINE_ERR_GIS_DISCONNECTED);
+			}
 		}
 	}
 }
@@ -2631,7 +3038,8 @@ void controler_safety_system_out()
 	io_card_set_output(io_card_ref, 
 			IO_CARD_A1, 
 			A1_OUT_5_PRN_active, 
-			io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_5_camera_trigger));
+			io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_2_FEEDING_SENSOR) && 
+			(io_card_get_output(io_card_ref, IO_CARD_A1, A1_OUT_10_ENA) > 0));
 
 #if 0
 	/* activation of gremser machine */
@@ -2659,14 +3067,9 @@ void controler_safety_system_out()
 	}
 	else
 	{
-		if((machine_state != MACHINE_STATE_NEXT) && (machine_state != MACHINE_STATE_WAIT) && (machine_state != MACHINE_STATE_PREPARE))
+		if((machine_state != MACHINE_STATE_WAIT))
 		{
 			/* counters */
-			controler_machine_stacker_counter(stacker_status);
-			controler_machine_tab_insert_counter();
-			controler_machine_reject_counter();
-			controler_machine_camera_counter();
-
 			if((machine_state != MACHINE_STATE_PRINT_BREAK) && (machine_state != MACHINE_STATE_CLEAR_HOT_FOLDER) && 
 				(machine_state != MACHINE_STATE_JOB_FINISH) && (machine_state != MACHINE_STATE_CLEAR_TO_FINISH) && 
 				(machine_state != MACHINE_STATE_PRINT_FINISH))
@@ -2677,6 +3080,17 @@ void controler_safety_system_out()
 			}
 		}
 	}
+
+	if(machine_state != MACHINE_STATE_WAIT)
+	{
+		controler_machine_stacker_counter(stacker_status);
+		controler_machine_tab_insert_counter();
+		controler_machine_reject_counter();
+		controler_machine_camera_counter();
+		contorler_sheet_counter();
+	}
+
+
 #endif
 }
 
@@ -2725,6 +3139,8 @@ void controler_machine_stacker_counter(uint8_t stacker_status)
 	if((sn_trig != stacker_status) && (stacker_status == MACHINE_SN_STACKING))
 	{
 		stacked_sheet_counter ++;
+		stacked_sheet_counter_in_job ++;
+	
 		rejected_sheet_seq_counter = 0;
 	}
 
@@ -2748,11 +3164,12 @@ void controler_machine_reject_counter()
 {
 	uint8_t rj_trig_val = io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_3_RJ_cnt);
 
-	if(rj_trig != rj_trig_val && rj_trig_val > 0)
+	if((rj_trig != rj_trig_val) && (rj_trig_val > 0))
 	{
 		rejected_sheet_counter ++;
-		rejected_sheet_in_job ++;
 		rejected_sheet_seq_counter++;
+
+		rejected_sheet_counter_in_job++;
 	}
 
 	rj_trig = rj_trig_val;
@@ -2764,7 +3181,7 @@ void controler_machine_camera_counter()
 
 	if((camera_trig != camera_trig_val) && (camera_trig_val > 0))
 	{
-		inspected_sheet_counter++;
+		camera_sensor_trigger_counter++;
 	}
 
 	/* trigger previous state record */
@@ -2792,146 +3209,22 @@ int8_t controler_printer_abbort_print(uint8_t step)
 	return ret_val;
 }
 
-
-/**
-** rutine for evaluting camera inspection and generate ouput csv ontent for quadient
-**
-** when in quadient csv find end of line, increment the line index and find end of line 
-** in camera csv file.
-**
-** when one (or more but it doesn't matter) character in line of camera csv file not equal with
-** character in line of quadient csv file, then add record to feedback csv file and 
-** find end of line in both csv files (quadient and camera), increment line index and then 
-** continue with inspection.  
-*/
-int8_t controler_csv_analyze()
+void controler_find_start_of_camera_csv(char ** csv)
 {
-	q_job * job = (q_job*) array_list_get(job_list, printed_job_index);
-	
-	if(job != NULL)
+	while(**csv != ',')
 	{
-		char * q_csv = util_load_csv(c_string_get_char_array(q_hotfolder_main_path), q_job_get_camera_csv_name(job), NULL);
-		char * c_csv = util_load_csv(c_string_get_char_array(pci_hotfolder_out_path), q_job_get_camera_csv_name(job), NULL);
-	
-		feedback_csv = c_string_new();
-
-		if((q_csv != NULL) && (c_csv != NULL))
-		{
-			controler_csv_compare(q_csv, c_csv);
-	
-			free(q_csv);
-			free(c_csv);
-
-			return STATUS_SUCCESS;
-		}
-		else
-		{
-			if(q_csv != NULL)
-				free(q_csv);
-		
-			if(c_csv != NULL)
-				free(c_csv);
-		}
+			(*csv)++;
 	}
 
-	return STATUS_GENERAL_ERROR;
+	(*csv)++;
 }
 
-
-/*
-** utility function for avoid duplicity code
-** writes the index of wrong recognized sheet to output csv file for quadient
-*/
-void controler_write_to_csv(c_string * feedback_csv, job_info * info, uint32_t index)
-{
-	info_struct* sheet_info = job_info_get_sheet_info(info, job_info_get_job_index(info), index);
-	c_string_add(feedback_csv, (char*) sheet_info->sheet_order);
-			
-	if(index+1 < job_info_get_job_sheet_number(info, job_info_get_job_index(info)))
-		c_string_concat(feedback_csv, "\n");
-}
-
-/*
-** utility function for avoid duplicity code
-** if some part of the csv file from camera missing then fill the output csv for quadient remaining 
-** sheet indexes.
-*/
-void controler_csv_fill_missing(c_string * feedback_csv, job_info * info, uint32_t * index)
-{
-	while(*index < job_info_get_job_sheet_number(info, job_info_get_job_index(info)))
-	{
-		controler_write_to_csv(feedback_csv, info, *index);
-		job_info_set_sheet_record_result(info, "FAIL", *index);
-		(*index)++;
-	}
-}
-
-void controler_csv_compare(char * q_csv, char * c_csv)
-{
-	uint32_t q_pos = 0, c_pos = 0, index = 0;
-
-	while((q_csv[q_pos] != 0))
-	{		
-		/* new line finding */
-		if((q_csv[q_pos] == '\n'))
-		{
-			job_info_set_sheet_record_result(info, "PASS", index);
-
-			while(c_csv[c_pos] != q_csv[q_pos])
-			{
-				if(c_csv[c_pos] != 0)
-				{
-					c_pos++;
-				}
-				else
-				{
-					index++;
-					controler_csv_fill_missing(feedback_csv, info, &index);
-					return;
-				}
-			}
-			index++;
-		}
-		
-		/* characters testing */
-		if(c_csv[c_pos] != q_csv[q_pos])
-		{
-			controler_write_to_csv(feedback_csv, info, index);
-			job_info_set_sheet_record_result(info, "FAIL", index);
-
-			/* jump to end of line */
-			while((q_csv[q_pos] != '\n') || (c_csv[c_pos] != '\n'))
-			{
-				/* if the part on the end of the camera csv file missing */
-				if(c_csv[c_pos] == 0)
-				{
-					index++;
-					controler_csv_fill_missing(feedback_csv, info, &index);
-					return;
-				}
-
-				if(q_csv[q_pos] != '\n')
-					q_pos++;
-
-				if(c_csv[c_pos] != '\n')
-					c_pos++;
-
-				if(q_csv[q_pos] == 0)
-					return;
-			}	
-
-			index++;
-		}
-			
-		q_pos++;
-		c_pos++;
-	}
-}
 
 
 
 rep_struct * controler_load_report_information(char * report_csv_name)
 {	
+	
 	rep_struct * job_report = NULL;
 	char * report_csv_content = util_load_csv(c_string_get_char_array(job_log_path), report_csv_name, NULL);
 
@@ -2959,20 +3252,23 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 						pos++;
 					}
 					else if(read_enable == true)
+					{
 						c_string_add_char(buffer, report_csv_content[pos]);	
+					}
 				break;
 
 				case 1:
 					if(report_csv_content[pos] == '\n')
 					{
-						job_report->job_name = malloc(sizeof(char) * (c_string_len(buffer)+1));
+						job_report->finish_state = malloc(sizeof(char) * (c_string_len(buffer)+1));
 						strcpy(job_report->finish_state, c_string_get_char_array(buffer));
 					}
 					else
 					{
 						c_string_add_char(buffer, report_csv_content[pos]);
 					}
-					break;
+
+				break;
 
 				case 2:
 					if(report_csv_content[pos] == '\n')
@@ -3013,7 +3309,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 				case 5:
 					if(report_csv_content[pos] == '\n')
 					{
-						job_report->job_name = malloc(sizeof(char) * (c_string_len(buffer)+1));
+						job_report->date_time = malloc(sizeof(char) * (c_string_len(buffer)+1));
 						strcpy(job_report->date_time, c_string_get_char_array(buffer));
 					}
 					else if((report_csv_content[pos] == ':') && (read_enable == false))
@@ -3022,7 +3318,9 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 						pos++;
 					}
 					else if(read_enable == true)
+					{
 						c_string_add_char(buffer, report_csv_content[pos]);	
+					}
 				break;
 			}
 							
@@ -3033,6 +3331,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 				c_string_clear(buffer);
 				temp_int_val = 0;
 			}
+
 			pos ++;
 		}
 
@@ -3054,7 +3353,7 @@ char * controler_machine_get_state_str()
 		switch(machine_state)
 		{
 			case MACHINE_STATE_WAIT:
-				status_str = "Čekání spuštění jobu";
+				status_str = "Čekání na spuštění jobu";
 			break;
 
 			case MACHINE_STATE_PREPARE:
@@ -3074,7 +3373,7 @@ char * controler_machine_get_state_str()
 			break;
 	
 			case MACHINE_STATE_NEXT:
-				status_str = "Čekání a další soubory jobu.";
+				status_str = "Čekání na další soubory jobu.";
 			break;
 
 			case MACHINE_STATE_PRINT_FINISH:
@@ -3121,6 +3420,14 @@ char * controler_machine_get_state_str()
 				status_str = "Očekávání potvrzení naložení prokladu.";
 			break;
 
+			case MACHINE_STATE_WAIT_FOR_PRINT_FINISH:
+				status_str = "Čekání na vyložení archů";
+			break;
+			
+			case MACHINE_STATE_WAIT_FOR_ENA_START:
+				status_str = "Čekání na spuštění stroje";
+			break;
+
 			default:
 				status_str = "Stroj je v neznámém stavu!!!";
 		}
@@ -3133,12 +3440,15 @@ char * controler_machine_get_state_str()
 	return status_str; 
 }
 
-
-
 void controler_machine_log_monitor()
 {
 	if(machine_state != machine_state_pre)
-		c_log_add_record_with_cmd(log_ref, "%d - %s", machine_state, controler_machine_get_state_str());
+	{
+		if(machine_state != MACHINE_STATE_ERROR)
+			c_log_add_record_with_cmd(log_ref, "%d - %s", machine_state, controler_machine_get_state_str());
+		else
+			c_log_add_record_with_cmd(log_ref, "%d - %s: %s", machine_state, controler_machine_get_state_str(), controler_get_error_str());
+	}
 
 	machine_state_pre = machine_state;
 }
@@ -3146,8 +3456,8 @@ void controler_machine_log_monitor()
 
 void controler_counter_check_sum()
 {
-	int32_t non_stacked = inspected_sheet_counter - stacked_sheet_counter - stacked_sheet_counter;
-	int32_t rest = (feeded_main_sheet_counter + feeded_companion_sheet_counter) - (stacked_sheet_counter + rejected_sheet_counter);
+	int32_t non_stacked = camera_sensor_trigger_counter - stacked_sheet_counter - stacked_sheet_counter;
+	int32_t rest = (feeded_sheet_counter_in_job) - (stacked_sheet_counter + rejected_sheet_counter);
 
 	/* if the non stacked sheets are int the specific interval check next else set error */
 	if((non_stacked >= 0) && (non_stacked <= non_stacked_upper_limit))
@@ -3210,7 +3520,8 @@ uint8_t controler_load_bkcore_csv()
 										 &(bkcore_csv_size));
 		
 			if(bkcore_csv_content != NULL)
-			{
+			{		
+				printf("%d - obsah bkcore souboru:\n%s\n", bkcore_csv_size, bkcore_csv_content);
 				c_log_add_record_with_cmd(log_ref, "Načten obsah bkcore csv souboru.");
 				return STATUS_SUCCESS;
 			}
@@ -3261,6 +3572,8 @@ void * controler_gis_runtime_state_reading(void * param)
 				}
 			}
 		}
+	
+		usleep(5000);
 	}
 	
 	c_string_set_string(print_controler_status, "Unknown");
@@ -3527,14 +3840,22 @@ void controler_initialize_variables()
 	machine_error_reset_req = false;
 	machine_cancel_req = false;
 
+	machine_jam_req = false;
+
 	
+	feed_sensor_timer = c_timer_new();
+	ena_timer = 0;
+	ena_start_timer = 0;
 	delay_on_end = 0;
+
+	file_delay = 0;
 
 	manual_feed = false;
 	ena_force = false;
 
 	io_manual = false;
 
+	network_connection_timer = c_timer_new();
 
 	feeder_status = 0;
 	stacker_status = 0;
@@ -3548,7 +3869,6 @@ void controler_initialize_variables()
 	job_list_pre = NULL;
 	job_list_changed = 0;
 
-	ena_pulse = c_pulse_new();
 	manual_feed_xbf = 0;
 
 	printed_job_index = -1;
@@ -3564,14 +3884,15 @@ void controler_initialize_variables()
 
 	timer = c_freq_millis();
 
-	feeded_main_sheet_counter = 0;
-	feeded_companion_sheet_counter = 0;
+	main_sheet_feed_request_counter = 0;
+	companion_sheet_feed_request_counter = 0;
 	stacked_sheet_counter = 0;
 	rejected_sheet_counter = 0;
 	rejected_sheet_seq_counter = 0;
 	tab_insert_counter = 0;
-	inspected_sheet_counter = 0;
+	camera_sensor_trigger_counter = 0;
 	feeded_sheet_counter = 0;
+	feeded_sheet_counter_in_job = 0;
 
 	sheet_sensor_pre = 0;
 

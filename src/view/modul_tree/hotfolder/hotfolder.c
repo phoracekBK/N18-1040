@@ -22,28 +22,35 @@ void hot_bkcore_csv_info(q_job * job, char * address);
 
 array_list * hot_read_dir_content(c_string * q_hotfolder_main_path)
 {
-	DIR * dir_ref = opendir(c_string_get_char_array(q_hotfolder_main_path));
-	
-	array_list * job_list = array_list_new();
-
-	if(dir_ref != NULL)
+	if(q_hotfolder_main_path != NULL)
 	{
-		struct dirent * dir_cont;
-		while((dir_cont = readdir(dir_ref)) != NULL)
+		DIR * dir_ref = opendir(c_string_get_char_array(q_hotfolder_main_path));
+		array_list * job_list = array_list_new();
+
+		if(dir_ref != NULL)
 		{
-			if(dir_cont->d_type != DT_DIR)
+			struct dirent * dir_cont;
+
+			while((dir_cont = readdir(dir_ref)) != NULL)
 			{
-				if (hot_parse_file_name(job_list, dir_cont->d_name, q_hotfolder_main_path) == 0)
+				if(dir_cont->d_type != DT_DIR)
 				{
-					util_delete_file(c_string_get_char_array(q_hotfolder_main_path), dir_cont->d_name);					
+					if (hot_parse_file_name(job_list, dir_cont->d_name, q_hotfolder_main_path) == 0)
+					{
+						util_delete_file(c_string_get_char_array(q_hotfolder_main_path), dir_cont->d_name);					
+					}
 				}
 			}
+	
+			closedir(dir_ref);
 		}
 
-		closedir(dir_ref);
+		return job_list;
 	}
-
-	return job_list;
+	else
+	{
+		return NULL;
+	}
 }
 
 
@@ -174,7 +181,7 @@ int8_t hot_parse_file_name(array_list * job_list, char * file_name, c_string * q
 		{
 			int8_t flag_param = hot_check_filename_param(file_name, available_flags, 3, offset);
 				
-			if(flag_param >= 0 && flag_param < 3)
+			if((flag_param >= 0) && (flag_param < 3))
 			{
 				offset += strlen(available_flags[flag_param]);
 				int16_t job_order = hot_get_order(file_name, offset, 4);

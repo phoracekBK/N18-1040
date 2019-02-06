@@ -65,9 +65,11 @@ int job_info_get_job_sheet_number(job_info * this, int job_index)
 	if(job_index < array_list_size(this->job_list))
 	{
 		array_list * job = array_list_get(this->job_list, job_index);
+
 		if(job != NULL)
 			return array_list_size(job);
 		else
+
 		return -1;
 	}
 
@@ -80,6 +82,9 @@ int job_info_get_printed_sheet_number(job_info * this)
 	return this->printed_sheet_number;
 }
 
+/* 
+** job index counted from zero 
+*/
 int job_info_get_job_index(job_info * this)
 {
 	return (array_list_size(this->job_list) - 1);
@@ -87,7 +92,8 @@ int job_info_get_job_index(job_info * this)
 
 void job_info_set_order_name(job_info * this, char* order_name)
 {
-	c_string_set_string(this->order_name, order_name);
+	if((this != NULL) && (order_name != NULL))
+		c_string_set_string(this->order_name, order_name);
 }
 
 void job_info_clear(job_info * this)
@@ -135,7 +141,8 @@ void job_info_clear(job_info * this)
 
 void job_info_add_job_record(job_info * this)
 {
-	array_list_add(this->job_list, array_list_new());
+	if(this != NULL)
+		array_list_add(this->job_list, array_list_new());
 }
 
 void job_info_generate_missing_sheet_records(job_info * this)
@@ -219,7 +226,6 @@ void job_info_set_total_stamp_number(job_info * this, int total_stamp_number)
 
 int job_info_get_total_sheet_number(job_info * this)
 {
-
 	return this->total_sheet_number;
 }
 
@@ -230,20 +236,23 @@ int job_info_get_total_stamp_number(job_info * this)
 
 void job_info_set_sheet_record_result(job_info * this, char * result, int index)
 {
-	info_struct * sheet_info = array_list_get(array_list_get(this->job_list, job_info_get_job_index(this)), index);
-
-	if(sheet_info != NULL)
+	if(index < array_list_size(array_list_get(this->job_list, job_info_get_job_index(this))))
 	{
-		if(strcmp(result, "PASS") == 0)
-			this->printed_sheet_number ++;
-		else
-			this->rejected_sheet_number ++;
+		info_struct * sheet_info = array_list_get(array_list_get(this->job_list, job_info_get_job_index(this)), index);
 
-		sheet_info->result = result;
+		if(sheet_info != NULL)
+		{
+			if(strcmp(result, "PASS") == 0)
+				this->printed_sheet_number ++;
+			else
+				this->rejected_sheet_number ++;
+
+			sheet_info->result = result;
+		}
 	}
 }	
 
-char * job_info_generate_csv(job_info * this, char * time_date_str)
+c_string * job_info_generate_csv(job_info * this, char * time_date_str)
 {
 	if(array_list_size(this->job_list) > 0)
 	{
@@ -251,24 +260,24 @@ char * job_info_generate_csv(job_info * this, char * time_date_str)
 		c_string_add(this->csv_content, c_string_get_char_array(this->order_name));
 
 		if(this->end_status == true)
-			c_string_add(this->csv_content, "\nCorectly finished\n");
+			c_string_add(this->csv_content, "\nÚspěšně ukončen\n");
 		else
-			c_string_add(this->csv_content, "\nPrematurely finished\n");
+			c_string_add(this->csv_content, "\nPředčasně ukončen\n");
 
 		char str_total_number[10];
 		sprintf(str_total_number, "%d\n", this->rejected_sheet_number);
-		c_string_add(this->csv_content,  "Total rejected sheet number: ");
+		c_string_add(this->csv_content,  "Celkový počet vyhozených archů: ");
 		c_string_add(this->csv_content, str_total_number);		
 
 		sprintf(str_total_number, "%d\n",  this->total_sheet_number);	
-		c_string_add(this->csv_content, "Total sheet number: ");
+		c_string_add(this->csv_content, "Celkový počet archů: ");
 		c_string_add(this->csv_content, str_total_number);
 
 		sprintf(str_total_number,"%d\n", this->total_stamps_number);
-		c_string_add(this->csv_content, "Total stemps number: ");
+		c_string_add(this->csv_content, "Celkový počet kolků: ");
 		c_string_add(this->csv_content, str_total_number);
 
-		c_string_add(this->csv_content, "Finish time: ");
+		c_string_add(this->csv_content, "Čas ukončení: ");
 		c_string_add(this->csv_content, time_date_str);
 
 		int i,j;
@@ -277,7 +286,7 @@ char * job_info_generate_csv(job_info * this, char * time_date_str)
 			array_list * job = array_list_get(this->job_list, i);
 			char order_string[5];
 			sprintf(order_string, "%.4d", i+1);
-			c_string_add(this->csv_content, "\nOrder: ");
+			c_string_add(this->csv_content, "\nPořadí: ");
 			c_string_add(this->csv_content, order_string);	
 
 			for(j = 0; j < array_list_size(job); j++)
@@ -294,20 +303,33 @@ char * job_info_generate_csv(job_info * this, char * time_date_str)
 			}
 		}
 
-		return c_string_get_char_array(this->csv_content);
+		return this->csv_content;
 	}
 	
 	return NULL;
 }
 
+
+c_string * job_info_get_csv_name(job_info * this)
+{
+	return this->csv_name;
+}
+
 int8_t job_info_generate_csv_name(job_info * this)
 {
-	if(c_string_len(this->order_name) > 0)
+	if(this != NULL)
 	{
-		c_string_set_string(this->csv_name, c_string_get_char_array(this->order_name));
-		c_string_concat(this->csv_name, ".csv");
-
-		return 1;
+		if(c_string_len(this->order_name) > 0)
+		{
+			c_string_set_string(this->csv_name, c_string_get_char_array(this->order_name));
+			c_string_concat(this->csv_name, ".csv");
+	
+			return 1;
+		}
+		else
+		{
+			return -1;
+		}
 	}
 	else
 	{
@@ -363,7 +385,7 @@ uint8_t job_info_constructor_suite_case()
 	job_info_clear(this);
 	res += cu_assert_pass("Try clear empty job info structure, no memory coruption");
 	
-	char *csv_out = job_info_generate_csv(this, "10.01.2019 19:10");
+	c_string *csv_out = job_info_generate_csv(this, "10.01.2019 19:10");
 	res += cu_assert_ptr_equal("Try to generate empty sheet list with no jobs and without generated order name and csv file name", csv_out, NULL);
 
 	int8_t csv_generation_res = job_info_generate_csv_name(this);
