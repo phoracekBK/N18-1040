@@ -2109,7 +2109,7 @@ void controler_machine_state_feeder_error()
 	}
 	else
 	{
-		if(c_timer_delay(switch_off_ena_in_feeder_error, 20000) > 0)
+		if(c_timer_delay(switch_off_ena_in_feeder_error, 120000) > 0)
 		{
 			machine_pause_req = true;
 			machine_state = MACHINE_STATE_PAUSE;
@@ -2650,6 +2650,10 @@ void controler_machine_finish_print()
 	if((info != NULL) && (c_string_len(printed_job_name) > 0))
 	{
 		char * time_date = util_get_time_string();
+		
+		job_info_set_feeded_sheet_number(info, feeded_sheet_counter);
+		job_info_set_stacked_sheet_number(info, stacked_sheet_counter);
+
 		c_string * report_csv_content = job_info_generate_csv(info, time_date);
 
 		if(report_csv_content != NULL)

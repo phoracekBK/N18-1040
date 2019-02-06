@@ -1,6 +1,7 @@
 
 
 **TODO**
+* vyzkoušet vypnout všechny systémy (pc) a po znovuspuštění zkontrolovat že vše naběhlo vpořádku 
 * při stavu sheet messing z nakladače po přechodu do stavu feeder_error po x vteřinách vypnout nakladač -> přejít do pauzy pro opětovné spuštění jobu
 * do reportovacího csv doplnit celkový počet naložených archů a celkový počet vyložených archů
 * při stavu low print quality nepřerušovat tisk, ale pouze pozastavit a počkat na potvrzení, že byl problém vyřešen

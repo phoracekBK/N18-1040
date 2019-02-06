@@ -1088,19 +1088,19 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	for(int i = 0; i < GC_BTN_N; i++)
 	{
 		if(i == GC_BTN_PRINT)
-			this->btn[i] = gtk_button_new_with_label ("print");
+			this->btn[i] = gtk_button_new_with_label ("Tisk");
 		else if(i == GC_BTN_PAUSE)
-			this->btn[i] = gtk_button_new_with_label ("pause");
+			this->btn[i] = gtk_button_new_with_label ("Pauza");
 		else if(i == GC_BTN_CONTINUE)
-			this->btn[i] = gtk_button_new_with_label ("continue");
+			this->btn[i] = gtk_button_new_with_label ("Pokračovat");
 		else if(i == GC_BTN_CANCEL)
-			this->btn[i] = gtk_button_new_with_label ("stop");
+			this->btn[i] = gtk_button_new_with_label ("Zastavit");
 		else if(i == GC_BTN_ERROR_RESET)
-			this->btn[i] = gtk_button_new_with_label("reset");
+			this->btn[i] = gtk_button_new_with_label("Reset");
 		else if(i == GC_BTN_DELETE_JOB)
-			this->btn[i] = gtk_button_new_with_label ("Clear");
+			this->btn[i] = gtk_button_new_with_label ("Vyčistit");
 		else if(i == GC_BTN_FEED)
-			this->btn[i] = gtk_button_new_with_label ("Feed");
+			this->btn[i] = gtk_button_new_with_label ("Naložit");
 
 		gtk_widget_set_size_request(GTK_WIDGET(this->btn[i]), 75,70);
 
@@ -1244,7 +1244,7 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_move_to(cr, width/4-80 - ext_ti_counter.width, 5*height/24+390);
 	cairo_show_text(cr, temp_buff);
 
-	sprintf(temp_buff, "%d/%d",controler_get_total_sheet_number(), controler_get_stacked_sheets());
+	sprintf(temp_buff, "%d/%d",controler_get_total_sheet_number(), controler_get_stacked_sheets()-controler_get_feeded_companion_sheets());
 	cairo_text_extents_t ext_stacked_counter;
 	cairo_text_extents(cr, temp_buff, &ext_stacked_counter);
 	cairo_move_to(cr, width/4-80 - ext_stacked_counter.width, 5*height/24+430);

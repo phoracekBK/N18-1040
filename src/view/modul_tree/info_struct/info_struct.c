@@ -20,6 +20,9 @@ struct _job_info_
 	uint32_t printed_sheet_number;
 	uint32_t rejected_sheet_number;
 
+	uint32_t feeded_sheet_number;
+	uint32_t stacked_sheet_number;
+
 	bool end_status;
 
 	/* 
@@ -48,6 +51,10 @@ job_info * job_info_new(char * csv_address)
 	this->total_stamps_number = 0;
 	this->printed_sheet_number = 0;
 	this->rejected_sheet_number = 0;
+
+	
+	this->feeded_sheet_number = 0;
+	this->stacked_sheet_number = 0;
 
 	this->end_status = true;
 
@@ -108,6 +115,10 @@ void job_info_clear(job_info * this)
 
 	this->printed_sheet_number = 0;
 	this->rejected_sheet_number = 0;
+
+
+	this->feeded_sheet_number = 0;
+	this->stacked_sheet_number = 0;
 
 	this->end_status = true;
 
@@ -252,6 +263,18 @@ void job_info_set_sheet_record_result(job_info * this, char * result, int index)
 	}
 }	
 
+
+void job_info_set_feeded_sheet_number(job_info *this, uint32_t feeded_sheet_number)
+{
+	this->feeded_sheet_number = feeded_sheet_number;
+}
+
+void job_info_set_stacked_sheet_number(job_info * this, uint32_t stacked_sheet_number)
+{
+	this->stacked_sheet_number = stacked_sheet_number;
+}
+
+
 c_string * job_info_generate_csv(job_info * this, char * time_date_str)
 {
 	if(array_list_size(this->job_list) > 0)
@@ -265,8 +288,17 @@ c_string * job_info_generate_csv(job_info * this, char * time_date_str)
 			c_string_add(this->csv_content, "\nPředčasně ukončen\n");
 
 		char str_total_number[10];
+
+		sprintf(str_total_number, "%d\n", this->feeded_sheet_number);		
+		c_string_add(this->csv_content, "Celkový počet naložených archů: ");
+		c_string_add(this->csv_content, str_total_number);		
+
+		sprintf(str_total_number, "%d\n", this->stacked_sheet_number);
+		c_string_add(this->csv_content, "Celkový počet vyložených archů ve vykladači: ");
+		c_string_add(this->csv_content, str_total_number);
+
 		sprintf(str_total_number, "%d\n", this->rejected_sheet_number);
-		c_string_add(this->csv_content,  "Celkový počet vyhozených archů: ");
+		c_string_add(this->csv_content,  "Celkový počet špatných archů ve výhybce: ");
 		c_string_add(this->csv_content, str_total_number);		
 
 		sprintf(str_total_number, "%d\n",  this->total_sheet_number);	

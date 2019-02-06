@@ -127,7 +127,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->g_reject_bin_lbl = "VÝHYBKA:";
     cz_lang->g_cnt_companion_feed_lbl = "Naložené prokladové archy:";
     cz_lang->g_cnt_rejected_lbl = "Vadné archy:";
-    cz_lang->g_cnt_stakced_lbl = "Vyložené archy očekávané/aktuální:";
+    cz_lang->g_cnt_stakced_lbl = "Archy ve vykladači očekávané/aktuální:";
     cz_lang->g_cnt_rejected_seq_lbl = "Sekvence vadných archů:";
     cz_lang->g_cnt_tab_insert_blb = "Nastřelovací proužky:";
     cz_lang->g_job_list_lbl = "Aktuální tisková úloha:";
