@@ -1,24 +1,20 @@
 
 
 **TODO**
+* přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
 * vyzkoušet vypnout všechny systémy (pc) a po znovuspuštění zkontrolovat že vše naběhlo vpořádku 
-* při stavu sheet messing z nakladače po přechodu do stavu feeder_error po x vteřinách vypnout nakladač -> přejít do pauzy pro opětovné spuštění jobu
-* do reportovacího csv doplnit celkový počet naložených archů a celkový počet vyložených archů
 * při stavu low print quality nepřerušovat tisk, ale pouze pozastavit a počkat na potvrzení, že byl problém vyřešen
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
 * přidat do controleru funkci pro nastřelování oddělovacích proužků
 * do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
+* zpomalit tisk pokud se náhrady blíží nastavení hodnotě (500) ve vykladači
 
 * vytvořit kartu pro přehled stroje kde budou zobrazeny podrobnosti o stavu stroje (počítadla, režim, stav nakladače, vykladače, ...)
 * vytvořit dokumentaci zdrojových kódů
 * refaktorovat kód pro větší přehlednost
 * vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
-* ošetřit aby se v hotfolderu pro gis mohlo nacházet pouze jedno pdf, vytvořit kontrolu když je již uvnitř pdf vyhodit hlášku že hotfolder není prázdný
-* ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1)
-* napojení do databáze omronu v gremser stroji
-* na základě napojení do omronu, upravit počítadla archů, která budou vyčtena 
-* Vytvořit skript pro spouštění GIS serveru a bufferovací aplikace
+* (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
 * Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
 * Zpomalit tisk pokud se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 
@@ -26,6 +22,11 @@
 
 **DONE**
 
+* až Petr Malý upraví bkcore csv upravit vyčítání a ukládání hodnot 
+* do reportovacího csv doplnit celkový počet naložených archů a celkový počet vyložených archů
+* při stavu sheet messing z nakladače po přechodu do stavu feeder_error po x vteřinách vypnout nakladač -> přejít do pauzy pro opětovné spuštění jobu
+* opravit výpis reportovacích csv
+* ošetřit aby se v hotfolderu pro gis mohlo nacházet pouze jedno pdf, vytvořit kontrolu když je již uvnitř pdf vyhodit hlášku že hotfolder není prázdný
 * upravit kontrolu csv z kamery a quadientu tak aby bylo možné přistupovat k jednotlivým řádků a buňkám v řádku a porovnávat jednotlivé parametry archu
 * při signálu z nakladače missing sheet, nebo double sheet, nebo feeder jam přejít do stavu feeder_error ve kterém se čeká na odstranění problému a na opětovné zahájení nakládání
 * pokud se nacházím nějakou dobu v pauze, pak vypnout ENA a potom opět spustit ENA když se chci navrátit do procesu tisku
@@ -103,8 +104,6 @@
 
 
 **Poznámky**
-
-*
 
 * stav nakladače sheet missing, neshoda počítadel, co nastane když se korektně nepodá -> vyřešeno
 

@@ -570,7 +570,9 @@ gboolean gui_cyclic_interupt(gpointer param)
 	//if(strcmp(visible_page, "control_page") == 0)
 	{
 		if((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT))
+		{
 			gui_control_page_load_jobs(this->control_page);
+		}
 	}
  	
 	gtk_widget_queue_draw(GTK_WIDGET(this->drawing_area));
@@ -1516,7 +1518,10 @@ void gui_control_page_load_jobs(gui_control_page * this)
 		gtk_list_store_append(this->job_list_store, &iter);
 		const char * job_status = NULL;		
 
-		if((strcmp(controler_get_printed_job_name(), controler_get_job_name(i)) == 0))
+		const char * printed_job_name = controler_get_printed_job_name();
+		char * job_name = controler_get_job_name(i);
+
+		if((printed_job_name != NULL) && (job_name != NULL) && (strcmp(printed_job_name, job_name) == 0))
 		{
 			if(controler_machine_status_val() == MACHINE_STATE_NEXT)
 				job_status = multi_lang->print_state_wait_for_data;
@@ -1530,13 +1535,14 @@ void gui_control_page_load_jobs(gui_control_page * this)
 			job_status = multi_lang->print_state_wait;
 		}
 
+
                	gtk_list_store_set (this->job_list_store, &iter,
-				JOB_STATE, job_status,
-				JOB_NAME, controler_get_job_name(i),
+				JOB_STATE, ((job_status == NULL) ? "Unknown" : job_status),
+				JOB_NAME, ((controler_get_job_name(i) == NULL) ? "Unknown" : controler_get_job_name(i)),
 				JOB_ORDER, controler_get_job_order(i),
 				JOB_SHEET_NUMBER, controler_get_job_sheet_number(i), 
 				JOB_STAMP_NUMBER, controler_get_job_stamp_number(i),
-				JOB_DATE_TIME, controler_get_job_date_time(i), 
+				JOB_DATE_TIME, ((controler_get_job_date_time(i) == NULL) ? "Unknown" : controler_get_job_date_time(i)), 
 				-1);
 	}
 
@@ -1572,7 +1578,8 @@ void gui_control_page_load_report_csv_list(gui_control_page * this)
 				{
 					for(int j = 0; j < array_list_size(this->gui_base_ref->report_csv_list); j++)
 					{
-						if(strcmp(array_list_get(current_csv_list, i), array_list_get(this->gui_base_ref->report_csv_list, j)) == 0)
+						if(strcmp(c_string_get_char_array(array_list_get(current_csv_list, i)), 
+							c_string_get_char_array(array_list_get(this->gui_base_ref->report_csv_list, j))) == 0)
 						{
 							list_changed = true;
 							break;
@@ -1584,7 +1591,8 @@ void gui_control_page_load_report_csv_list(gui_control_page * this)
 				}
 
 				if(list_changed == false)
-				{
+				{	
+					printf("repost list changed\n");
 					array_list_destructor_with_release(&this->gui_base_ref->report_csv_list, c_string_finalize_v2);
 					this->gui_base_ref->report_csv_list = current_csv_list;
 					gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
@@ -2938,7 +2946,7 @@ void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_
 				else
 		               		gtk_list_store_set (job_report_list_store, &iter, REP_FINISH_STATE, "", -1);
 
-	               		gtk_list_store_set (job_report_list_store, &iter, REP_REJECTED_SHEET_NUMBER, job_report->rejected_sheet_number, -1);
+	               		gtk_list_store_set (job_report_list_store, &iter, REP_REJECTED_SHEET_NUMBER, job_report->wrong_sheet_number, -1);
 	               		gtk_list_store_set (job_report_list_store, &iter, REP_SHEET_NUMBER, job_report->sheet_number, -1);
 	        		gtk_list_store_set (job_report_list_store, &iter, REP_STAMP_NUMBER, job_report->stamp_number, -1);
 

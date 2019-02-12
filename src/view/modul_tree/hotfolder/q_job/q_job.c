@@ -10,11 +10,14 @@ struct _q_job_
 	char flag;
 	int order;
 
+	char * nominal;
+	char * order_name;
+	char * stamp_type;
+
 	int sheet_number;
 	int stamp_number;
 	char * date_time;
 };
-
 
 
 q_job * q_job_new(char* name, uint32_t order, char flag, char * date_time)
@@ -26,6 +29,12 @@ q_job * q_job_new(char* name, uint32_t order, char flag, char * date_time)
 	job->bkcore_name = NULL;
 	job->order = order;
 	job->flag = flag;
+
+
+	job->nominal = NULL;
+	job->order_name = NULL;
+	job->stamp_type = NULL;
+
 
 	job->sheet_number = 0;
 	job->stamp_number = 0;
@@ -88,6 +97,50 @@ void q_job_set_stamp_number(q_job * job, int stamp_number)
 void q_job_set_sheet_number(q_job * job, int sheet_number)
 {
 	job->sheet_number = sheet_number;
+}
+
+
+char * q_job_get_nominal(q_job * job)
+{
+	return job->nominal;
+}
+
+char * q_job_get_stamp_type(q_job * job)
+{
+	return job->stamp_type;
+}
+
+char * q_job_get_order_name(q_job * job)
+{
+	return job->order_name;
+}
+
+
+void q_job_set_nominal(q_job * job, char * nominal)
+{
+	if(job->nominal != NULL)
+		free(job->nominal);
+
+	job->nominal = (char *) malloc(sizeof(char) * (strlen(nominal)+1));
+	strcpy(job->nominal, nominal);
+}
+
+void q_job_set_order_name(q_job * job, char * order_name)
+{
+	if(job->order_name != NULL)
+		free(job->order_name);
+
+	job->order_name = (char*) malloc(sizeof(char*) * (strlen(order_name)+1));
+	strcpy(job->order_name, order_name);
+}
+
+void q_job_set_stamp_type(q_job * job, char * stamp_type)
+{
+	if(job->stamp_type != NULL)
+		free(job->stamp_type);
+
+	job->stamp_type = (char*) malloc(sizeof(char) * (strlen(stamp_type)+1));
+	strcpy(job->stamp_type, stamp_type);
 }
 
 void q_job_set_pdf_name(q_job * job, char * pdf_name)

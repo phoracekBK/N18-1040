@@ -104,7 +104,7 @@
 
 #define MACHINE_STATE_CLEAR_BELT_AFTER_JAM 20
 
-
+#define MACHINE_STATE_STACKER_ERROR 21
 
 
 
@@ -189,7 +189,10 @@ struct _rep_struct_
 {
 	char * finish_state;
 	char * job_name;
+	int wrong_sheet_number;
 	int rejected_sheet_number;
+	int feeded_sheet_number;
+	int stacked_sheet_number;
 	int sheet_number;
 	int stamp_number;
 	char * date_time;

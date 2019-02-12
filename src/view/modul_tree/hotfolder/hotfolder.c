@@ -254,11 +254,24 @@ void hot_bkcore_csv_info(q_job * job, char * address)
 		int row = 0;
 		int pos = 0;
 
-		while((row < 2) && (bkcore_csv_content[pos] != 0))
+		char str[512];
+		int str_pos = 0;
+
+		while((bkcore_csv_content[pos] != 0) && (row < 5))
 		{
 			if(bkcore_csv_content[pos] == '\n')
 			{
+				str[str_pos] = 0;
+
+				if(row == 3)
+					q_job_set_nominal(job, str);
+				else if(row == 2)
+					q_job_set_order_name(job, str);
+				else if(row == 4)
+					q_job_set_stamp_type(job, str);
+
 				row++;
+				str_pos = 0;
 			}
 	
 			if(isdigit(bkcore_csv_content[pos]))
@@ -270,6 +283,11 @@ void hot_bkcore_csv_info(q_job * job, char * address)
 				else if(row == 1)
 				{
 					sheet_number = (sheet_number * 10) + (bkcore_csv_content[pos]-48);
+				}
+				else
+				{
+					str[str_pos] = bkcore_csv_content[pos];
+					str_pos++;
 				}
 			}
 

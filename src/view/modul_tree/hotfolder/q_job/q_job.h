@@ -34,5 +34,11 @@ void q_job_set_sheet_number(q_job * job, int sheet_number);
 void q_job_set_pdf_name(q_job * job, char * pdf_name);
 void q_job_set_camera_csv_name(q_job * job, char * camera_csv_name);
 void q_job_set_bkcore_csv_name(q_job * job, char * bkcore_csv_name);
+void q_job_set_nominal(q_job * job, char * nominal);
+void q_job_set_order_name(q_job * job, char * order_name);
+void q_job_set_stamp_type(q_job * job, char * stamp_type);
+char * q_job_get_nominal(q_job * job);
+char * q_job_get_stamp_type(q_job * job);
+char * q_job_get_order_name(q_job * job);
 
 #endif
