@@ -364,6 +364,12 @@ c_string * job_info_get_csv_name(job_info * this)
 	return this->csv_name;
 }
 
+
+c_string * job_info_get_order_name(job_info * this)
+{
+	return this->order_name;
+}
+
 int8_t job_info_generate_csv_name(job_info * this)
 {
 	if(this != NULL)

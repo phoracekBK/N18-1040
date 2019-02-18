@@ -1,9 +1,10 @@
 
 
 **TODO**
+* přidat informační popisek do hlavního panelu
+* nastavit program aby při zácpě jakéhokoli druhu vyčistil pás, a vygeneroval náhrady do quadientu
 * přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
 * vyzkoušet vypnout všechny systémy (pc) a po znovuspuštění zkontrolovat že vše naběhlo vpořádku 
-* při stavu low print quality nepřerušovat tisk, ale pouze pozastavit a počkat na potvrzení, že byl problém vyřešen
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
 * přidat do controleru funkci pro nastřelování oddělovacích proužků
 * do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
@@ -21,7 +22,11 @@
 
 
 **DONE**
-
+* přidat na hlavní panel informaci o počtu náhrad v daném podjobu
+* přidat na hlavní panel časový odhad pro tisk daného jobu
+* přida položku job id a sjednotit názvy ve výpisu jobů
+* přidat tlačítko naložit jeden arch a nastavit pauzu
+* při stavu low print quality nepřerušovat tisk, ale pouze pozastavit a počkat na potvrzení, že byl problém vyřešen
 * až Petr Malý upraví bkcore csv upravit vyčítání a ukládání hodnot 
 * do reportovacího csv doplnit celkový počet naložených archů a celkový počet vyložených archů
 * při stavu sheet messing z nakladače po přechodu do stavu feeder_error po x vteřinách vypnout nakladač -> přejít do pauzy pro opětovné spuštění jobu

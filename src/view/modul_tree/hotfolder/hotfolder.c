@@ -273,18 +273,24 @@ void hot_bkcore_csv_info(q_job * job, char * address)
 				row++;
 				str_pos = 0;
 			}
-	
-			if(isdigit(bkcore_csv_content[pos]))
+		
+			if(row  < 2)
 			{
-				if(row == 0)
+				if(isdigit(bkcore_csv_content[pos]))
 				{
-					stamp_number = (stamp_number*10) + (bkcore_csv_content[pos]-48);
+					if(row == 0)
+					{
+						stamp_number = (stamp_number*10) + (bkcore_csv_content[pos]-48);
+					}
+					else if(row == 1)
+					{
+						sheet_number = (sheet_number * 10) + (bkcore_csv_content[pos]-48);
+					}
 				}
-				else if(row == 1)
-				{
-					sheet_number = (sheet_number * 10) + (bkcore_csv_content[pos]-48);
-				}
-				else
+			}
+			else
+			{
+				if(bkcore_csv_content[pos] != '\n' && bkcore_csv_content[pos] != '\r')
 				{
 					str[str_pos] = bkcore_csv_content[pos];
 					str_pos++;

@@ -40,6 +40,7 @@ job_info * job_info_new(char * csv_address);
 int job_info_get_job_index(job_info * this);
 int job_info_get_printed_sheet_number(job_info * this);
 void job_info_set_order_name(job_info * this, char* order_name);
+c_string * job_info_get_order_name(job_info * this);
 void job_info_clear(job_info * this);
 void info_struct_finalize(void * this);
 void job_info_add_job_record(job_info * this);

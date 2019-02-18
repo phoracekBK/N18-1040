@@ -160,6 +160,13 @@
 #define MACHINE_ERR_STACKER_FULL 35
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
+
+
+
+
+
+
+
 enum _gremser_print_mode_
 {
 	GR_SETUP=0,
@@ -288,6 +295,8 @@ int32_t controler_get_feeded_sheets();
 int32_t controler_get_feeded_companion_sheets();
 int32_t controler_get_rejected_sheets();
 int32_t controler_get_tab_inserts();
+int controler_get_sheet_number_in_job();
+int controler_get_rejected_sheet_in_job();
 
 char * controler_get_gis_status();
 
@@ -298,12 +307,15 @@ uint8_t controler_print_cancel();
 uint8_t controler_print_reset_error();
 void controler_manual_feed_sheet();
 void controler_manual_set_ena_state(bool state);
+void controler_print_one_sheet_req();
 
 void controler_sheet_source_confirmation();
 
 /* error messages return and translations  */
 char* controler_machine_get_state_str();
 uint8_t controler_machine_status_val();
+
+bool controler_get_print_one_req_val();
 
 int controler_get_error_val();
 const char* controler_get_error_str();
@@ -327,11 +339,15 @@ const char * controler_get_printed_job_name();
 
 rep_struct * controler_load_report_information(char * report_csv_name);
 
+
+
 char * controler_get_job_name(int job_index);
+char * controler_get_job_order_name(int job_index);
 char * controler_get_job_pdf_name(int job_index);
 char * controler_get_job_bkcore_csv_name(int job_index);
 char * controler_get_job_camera_csv_name(int job_index);
 char * controler_get_job_date_time(int job_index);
+char * controler_get_job_nominal_value(int job_index);
 int controler_get_job_stamp_number(int job_index);
 int controler_get_job_sheet_number(int job_index);
 int controler_get_job_order(int job_index);
@@ -339,6 +355,8 @@ char controler_get_job_flag(int job_index);
 int controler_get_job_queue_size();
 void controler_set_manual_mode(bool state);
 bool controler_get_manual_mode_state();
+
+uint64_t controler_get_time_for_one_sheet();
 
 #if CONTROLER_TEST_MODE == true
 void controler_unit_test();

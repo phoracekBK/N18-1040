@@ -22,12 +22,14 @@ struct _lang_
 	const char * lang_name;
  	const char * win_title;
 	const char * gui_job_state;
-	const char * gui_job_name;
-	const char * gui_job_order;
+	const char * gui_job_order_name;
+	const char * gui_job_q_name;
+	const char * gui_job_nominal;
 	const char * gui_job_sheet_number;
 	const char * gui_job_stamp_number;
 	const char * gui_job_date_time;
 	const char * print_state_print;
+	const char * print_state_pause;
 	const char * print_state_job_error;
 	const char * print_state_wait;
 	const char * print_state_wait_for_data;
@@ -124,6 +126,7 @@ struct _lang_
 	const char * g_cnt_companion_feed_lbl;
 	const char * g_cnt_rejected_lbl;
 	const char * g_cnt_stakced_lbl;
+	const char * g_cnt_compenzation_lbl;
 	const char * g_cnt_rejected_seq_lbl;
 	const char * g_cnt_tab_insert_blb;
 	const char * g_job_list_lbl;

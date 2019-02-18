@@ -19,10 +19,11 @@ const double settings_btn_fg_s[3] = {0.7, 0.7, 0.7};
 enum _gui_job_list_items_
 {
 	JOB_STATE= 0,
-	JOB_NAME,
-	JOB_ORDER,
+	JOB_ORDER_NAME,
+	JOB_NOMINAL,
 	JOB_SHEET_NUMBER,
 	JOB_STAMP_NUMBER,
+	JOB_Q_NAME,
 	JOB_DATE_TIME,
 
 	JOB_LIST_N
@@ -46,6 +47,7 @@ enum _gui_control_btn_
 	GC_BTN_PAUSE,
 	GC_BTN_CONTINUE,
 	GC_BTN_CANCEL,
+	GC_BTN_PRINT_ONE,
 	GC_BTN_ERROR_RESET,
 	GC_BTN_FEED,
 	GC_BTN_DELETE_JOB,
@@ -147,7 +149,9 @@ struct _gui_
 	gui_network_page * network_page;
 	gui_lang_page * lang_page;
 	gui_hotfolder_page * hotfolder_page;
-	gui_print_params_page * print_params_page; 
+	gui_print_params_page * print_params_page;
+
+	uint8_t error_blink;
 };
 
 struct _gui_control_page_
@@ -357,7 +361,7 @@ void gui_control_page_set_ena_callback(GtkSwitch *widget, gboolean state, gpoint
 void gui_control_page_manual_sheet_feed(GtkWidget * widget, gpointer param);
 void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param);
 void gui_control_page_clear_hotfolder(GtkWidget * widget, gpointer param);
-
+void gui_control_page_print_one_callback(GtkWidget * widget, gpointer param);
 
 gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref);
 void gui_settings_page_language(gui_settings_page * this, lang * multi_lang);
@@ -454,6 +458,7 @@ gui * gui_new()
 	gtk_widget_set_size_request(GTK_WIDGET(this->status_bar), this->gui_base_ref->work_area_geometry.width, this->gui_base_ref->work_area_geometry.height/12);
 	this->error_string = c_string_new();
 	this->blink = false;
+	this->error_blink = 0;
 	
 	/* create control page */
 	this->control_page = gui_control_page_new(this->gui_base_ref);
@@ -486,7 +491,7 @@ gui * gui_new()
 	gui_pack(this);	
 
 	/* cyclic interupt for continues reading of core status */
-	g_timeout_add(1000, gui_cyclic_interupt, this);
+	g_timeout_add(50, gui_cyclic_interupt, this);
 
 	gtk_widget_show_all(GTK_WIDGET(this->main_win));
 
@@ -498,7 +503,23 @@ gboolean gui_cyclic_interupt(gpointer param)
 {
 	gui * this = (gui*) param;
 
-	this->blink = !this->blink;
+	if(this->error_blink > 20)
+	{
+		this->blink = !this->blink;
+		this->error_blink = 0;
+
+		//if(strcmp(visible_page, "control_page") == 0)
+		{
+			if((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT))
+			{
+				gui_control_page_load_jobs(this->control_page);
+			}
+		}
+	}
+	else
+	{
+		this->error_blink++;
+	}
 
 	gtk_widget_set_visible(GTK_WIDGET(this->io_vision_page->btn_manual), controler_machine_status_val() == MACHINE_STATE_WAIT);
 	gtk_widget_set_visible(GTK_WIDGET(this->control_page->ena_switch), controler_get_manual_mode_state());
@@ -525,6 +546,12 @@ gboolean gui_cyclic_interupt(gpointer param)
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_DELETE_JOB]), (controler_machine_status_val() == MACHINE_STATE_WAIT) && 
 						(controler_get_manual_mode_state() == false));
 
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT_ONE]), 
+					(controler_machine_status_val() == MACHINE_STATE_PRINT_MAIN) || 
+					(controler_machine_status_val() == MACHINE_STATE_READY_TO_START) || 
+					(controler_machine_status_val() == MACHINE_STATE_READ_CSV_LINE) || 
+					(controler_machine_status_val() == MACHINE_STATE_PAUSE));
 
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_DELETE_JOB]), controler_machine_status_val() == MACHINE_STATE_WAIT);
 
@@ -567,14 +594,9 @@ gboolean gui_cyclic_interupt(gpointer param)
 			c_string_clear(this->error_string);
 	}
 
-	//if(strcmp(visible_page, "control_page") == 0)
-	{
-		if((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT))
-		{
-			gui_control_page_load_jobs(this->control_page);
-		}
-	}
  	
+	
+	
 	gtk_widget_queue_draw(GTK_WIDGET(this->drawing_area));
 
 	return TRUE;
@@ -634,6 +656,44 @@ gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
         	cairo_set_source_rgb(cr, 0, 0, 0);
 		cairo_move_to(cr, 30, this->gui_base_ref->work_area_geometry.height/24.0 + ((double)extents.height/2.0)-2);
 		cairo_show_text(cr, c_string_get_char_array(this->error_string));
+        	cairo_fill(cr);
+	}
+
+	if((strlen(controler_get_printed_job_name()) > 0) && (controler_machine_status_val() != MACHINE_STATE_ERROR))
+	{
+		cairo_select_font_face(cr, "Courier", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+		cairo_set_font_size(cr, 19);
+		cairo_text_extents_t extents;
+        	cairo_set_source_rgb(cr, 0, 0, 0);
+
+		char time_str[128];
+
+		if(controler_get_time_for_one_sheet() == 0)
+		{	
+			sprintf(time_str, "Odhadovaný čas tisku: --:--:--");
+			cairo_text_extents(cr, time_str, &extents);
+		}
+		else
+		{
+			int total_sheet_number = controler_get_total_sheet_number();
+			int stacked_sheet_number = controler_get_stacked_sheets();
+			int rejected_sheet_number = controler_get_rejected_sheets();
+
+			uint32_t total_time = (total_sheet_number - (stacked_sheet_number-rejected_sheet_number)) * (controler_get_time_for_one_sheet());
+
+			uint8_t hours = total_time/3600000;
+			uint8_t minutes = total_time/60000%60;
+			uint8_t seconds = (total_time/1000)%60;
+			
+			sprintf(time_str, "Odhadovaný čas tisku: %02d:%02d:%02d", hours, minutes, seconds);
+			cairo_text_extents(cr, time_str, &extents);
+		}
+
+		cairo_move_to(cr, this->gui_base_ref->work_area_geometry.width-extents.width-30, 
+				this->gui_base_ref->work_area_geometry.height/24.0 + ((double)extents.height/2.0)-2);
+		cairo_show_text(cr, time_str);
+
+
         	cairo_fill(cr);
 	}
 
@@ -784,6 +844,11 @@ void gui_signals(gui * this)
 	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_DELETE_JOB]), 
 				"clicked", 
 				G_CALLBACK(gui_control_page_clear_hotfolder), 
+				NULL);
+
+	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_PRINT_ONE]), 
+				"clicked", 
+				G_CALLBACK(gui_control_page_print_one_callback), 
 				NULL);
 
 
@@ -1097,6 +1162,8 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 			this->btn[i] = gtk_button_new_with_label ("Pokračovat");
 		else if(i == GC_BTN_CANCEL)
 			this->btn[i] = gtk_button_new_with_label ("Zastavit");
+		else if(i == GC_BTN_PRINT_ONE)
+			this->btn[i] = gtk_button_new_with_label("Naložit arch");
 		else if(i == GC_BTN_ERROR_RESET)
 			this->btn[i] = gtk_button_new_with_label("Reset");
 		else if(i == GC_BTN_DELETE_JOB)
@@ -1119,6 +1186,11 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	return this;
 }
 
+
+void gui_control_page_print_one_callback(GtkWidget * widget, gpointer param)
+{
+	controler_print_one_sheet_req();
+}
 
 void gui_control_page_clear_hotfolder(GtkWidget * widget, gpointer param)
 {
@@ -1219,6 +1291,9 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_move_to(cr, left_horizontal_offset, 5*height/24+430);
 	cairo_show_text(cr, multi_lang->g_cnt_stakced_lbl);
 
+	cairo_move_to(cr, left_horizontal_offset, 5*height/24+470);
+	cairo_show_text(cr, multi_lang->g_cnt_compenzation_lbl);
+
 
 	cairo_set_font_size(cr, 19);
 
@@ -1250,6 +1325,12 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_text_extents_t ext_stacked_counter;
 	cairo_text_extents(cr, temp_buff, &ext_stacked_counter);
 	cairo_move_to(cr, width/4-80 - ext_stacked_counter.width, 5*height/24+430);
+	cairo_show_text(cr, temp_buff);
+
+	sprintf(temp_buff, "%d", controler_get_rejected_sheet_in_job());
+	cairo_text_extents_t ext_compenzation_counter;
+	cairo_text_extents(cr, temp_buff, &ext_compenzation_counter);
+	cairo_move_to(cr, width/4-80 - ext_compenzation_counter.width, 5*height/24+470);
 	cairo_show_text(cr, temp_buff);
 
 	/* right side */
@@ -1385,15 +1466,18 @@ void gui_control_page_language(gui_control_page * this)
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
 					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_state, JOB_STATE)));
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_name, JOB_NAME)));
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_order_name, JOB_ORDER_NAME)));
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_order, JOB_ORDER)));
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_nominal, JOB_NOMINAL)));
 
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
 					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_sheet_number, JOB_SHEET_NUMBER)));
 
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
 					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_stamp_number, JOB_STAMP_NUMBER)));
+
+	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_q_name, JOB_Q_NAME)));
 
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
 					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_date_time, JOB_DATE_TIME)));
@@ -1472,7 +1556,7 @@ void gui_control_page_btn_print_callback(GtkButton *button, gpointer param)
 
         	if (gtk_tree_selection_get_selected (selection, &model, &iter))
         	{
-        	        gtk_tree_model_get (model, &iter, JOB_NAME, &job_name, -1);
+        	        gtk_tree_model_get (model, &iter, JOB_Q_NAME, &job_name, -1);
 
 			controler_print_start((const char*) job_name);
         	        g_free(job_name);
@@ -1511,43 +1595,55 @@ void gui_control_page_load_jobs(gui_control_page * this)
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
 
 	GtkTreeIter iter;
-	this->job_list_store = gtk_list_store_new(JOB_LIST_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_STRING);
+	this->job_list_store = gtk_list_store_new(JOB_LIST_N, 
+						G_TYPE_STRING, 
+						G_TYPE_STRING, 
+						G_TYPE_STRING, 
+						G_TYPE_INT, 
+						G_TYPE_INT, 
+						G_TYPE_STRING, 
+						G_TYPE_STRING);
 
-	for(int i = 0; i < controler_get_job_queue_size(); i++)
+	if(this->job_list_store != NULL)
 	{
-		gtk_list_store_append(this->job_list_store, &iter);
-		const char * job_status = NULL;		
-
-		const char * printed_job_name = controler_get_printed_job_name();
-		char * job_name = controler_get_job_name(i);
-
-		if((printed_job_name != NULL) && (job_name != NULL) && (strcmp(printed_job_name, job_name) == 0))
+		for(int i = 0; i < controler_get_job_queue_size(); i++)
 		{
-			if(controler_machine_status_val() == MACHINE_STATE_NEXT)
-				job_status = multi_lang->print_state_wait_for_data;
-			else if(controler_machine_status_val() == MACHINE_STATE_ERROR)
-				job_status = multi_lang->print_state_job_error;
+			gtk_list_store_append(this->job_list_store, &iter);
+			const char * job_status = NULL;		
+
+			const char * printed_job_name = controler_get_printed_job_name();
+			char * job_name = controler_get_job_name(i);
+
+			if((printed_job_name != NULL) && (job_name != NULL) && (strcmp(printed_job_name, job_name) == 0))
+			{
+				if(controler_machine_status_val() == MACHINE_STATE_NEXT)
+					job_status = multi_lang->print_state_wait_for_data;
+				else if(controler_machine_status_val() == MACHINE_STATE_ERROR)
+					job_status = multi_lang->print_state_job_error;
+				else if(controler_machine_status_val() == MACHINE_STATE_PAUSE)
+					job_status = multi_lang->print_state_pause;
+				else
+					job_status = multi_lang->print_state_print;
+			}
 			else
-				job_status = multi_lang->print_state_print;
-		}
-		else
-		{
-			job_status = multi_lang->print_state_wait;
+			{
+				job_status = multi_lang->print_state_wait;
+			}
+
+        	       	gtk_list_store_set (this->job_list_store, &iter,
+					JOB_STATE, ((job_status == NULL) ? " " : job_status),
+					JOB_ORDER_NAME, ((controler_get_job_order_name(i) == NULL) ? " " : controler_get_job_order_name(i)),
+					JOB_NOMINAL, ((controler_get_job_nominal_value(i) == NULL) ? " " : controler_get_job_nominal_value(i)),
+					JOB_SHEET_NUMBER, controler_get_job_sheet_number(i), 
+					JOB_STAMP_NUMBER, controler_get_job_stamp_number(i),
+					JOB_Q_NAME, ((controler_get_job_name(i) == NULL) ? " " : controler_get_job_name(i)),
+					JOB_DATE_TIME, ((controler_get_job_date_time(i) == NULL) ? " " : controler_get_job_date_time(i)), 
+					-1);
 		}
 
-
-               	gtk_list_store_set (this->job_list_store, &iter,
-				JOB_STATE, ((job_status == NULL) ? "Unknown" : job_status),
-				JOB_NAME, ((controler_get_job_name(i) == NULL) ? "Unknown" : controler_get_job_name(i)),
-				JOB_ORDER, controler_get_job_order(i),
-				JOB_SHEET_NUMBER, controler_get_job_sheet_number(i), 
-				JOB_STAMP_NUMBER, controler_get_job_stamp_number(i),
-				JOB_DATE_TIME, ((controler_get_job_date_time(i) == NULL) ? "Unknown" : controler_get_job_date_time(i)), 
-				-1);
+		gtk_tree_view_set_model (GTK_TREE_VIEW(this->job_list), GTK_TREE_MODEL(this->job_list_store));
+        	g_object_unref(G_OBJECT(this->job_list_store));
 	}
-
-	gtk_tree_view_set_model (GTK_TREE_VIEW(this->job_list), GTK_TREE_MODEL(this->job_list_store));
-        g_object_unref(G_OBJECT(this->job_list_store));
 }
 
 
@@ -1559,8 +1655,8 @@ void gui_control_page_load_report_csv_list(gui_control_page * this)
 	{
 		if(this->gui_base_ref->report_csv_list == NULL)
 		{
-				this->gui_base_ref->report_csv_list = current_csv_list;
-				gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
+			this->gui_base_ref->report_csv_list = current_csv_list;
+			gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
 		}
 		else
 		{

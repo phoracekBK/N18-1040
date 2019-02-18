@@ -23,7 +23,7 @@ c_csv_struct * controler_analyze_csv(c_csv_struct * q_csv, c_csv_struct * c_csv)
 				c_string * q_ceel = NULL;
 				c_string * c_ceel = NULL;
 
-				while((q_ceel = c_csv_get_next_ceel_in_line(q_csv)) != NULL && c_csv_get_focused_line_index(q_csv) < 14)
+				while((q_ceel = c_csv_get_next_ceel_in_line(q_csv)) != NULL)
 				{
 					if((c_ceel = c_csv_get_next_ceel_in_line(c_csv)) != NULL)
 					{
