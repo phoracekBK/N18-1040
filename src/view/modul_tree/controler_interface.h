@@ -106,7 +106,7 @@
 
 #define MACHINE_STATE_STACKER_ERROR 21
 
-
+#define MACHINE_STATE_FAKE_COMPANION 22
 
 
 
@@ -195,6 +195,7 @@ typedef struct _rep_struct_ rep_struct;
 struct _rep_struct_
 {
 	char * finish_state;
+	char * order_name;
 	char * job_name;
 	int wrong_sheet_number;
 	int rejected_sheet_number;
@@ -259,13 +260,15 @@ void controler_total_clear_hotfolder();
 
 void controler_set_max_stacked_sheets(int sheet_val);
 void controler_set_max_rejected_sheet_seq(int sheet_val);
+void controler_set_feed_delay(uint32_t delay);
+uint32_t controler_get_get_feed_delay();
 int controler_get_max_rejected_sheet_seq();
 void controler_set_companion_sheet_source(int source);
 extern void controler_set_sheet_source_confirmation(bool confirm);
 bool controler_get_sheet_source_confirmation();
 int controler_get_sheet_source();
 int controler_get_max_stacked_sheet();
-
+int controler_get_stacked();
 
 uint8_t controler_set_q_main_hotfolder_path(const char * path);
 uint8_t controler_set_q_feedback_hotfolder_path(const char * path);
@@ -308,6 +311,7 @@ uint8_t controler_print_reset_error();
 void controler_manual_feed_sheet();
 void controler_manual_set_ena_state(bool state);
 void controler_print_one_sheet_req();
+void controler_finish_job_and_print_companion();
 
 void controler_sheet_source_confirmation();
 
@@ -316,6 +320,7 @@ char* controler_machine_get_state_str();
 uint8_t controler_machine_status_val();
 
 bool controler_get_print_one_req_val();
+bool controler_get_fake_companion_req_val();
 
 int controler_get_error_val();
 const char* controler_get_error_str();

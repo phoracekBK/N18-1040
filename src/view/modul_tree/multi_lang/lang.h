@@ -41,6 +41,16 @@ struct _lang_
 	const char * set_btn_back;
 	const char * set_btn_back_to_settngs;
 
+	const char * info_label_preparing;
+	const char * info_label_finishing;
+	const char * info_label_feed_sheet_confirm;
+	const char * info_label_fix_feeder_issue;
+	const char * info_label_companion_fake;
+	const char * info_label_companion_fake_instruction;
+	const char * info_label_data_generation;
+	const char * info_label_approx_max_stacked_sheet;
+	const char * info_label_max_stacked_sheet;
+
 	const char * err_no_error;
 	const char * err_cant_save_f_csv;
 	const char * err_analyze_camera_csv;
@@ -109,10 +119,11 @@ struct _lang_
 	const char * hot_report_csv_fs_label;
 
 	const char * rep_csv_state;
-	const char * rep_csv_name;
+	const char * rep_csv_order_name;
 	const char * rep_csv_rejected_sheets;
 	const char * rep_csv_sheet_number;
-	const char * rep_csv_stamp_number;
+	const char * rep_csv_stamp_number;	
+	const char * rep_csv_job_name;
 	const char * rep_csv_date_time;
 	
 
@@ -138,6 +149,7 @@ struct _lang_
 	const char * par_print_confirm_lbl;
 	const char * par_sheet_source_main;
 	const char * par_sheet_source_companion;
+	const char * par_feed_delay_lbl;
 	const char * par_machine_mode_lbl;
 	const char * par_mm_setup_comb;
 	const char * par_mm_inspection_comb;

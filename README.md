@@ -1,13 +1,15 @@
 
 
 **TODO**
-* přidat informační popisek do hlavního panelu
+* přidat do ovládacího panelu tlačítko na vyprázdnění vykladače (vynulování počítadla na vyložené archy) (implementováno ale netestováno)
+* zrychlit ukončování jobu
+* nafakeovat tisk prokladu na jedno tlačítko
 * nastavit program aby při zácpě jakéhokoli druhu vyčistil pás, a vygeneroval náhrady do quadientu
 * přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
 * vyzkoušet vypnout všechny systémy (pc) a po znovuspuštění zkontrolovat že vše naběhlo vpořádku 
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
+* přidat do nastavení tiskových parametrů zpomalení nakládání -> nastavení rozestupů archů na pásu
 * přidat do controleru funkci pro nastřelování oddělovacích proužků
-* do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
 * zpomalit tisk pokud se náhrady blíží nastavení hodnotě (500) ve vykladači
 
@@ -16,12 +18,22 @@
 * refaktorovat kód pro větší přehlednost
 * vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
 * (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
-* Upravit vizuální vzhled ovládacích tlačítek v řídícím panelu
 * Zpomalit tisk pokud se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 
 
 
 **DONE**
+
+* zprovoznit vizualizaci stroje v hlavním panelu
+* přidat do nastavení tiskových parametrů nastavení zpomalení nakládání (časová prodleva naložení ovlivňující vzdálenost jednotlivých archů)
+* do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
+* upravit obsah reportovacího csv a sjednotit popisky jobů k tisku a vytisknutých jobů
+* vytvořit skript který vymaže soubory logu a reportu starší než 30 dnů
+* při ukončování programu pokud se program nachází ve stavu tisku, pak se musí nejprve tisk korektně ukončit aby se mohl ukočit program
+* přidat informační popisky do hlavního panelu
+* upravit ovládací tlačítka hlavního panelu - talčítko vymazat job sloučit s tlačítkem pro zrušení tisknutého jobu a naložit jeden arch automaticky spustí tisk jobu pokud neběží
+* automatické připojení gisu po jeho odpojení s chybou
+* přidat tlačítko na korektní ukončení programu
 * přidat na hlavní panel informaci o počtu náhrad v daném podjobu
 * přidat na hlavní panel časový odhad pro tisk daného jobu
 * přida položku job id a sjednotit názvy ve výpisu jobů

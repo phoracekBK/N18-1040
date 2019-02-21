@@ -77,6 +77,8 @@
 #define CFG_PP_NON_STACKED_SHEET_LIMIT "non_stacked_sheet_limit"
 #define CFG_PP_NON_REVIDED_SHEET_LIMIT "non_revided_sheet_limit"
 #define CFG_PP_GR_MACHINE_MODE "gr_machine_mode"
+#define CFG_PP_FEED_DELAY "feed_delay"
+
 
 #define CFG_LANG_INDEX "lang_index"
 
@@ -100,7 +102,9 @@ pthread_t iij_gis_state_reading_thread;
 
 com_tcp * iij_tcp_ref;
 com_tcp * pci_tcp_ref;
-	
+bool iij_tcp_connection_req;	
+c_timer * iij_connection_try_timer;
+
 /* connection testing, communication with network_responder utility */
 com_tcp * pci_connection;
 com_tcp * iij_connection;
@@ -158,6 +162,9 @@ uint32_t camera_sensor_trigger_counter;
 uint32_t feeded_sheet_counter;
 uint32_t feeded_sheet_counter_in_job;
 uint32_t feeded_sheet_counter_pre;
+uint32_t stacked_sheet;
+uint32_t rejected_sheet;
+uint32_t feeded_sheet;
 
 int32_t non_stacked_upper_limit;
 int32_t non_revided_upper_limit;
@@ -222,11 +229,17 @@ uint64_t ena_start_timer;
 uint64_t file_delay;
 
 c_timer * feeding_rate;
+uint64_t feed_delay;
+
 uint32_t wait_for_files_ready;
 c_timer * f_s_delay;
-uint64_t time_for_nth_sheet[12];
+uint64_t time_for_nth_sheet[4];
 uint64_t last_feeded_sheet_millis;
 int nth_sheet_time_index;
+
+bool fake_companion_req;
+bool companion_faked;
+
 
 /**************************************************** functions declarations *****************************************************/
 
@@ -274,6 +287,7 @@ void controler_machine_state_save_q_csv();
 void controler_machine_state_wait_for_print_finish();
 void controler_machine_state_finish();
 void controler_machine_state_print_break();
+void controler_machine_state_fake_companion();
 
 
 void contorler_sheet_counter();
@@ -441,9 +455,7 @@ void controler_finalize()
 	com_tcp_finalize(iij_tcp_ref);
 	//com_tcp_finalize(pci_tcp_ref);
 	
-	config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
-	config_destroy(&(cfg_ref));
-
+	
 	
 	if(job_list != NULL)
 		array_list_destructor_with_release_v2(job_list, q_job_finalize);
@@ -470,6 +482,11 @@ void controler_finalize()
 
 	io_card_finalize(io_card_ref);
 		
+	config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
+	sleep(1);
+	config_destroy(&(cfg_ref));
+
+
 	c_log_add_record_with_cmd(log_ref, "Jádro úspěšně ukončeno.");
 	c_log_finalize(log_ref);
 }
@@ -778,12 +795,25 @@ void controler_print_one_sheet_req()
 {
 	machine_pause_req = false;
 	machine_print_one_req = true;	
+	rejected_sheet_seq_counter = 0;
 }
 
+
+void controler_finish_job_and_print_companion()
+{
+	fake_companion_req = true;
+	machine_pause_req = false;
+}
+	
 
 bool controler_get_print_one_req_val()
 {
 	return machine_print_one_req;
+}
+
+bool controler_get_fake_companion_req_val()
+{
+	return fake_companion_req;
 }
 
 void controler_feed_sheet()
@@ -814,6 +844,26 @@ void controler_manual_set_ena_state(bool state)
 		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_10_ENA, 0);
 }
 
+
+
+void controler_set_feed_delay(uint32_t delay)
+{
+	feed_delay = delay;
+
+	c_log_add_record_with_cmd(log_ref, "Nastavena prodleva pro zpomalení nakládání kolkových archů: %d", delay);
+
+	controler_update_config(CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_FEED_DELAY, 
+			CONFIG_TYPE_INT, 
+			&delay, 
+			"Nastavení prodlevy pro zpomalení nakládání kolkových archů aktualizováno.", 
+			"Nepodařilo se aktualizovat prodlevu pro zpomalení nakládání kolkových archů!");
+}
+
+uint32_t controler_get_get_feed_delay()
+{
+	return feed_delay;
+}
 
 void controler_set_max_rejected_sheet_seq(int sheet_val)
 {
@@ -948,7 +998,10 @@ uint8_t controler_get_card_output(int card, int addr)
 	return io_card_get_output(io_card_ref, card, addr);
 }
 
-
+int controler_get_stacked()
+{
+	return stacked_sheet;
+}
 
 int controler_get_max_stacked_sheet()
 {
@@ -1296,9 +1349,14 @@ uint8_t controler_iij_connect()
 	uint8_t res = controler_iij_try_connect();
 
 	if(res == STATUS_CLIENT_CONNECTED)
+	{	
+		iij_tcp_connection_req = true;	
 		c_log_add_record_with_cmd(log_ref, "Spojení s GISem navázáno.");
+	}
 	else
+	{
 		c_log_add_record_with_cmd(log_ref, "Spojení s GISem nebylo navázáno!");
+	}
 
 	return res;
 }
@@ -1311,6 +1369,8 @@ uint8_t controler_iij_is_connected()
 uint8_t controler_iij_disconnect()
 {
 	com_tcp_disconnect(iij_tcp_ref);
+	
+	iij_tcp_connection_req = false;	
 	c_log_add_record_with_cmd(log_ref, "Spojení s GISem ukončeno.");
 
 	return STATUS_SUCCESS;
@@ -1367,8 +1427,28 @@ uint8_t controler_pci_status()
 
 void * controler_machine_handler(void * param)
 {
-	while(machine_handler_run == true)
+	while(true)
 	{
+		if((machine_handler_run == false))
+		{
+			if((machine_state == MACHINE_STATE_WAIT) || (machine_state == MACHINE_STATE_ERROR))
+			{
+				break;
+			}
+			else
+			{
+				if(machine_state == MACHINE_STATE_NEXT || machine_state == MACHINE_STATE_PREPARE ||
+					machine_state == MACHINE_STATE_PAUSE || machine_state == MACHINE_STATE_READY_TO_START || 
+					machine_state == MACHINE_STATE_WAIT_FOR_PRINT_FINISH || machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION || 
+					machine_state == MACHINE_STATE_FEEDER_ERROR || machine_state == MACHINE_STATE_FEEDER_ERROR || 
+					machine_state == MACHINE_STATE_STACKER_ERROR || machine_state == MACHINE_STATE_CLEAR_BELT_AFTER_JAM || 
+					machine_state == MACHINE_STATE_FAKE_COMPANION)
+					{
+						machine_state = MACHINE_STATE_PRINT_BREAK;
+					}
+			}
+		}
+		
 		/* read all inputs */
 		io_card_sync_inputs(io_card_ref);
 
@@ -1413,6 +1493,9 @@ void * controler_machine_handler(void * param)
 
 			else if(machine_state == MACHINE_STATE_PRINT_MAIN)
 				controler_machine_state_print_main();
+
+			else if(machine_state == MACHINE_STATE_FAKE_COMPANION)
+				controler_machine_state_fake_companion();
 		
 			else if(machine_state == MACHINE_STATE_CLEAR_BELT_AFTER_JAM)
 				controler_machine_state_clear_belt_after_jam();
@@ -1467,7 +1550,12 @@ void controler_machine_state_error()
 	{
 		error_code = MACHINE_ERR_NO_ERROR;
 		machine_state = MACHINE_STATE_PRINT_BREAK;
-	}	
+	}
+	else if(fake_companion_req == true)
+	{
+		error_code = MACHINE_ERR_NO_ERROR;
+		machine_state = MACHINE_STATE_FAKE_COMPANION;
+	}
 }
 
 int controler_get_machine_mode()
@@ -1690,7 +1778,8 @@ void controler_print_break_req()
 		machine_state == MACHINE_STATE_PAUSE || machine_state == MACHINE_STATE_READY_TO_START || 
 		machine_state == MACHINE_STATE_WAIT_FOR_PRINT_FINISH || machine_state == MACHINE_STATE_WAIT_FOR_CONFIRMATION || 
 		machine_state == MACHINE_STATE_FEEDER_ERROR || machine_state == MACHINE_STATE_FEEDER_ERROR || 
-		machine_state == MACHINE_STATE_STACKER_ERROR || machine_state == MACHINE_STATE_CLEAR_BELT_AFTER_JAM)
+		machine_state == MACHINE_STATE_STACKER_ERROR || machine_state == MACHINE_STATE_CLEAR_BELT_AFTER_JAM || 
+		machine_state == MACHINE_STATE_FAKE_COMPANION)
 	{
 		if((machine_cancel_req) == true)
 		{
@@ -1698,7 +1787,6 @@ void controler_print_break_req()
 		}
 	}
 }
-
 
 void controler_refresh_dir_list()
 {
@@ -1814,6 +1902,7 @@ void controler_machine_state_read_hotfolder()
 								{	
 									printf("set job name\n");
 									job_info_set_order_name(info, q_job_get_order_name(job));
+									job_info_set_job_name(info, q_job_get_job_name(job));
 									job_info_generate_csv_name(info);
 								}
 	
@@ -1958,11 +2047,22 @@ void controler_machine_state_pause()
 			bkcore_csv_pos = feeded_sheet_counter_in_job;
 			rejected_sheet_seq_counter = 0;
 
+			if(stacked_sheet >= max_stacked_sheets)
+			{
+				stacked_sheet = 0;
+				rejected_sheet = 0;
+				feeded_sheet = 0;
+			}
+
 			if(machine_jam_req == true)
 				machine_state = MACHINE_STATE_CLEAR_BELT_AFTER_JAM;
 			else
 				machine_state = MACHINE_STATE_WAIT_FOR_ENA_START;
 		}
+	}
+	else if((fake_companion_req == true))
+	{
+		machine_state = MACHINE_STATE_FAKE_COMPANION;
 	}
 }
 
@@ -2073,7 +2173,7 @@ void controler_record_feeding_time()
 	if((stacked_sheet_counter_in_job > 0) && (sn_trig != stacker_status) && (stacker_status == MACHINE_SN_STACKING))
 	{
 		time_for_nth_sheet[nth_sheet_time_index] = c_freq_millis() - last_feeded_sheet_millis;
-		nth_sheet_time_index = (nth_sheet_time_index +1) % 12;
+		nth_sheet_time_index = (nth_sheet_time_index +1) % 4;
 
 		last_feeded_sheet_millis = c_freq_millis();
 	}
@@ -2084,30 +2184,43 @@ uint64_t controler_get_time_for_one_sheet()
 {
 	uint64_t dia_time = 0;
 
-	for(int i = 0; i < 12; i++)
+	if(stacked_sheet_counter > 0)
 	{
-		dia_time += time_for_nth_sheet[i];
-	}
+		for(int i = 0; i < 4; i++)
+		{
+			dia_time += time_for_nth_sheet[i];
+		}
 
-	if(stacked_sheet_counter > 11)
-		return (dia_time/12);
+		if(stacked_sheet_counter > 3)
+			return (dia_time/4);
+		else
+			return dia_time/stacked_sheet_counter;
+	}
 	else
-		return dia_time/stacked_sheet_counter;
+	{
+		return 0;
+	}	
 }
 
 int8_t controler_machine_slow_down()
 {
 	int x = 10;
-	int8_t slmx = (stacked_sheet_counter < (max_stacked_sheets - x));
-	int8_t sgemx = (stacked_sheet_counter >= (max_stacked_sheets - x));
-	int8_t sgem = !(stacked_sheet_counter >= max_stacked_sheets);
-	int8_t fes = (feeded_sheet_counter_in_job == stacked_sheet_counter+rejected_sheet_counter);
+	int8_t slmx = (stacked_sheet < (max_stacked_sheets - x));
+	int8_t sgemx = (stacked_sheet >= (max_stacked_sheets - x));
+	int8_t sgem = !(stacked_sheet >= max_stacked_sheets);
+	int8_t fes = (feeded_sheet == stacked_sheet+rejected_sheet);
 
 	return ((!slmx) && sgemx && sgem && fes) || (slmx && (!sgemx) && sgem);
 }
 
 void controler_machine_state_read_csv_line()
 {
+	/* load line from csv */
+	q_job * job = NULL;
+				
+	if(job_list != NULL)
+		job = array_list_get(job_list, printed_job_index);
+
 	/* if is set pause request, move to pause state after feed current sheet */
 	if((machine_pause_req == true))
 	{
@@ -2117,20 +2230,18 @@ void controler_machine_state_read_csv_line()
 	{
 		machine_state = MACHINE_STATE_PRINT_BREAK;
 	}
+	else if((job != NULL) && ((fake_companion_req == true) || (companion_faked == true)) && (q_job_get_flag(job) != 'p'))
+	{
+		machine_state = MACHINE_STATE_FAKE_COMPANION;
+	}
 	else
 	{
 		if(feeder_status == MACHINE_FN_READY_TO_FEED)
 		{
-			if(c_timer_delay(feeding_rate, 100) > 0)
+			if(c_timer_delay(feeding_rate, feed_delay) > 0)
 			{
 				if(controler_machine_slow_down() > 0)
 				{
-					/* load line from csv */
-					q_job * job = NULL;
-				
-					if(job_list != NULL)
-						job = array_list_get(job_list, printed_job_index);
-		
 					if(job != NULL)
 					{
 						/* process csv line */
@@ -2180,7 +2291,7 @@ void controler_machine_state_read_csv_line()
 						controler_set_machine_error(MACHINE_ERR_UNKNOWN_ERROR);
 					}
 				}
-				else if(stacked_sheet_counter >= max_stacked_sheets)
+				else if(stacked_sheet >= max_stacked_sheets)
 				{
 					machine_state = MACHINE_STATE_PAUSE;
 					machine_pause_req = true;
@@ -2313,7 +2424,7 @@ void controler_machine_state_print_main()
 	}
 	else if((feed_sheet == 3) && (feeder_status == MACHINE_FN_READY_TO_FEED))
 	{
-		if(timer + 600 < c_freq_millis())
+		//if(timer + 600 < c_freq_millis())
 		{
 			feed_sheet = 0;
 			main_sheet_feed_request_counter++;
@@ -2355,9 +2466,9 @@ void controler_machine_state_print_companion()
 			feed_sheet = 2;
 		}
 
-		if(io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_0_TI_incyc) > 0)
+		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) > 0)
 		{
-			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_12_TI_ins, 0);
+			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_9_TA_cyc, 0);
 			timer = c_freq_millis();
 			feed_sheet = 3;
 		}
@@ -2374,7 +2485,7 @@ void controler_machine_state_print_companion()
 	else if((feed_sheet == 3) && (io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) == 0))
 	{
 		/* wait 10s for sure, that the companion sheet was successfuly feeded (response 2Hz flashing) */
-		if(((timer+10000) <= c_freq_millis()) || ((io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_2_FEEDING_SENSOR) > 0) && (timer+3000 < c_freq_millis())))
+		if(((timer+10000) <= c_freq_millis()) || ((io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_2_FEEDING_SENSOR) > 0) && ((timer+6000) <= c_freq_millis())))
 		{
 			/* wait for TA_BF true state, incremet the counter state and go to READ_CSV_LINE state */	
 			feed_sheet = 0;
@@ -2614,8 +2725,7 @@ void controler_machine_state_wait_for_print_finish()
 		controler_set_machine_error(MACHINE_ERR_PRINT_FINALIZING_FREEZE);
 
 
-
-	if(((delay_on_end+30000) < c_freq_millis()) || (feeded_sheet_counter_in_job == (stacked_sheet_counter_in_job + rejected_sheet_counter_in_job) && 
+	if(((delay_on_end+25000) < c_freq_millis()) || (feeded_sheet_counter_in_job == (stacked_sheet_counter_in_job + rejected_sheet_counter_in_job) && 
 			(delay_on_end+15000 < c_freq_millis())))
 	{
 		if((feeded_sheet_counter_in_job == job_info_get_job_sheet_number(info, job_info_get_job_index(info))) && 
@@ -2647,6 +2757,63 @@ void controler_machine_state_wait_for_print_finish()
 		}
 	}
 }
+
+
+void controler_machine_state_fake_companion()
+{
+	if(fake_companion_req == true)
+	{
+		if(print_finishing_step  == 0)
+		{
+			if(strcmp(c_string_get_char_array(print_controler_status), "Ready") != 0)
+				print_finishing_step = 1;
+			else
+				print_finishing_step = 3;
+			printf("Recognize state of print breaking\n");
+		}
+		else if(print_finishing_step == 1)
+		{
+			controler_printer_abbort_print(0);
+			printf("Send P,A\n");
+			timer = c_freq_millis();
+			print_finishing_step = 2;
+		}
+		else if(print_finishing_step == 2)
+		{
+			if((timer + 500) <= c_freq_millis())
+			{
+				printf("Send R,A\n");
+				controler_printer_abbort_print(1);
+				print_finishing_step = 3;
+			}
+		}
+		else
+		{
+			if(strcmp(c_string_get_char_array(print_controler_status), "Ready") == 0)
+			{
+				fake_companion_req = false;
+				companion_faked = true;
+	
+				q_job * job = NULL;
+
+				if(job_list != NULL)
+					job = array_list_get(job_list, printed_job_index);
+
+				if(job != NULL)
+				{
+					if(q_job_get_flag(job) == 'k')
+					{
+						util_save_csv(c_string_get_char_array(q_hotfolder_feedback_path), q_job_get_bkcore_csv_name(job), "");
+					}
+				}		
+	
+				print_finishing_step = 0;
+				machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
+			}
+		}
+	}
+}
+
 
 void controler_machine_state_print_break()
 {
@@ -2685,9 +2852,9 @@ void controler_machine_state_print_break()
 
 			if(job != NULL)
 			{
-
 				/* wait for machine done the printing */
-				if((feeded_sheet_counter_in_job == (stacked_sheet_counter + rejected_sheet_counter)) || (c_timer_delay(print_timer, 10000) > 0))
+				if((feeded_sheet_counter_in_job == (stacked_sheet_counter + rejected_sheet_counter)) || (c_timer_delay(print_timer, 10000) > 0) || 
+					(q_job_get_flag(job) == 'e'))
 				{
 					printf("Finish\n");
 
@@ -2859,12 +3026,16 @@ void controler_machine_finish_print()
 				c_string_get_char_array(job_info_get_csv_name(info)), 
 				c_string_get_char_array(report_csv_content));
 		}
+		else
+		{
+			printf("report csv content is missing\n");
+		}
 
-			free(time_date);
-			job_info_clear(info);
+		free(time_date);
+		job_info_clear(info);
 	}
 
-	for(int i = 0; i< 12; i++)
+	for(int i = 0; i < 4; i++)
 	{
 		time_for_nth_sheet[i] = 0;
 	}
@@ -2892,6 +3063,8 @@ void controler_machine_finish_print()
 	error_code = MACHINE_ERR_NO_ERROR;
 	machine_pause_req = false;
 
+	fake_companion_req = false;
+	companion_faked = false;
 }
 
 
@@ -3251,14 +3424,16 @@ void controler_safety_system_in()
 				machine_error_reset_req = true;
 			else
 				machine_error_reset_req = false;
-	
 		}
 		else
 		{
-			if(machine_mode == GR_PRINT_INSPECTION || machine_mode == GR_PRINT)
+			if((machine_mode == GR_PRINT_INSPECTION) || (machine_mode == GR_PRINT))
 			{
+				if(iij_tcp_connection_req == true && c_timer_delay(iij_connection_try_timer, 1000) > 0)
+					controler_iij_connect();
+
 				if(error_code == MACHINE_ERR_NO_ERROR)
-					controler_set_machine_error(MACHINE_ERR_GIS_DISCONNECTED);
+					controler_set_machine_error(MACHINE_ERR_GIS_DISCONNECTED);	
 			}
 		}
 	}
@@ -3473,11 +3648,28 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 		int temp_int_val = 0;
 		c_string * buffer = c_string_new();
 
-		while((report_csv_content[pos] != 0) && (par < 9))
+		while((report_csv_content[pos] != 0) && (par < 10))
 		{
 			switch(par)
 			{
 				case 0:
+					if(report_csv_content[pos] == '\n')
+					{
+						job_report->order_name = malloc(sizeof(char) * (c_string_len(buffer)+1));
+						strcpy(job_report->order_name, c_string_get_char_array(buffer));
+					}
+					else if(report_csv_content[pos] == ':')
+					{
+						read_enable = true;
+						pos++;
+					}
+					else if(read_enable == true)
+					{
+						c_string_add_char(buffer, report_csv_content[pos]);	
+					}
+				break;
+
+				case 1:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->job_name = malloc(sizeof(char) * (c_string_len(buffer)+1));
@@ -3494,7 +3686,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 					}
 				break;
 
-				case 1:
+				case 2:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->finish_state = malloc(sizeof(char) * (c_string_len(buffer)+1));
@@ -3508,7 +3700,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 				break;
 				
 				
-				case 2:
+				case 3:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->feeded_sheet_number = temp_int_val;
@@ -3520,7 +3712,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 					}
 				break;
 		
-				case 3:
+				case 4:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->stacked_sheet_number = temp_int_val;
@@ -3532,7 +3724,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 					}
 				break;
 		
-				case 4:
+				case 5:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->rejected_sheet_number = temp_int_val;
@@ -3545,7 +3737,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 				break;
 
 
-				case 5:
+				case 6:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->wrong_sheet_number = temp_int_val;
@@ -3557,7 +3749,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 					}
 				break;
 
-				case 6:
+				case 7:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->sheet_number = temp_int_val;
@@ -3570,7 +3762,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 				break;
 
 
-				case 7:
+				case 8:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->stamp_number = temp_int_val;
@@ -3582,7 +3774,7 @@ rep_struct * controler_load_report_information(char * report_csv_name)
 					}
 				break;
 	
-				case 8:
+				case 9:
 					if(report_csv_content[pos] == '\n')
 					{
 						job_report->date_time = malloc(sizeof(char) * (c_string_len(buffer)+1));
@@ -3860,7 +4052,9 @@ void * controler_gis_runtime_state_reading(void * param)
 		usleep(5000);
 	}
 	
-	c_string_set_string(print_controler_status, "Unknown");
+	if(print_controler_status != NULL)
+		c_string_set_string(print_controler_status, "Unknown");
+
 	controler_iij_disconnect();
 	
 	return NULL;
@@ -4099,6 +4293,11 @@ uint8_t controler_load_config()
 	else
 		return 18;
 */
+
+	if(config_setting_lookup_int(settings, CFG_PP_FEED_DELAY, &setting_val_int) == CONFIG_TRUE)
+		feed_delay = setting_val_int;
+	else
+		return 19;
 	
 
 	/* load language settings */
@@ -4107,7 +4306,7 @@ uint8_t controler_load_config()
 	if(config_setting_lookup_int(settings, CFG_LANG_INDEX, &setting_val_int) == CONFIG_TRUE)
 		lang_index = setting_val_int;
 	else
-		return 19;
+		return 20;
 
 
 	return 0;
@@ -4126,6 +4325,16 @@ void controler_initialize_variables()
 	machine_print_one_req = false;
 	machine_jam_req = false;
 
+
+	fake_companion_req = false;
+	companion_faked = false;
+
+
+	machine_mode = GR_PRINT_INSPECTION;
+
+	iij_tcp_connection_req = true;	
+	
+	iij_connection_try_timer = c_timer_new();
 	
 	wait_for_files_ready = 0;
 
@@ -4181,6 +4390,11 @@ void controler_initialize_variables()
 	feeded_sheet_counter = 0;
 	feeded_sheet_counter_in_job = 0;
 	feeded_sheet_counter_pre = 0;
+
+
+	stacked_sheet = 0;
+	rejected_sheet = 0;
+	feeded_sheet = 0;
 
 	sheet_sensor_pre = 0;
 
@@ -4266,6 +4480,11 @@ void controler_default_config()
 	non_revided_upper_limit = 3;
 	settings = config_setting_add(print_params, CFG_PP_NON_REVIDED_SHEET_LIMIT, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, 3);	
+
+
+	feed_delay = 500;
+	settings = config_setting_add(print_params, CFG_PP_FEED_DELAY, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 500);	
 
 /*
 	machine_mode = GR_PRINT_INSPECTION;

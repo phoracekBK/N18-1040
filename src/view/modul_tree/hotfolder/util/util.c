@@ -90,6 +90,7 @@ int32_t util_save_csv(char* addr, char * name, char* buff)
 
 	if(csv_out != NULL)
 	{
+		printf("%s\n", csv_addr);
 		//printf("csv content - %s\n", buff);
 		int32_t size_out = fwrite(buff, sizeof(char), strlen(buff), csv_out);
 		fclose(csv_out);

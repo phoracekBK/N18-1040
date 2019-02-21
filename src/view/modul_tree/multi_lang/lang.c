@@ -46,6 +46,17 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->set_btn_back = "Zpět na controlní panel";
     cz_lang->set_btn_back_to_settngs = "Zpět";
 
+
+    cz_lang->info_label_preparing = "Čekejte, spouštění tisku...";
+    cz_lang->info_label_finishing = "Čekejte, ukončování tisku...";
+    cz_lang->info_label_feed_sheet_confirm = "Potvrďte naložení prokladového archu.";
+    cz_lang->info_label_fix_feeder_issue = "Nakladač v chybě, čekám na nápravu...";
+    cz_lang->info_label_companion_fake = "Ruční tisk prokladového archu.";
+    cz_lang->info_label_companion_fake_instruction = "Vytisknout další proklad nebo ukončit job.";
+    cz_lang->info_label_data_generation = "Generují se tisková data...";
+    cz_lang->info_label_approx_max_stacked_sheet = "Blíží se maximální množství archů ve vykladači";
+    cz_lang->info_label_max_stacked_sheet = "Dosaženo maximální množství archů ve vykladači";
+ 
     cz_lang->err_no_error = "Připraven";
     cz_lang->err_cant_save_f_csv = "Nelze uložit zpětnovazební csv!";
     cz_lang->err_analyze_camera_csv = "Chyba analýzy camerového csv!";
@@ -114,10 +125,11 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->hot_report_csv_fs_label = "Adresář pro reporty:";
 
     cz_lang->rep_csv_state = "Stav ukončení";
-    cz_lang->rep_csv_name = "Název-ID jobu";
+    cz_lang->rep_csv_order_name = "Jméno jobu";
     cz_lang->rep_csv_rejected_sheets = "Celk. počet vadných archů";
     cz_lang->rep_csv_sheet_number = "Celkový počet archů";
     cz_lang->rep_csv_stamp_number = "Celkový počet kolků";
+    cz_lang->rep_csv_job_name = "Job-identifikátor";
     cz_lang->rep_csv_date_time = "Datum a čas";
 
     cz_lang->g_counters_label = "POČÍTADLA STROJE:";
@@ -140,6 +152,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->par_rejected_sheet_seq_lbl = "Maximální sekvence vadných archů:";
     cz_lang->par_sheet_source_lbl = "Nakladač pro prokladový arch:";
     cz_lang->par_print_confirm_lbl = "Potvrzení naložení archu z hlavního nakladače:";
+    cz_lang->par_feed_delay_lbl = "Zpomalení nakládání kolkových archů (ms): ";
     cz_lang->par_sheet_source_main = "Hlavní nakladač";
     cz_lang->par_sheet_source_companion = "Prokladový nakladač";
     cz_lang->par_machine_mode_lbl = "Pracovní režim dopravníku: ";
@@ -196,6 +209,17 @@ void lang_init_english(lang * en_lang)
     en_lang->set_btn_io_vision = "IO vision";
     en_lang->set_btn_back = "Back to control page";
     en_lang->set_btn_back_to_settngs = "Back";
+
+
+    en_lang->info_label_preparing = "Please wait, print is starting...";
+    en_lang->info_label_finishing = "Please wait, print is starting...";
+    en_lang->info_label_feed_sheet_confirm = "Confirm sheet feeding.";
+    en_lang->info_label_fix_feeder_issue = "Feeder in error state, waiting for fix...";
+    en_lang->info_label_companion_fake = "Faking companion sheet generating";
+    en_lang->info_label_companion_fake_instruction = "Fake next companion sheet or cancel job";
+    en_lang->info_label_data_generation = "New data generating...";
+    en_lang->info_label_approx_max_stacked_sheet = "Approximation of maximum amount of sheets in stacker";
+    en_lang->info_label_max_stacked_sheet = "Maximum amount of sheets in stacker";
 
     en_lang->err_no_error = "Ready";
     en_lang->err_cant_save_f_csv = "Can't save feedback csv!";
@@ -265,10 +289,11 @@ void lang_init_english(lang * en_lang)
     en_lang->hot_report_csv_fs_label = "Report directory:";
 
     en_lang->rep_csv_state = "Job status";
-    en_lang->rep_csv_name = "Job Name-ID";
+    en_lang->rep_csv_order_name = "Job name";
     en_lang->rep_csv_rejected_sheets = "Total rejected sheet number";
     en_lang->rep_csv_sheet_number = "Total sheet number";
     en_lang->rep_csv_stamp_number = "Total stamp number";
+    en_lang->rep_csv_job_name = "Job-identificator";
     en_lang->rep_csv_date_time = "Date and time";
 
     en_lang->g_counters_label = "MACHINE COUNTERS:";
@@ -291,6 +316,7 @@ void lang_init_english(lang * en_lang)
     en_lang->par_rejected_sheet_seq_lbl = "Maximum number of rejected sheets in sequence:";
     en_lang->par_sheet_source_lbl = "Feeder for companion sheet:";
     en_lang->par_print_confirm_lbl = "Confirmation feeding from main feeder:";
+    en_lang->par_feed_delay_lbl = "Slow down feeding of stamp sheets (ms): ";
     en_lang->par_sheet_source_main = "Main feeder";
     en_lang->par_sheet_source_companion = "Companion feeder";
     en_lang->par_machine_mode_lbl = "Conveyor work mode:";

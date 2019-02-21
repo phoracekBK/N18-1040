@@ -2,9 +2,7 @@
 #define _INFO_STRUCT_H_
 
 
-#include <c_string.h>
-#include <array_list.h>
-#include <c_unit_lib.h>
+#include <aclib.h>
 
 #include <features.h>
 #include <stdlib.h>
@@ -56,6 +54,7 @@ void job_info_set_total_stamp_number(job_info * this, int total_stamp_number);
 int job_info_get_total_sheet_number(job_info * this);
 int job_info_get_total_stamp_number(job_info * this);
 int job_info_get_job_sheet_number(job_info * this, int job_index);
+void job_info_set_job_name(job_info * this, char * job_name);
 void job_info_set_end_status(job_info * this, bool status);
 void job_info_set_feeded_sheet_number(job_info *this, uint32_t feeded_sheet_number);
 void job_info_set_stacked_sheet_number(job_info * this, uint32_t stacked_sheet_number);

@@ -13,6 +13,7 @@ struct _job_info_
 	c_string * order_name;
 	c_string* csv_content;
 	c_string * csv_name;
+	c_string * job_name;
 
 	uint32_t total_sheet_number;
 	uint32_t total_stamps_number;
@@ -46,7 +47,7 @@ job_info * job_info_new(char * csv_address)
 	this->csv_content = c_string_new();
 	this->job_list = array_list_new();
 	this->csv_name = c_string_new();
-
+	this->job_name = c_string_new();
 
 	this->total_sheet_number = 0;
 	this->total_stamps_number = 0;
@@ -86,6 +87,11 @@ int job_info_get_job_sheet_number(job_info * this, int job_index)
 }
 
 
+void job_info_set_job_name(job_info * this, char * job_name)
+{	
+	c_string_set_string(this->job_name, job_name);
+}
+
 int job_info_get_printed_sheet_number(job_info * this)
 {
 	return this->printed_sheet_number;
@@ -110,6 +116,7 @@ void job_info_clear(job_info * this)
 	c_string_clear(this->order_name);
 	c_string_clear(this->csv_content);
 	c_string_clear(this->csv_name);
+	c_string_clear(this->job_name);
 
 	this->total_sheet_number = 0;
 	this->total_stamps_number = 0;
@@ -292,8 +299,11 @@ c_string * job_info_generate_csv(job_info * this, char * time_date_str)
 {
 	if(array_list_size(this->job_list) > 0)
 	{
-		c_string_add(this->csv_content, "Job: ");
+		c_string_add(this->csv_content, "Objednávka: ");
 		c_string_add(this->csv_content, c_string_get_char_array(this->order_name));
+
+		c_string_add(this->csv_content, "\nJob: ");
+		c_string_add(this->csv_content, c_string_get_char_array(this->job_name));
 
 		if(this->end_status == true)
 			c_string_add(this->csv_content, "\nÚspěšně ukončen\n");
@@ -301,7 +311,6 @@ c_string * job_info_generate_csv(job_info * this, char * time_date_str)
 			c_string_add(this->csv_content, "\nPředčasně ukončen\n");
 
 		char str_total_number[10];
-
 		sprintf(str_total_number, "%d\n", this->feeded_sheet_number);		
 		c_string_add(this->csv_content, "Celkový počet naložených archů: ");
 		c_string_add(this->csv_content, str_total_number);		
@@ -378,6 +387,12 @@ int8_t job_info_generate_csv_name(job_info * this)
 		{
 			c_string_set_string(this->csv_name, c_string_get_char_array(this->order_name));
 			c_string_concat(this->csv_name, ".csv");
+
+			for(int i = 0; i < c_string_len(this->csv_name); i++)
+			{
+				if(c_string_get_char(this->csv_name, i) == '/')
+					c_string_set_char(this->csv_name, i, '_');
+			}
 	
 			return 1;
 		}
@@ -416,6 +431,7 @@ void job_info_finalize(job_info * this)
 	c_string_finalize(&(this->order_name));
 	c_string_finalize(&(this->csv_content));
 	c_string_finalize(&(this->csv_name));
+	c_string_finalize(&(this->job_name));
 
 	if(this->csv_addr != NULL)
 		free(this->csv_addr);
