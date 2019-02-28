@@ -76,6 +76,7 @@ enum _gui_settings_btn_
 	S_BTN_LANG,
 	S_BTN_PRINT_PARAMETERS,
 	S_BTN_HOTFOLDERS,
+	S_BTN_MACHINE_OVERVIEW,
 	S_BTN_IO_VISION,
 	S_BTN_BACK,
 
@@ -118,9 +119,11 @@ typedef struct _gui_print_params_page_ gui_print_params_page;
 struct _gui_hotfolder_page_;
 typedef struct _gui_hotfolder_page_ gui_hotfolder_page;
 
-
 struct _gui_io_vision_page_;
 typedef struct _gui_io_vision_page_ gui_io_vision_page;
+
+struct _gui_machine_overview_;
+typedef struct _gui_machine_overview_ gui_machine_overview;
 
 
 
@@ -153,6 +156,7 @@ struct _gui_
 	gui_lang_page * lang_page;
 	gui_hotfolder_page * hotfolder_page;
 	gui_print_params_page * print_params_page;
+	gui_machine_overview * machine_overview;
 
 	uint8_t error_blink;
 };
@@ -307,6 +311,17 @@ struct _gui_hotfolder_page_
 	gui_base * gui_base_ref;
 };
 
+struct _gui_machine_overview_
+{
+	GtkWidget * page;
+	GtkWidget * machine_img;
+	GtkWidget * info_box;	
+
+
+	settings_button * btn_return;
+	gui_base * gui_base_ref;
+};
+
 
 struct _gui_info_window_
 {
@@ -343,6 +358,9 @@ void gui_lang_page_set_interface_language_callback(GtkComboBox * widget, gpointe
 void gui_pack(gui * this);
 char * gui_hotfolder_page_def_file_chooser(char * title);
 
+
+char * gui_def_file_chooser(gui* this, char * title, GtkFileChooserAction choose_action, GtkFileFilter *filter, char * default_file_name);
+
 gui_control_page * gui_control_page_new(gui_base * gui_base_ref);
 void gui_control_page_language(gui_control_page * this);
 gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gpointer param);
@@ -376,22 +394,21 @@ void gui_settings_page_btn_go_to_print_params_settings_callback(GtkWidget* widge
 void gui_settings_page_btn_go_to_hotfolder_settings_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_btn_go_to_network_settings_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_btn_back_callback(GtkWidget* widget, GdkEventButton* event, gpointer param);
+void gui_settings_page_btn_got_to_machine_overview_callback(GtkWidget * widget, GdkEventButton* event, gpointer param);
 void gui_settings_page_return_callback(GtkButton *button, GdkEventButton * event, gpointer param);
 
 
 gui_csv_manage * gui_csv_manage_new(gui_base * gui_base_ref);
 void gui_csv_manage_return_to_control_page(GtkWidget* widget, gpointer param);
 void gui_csv_manage_language(gui_csv_manage * this, lang * multi_lang);
-uint8_t gui_csv_manage_check_day(int8_t day, int16_t year, int8_t month);
+int gui_csv_manage_check_day(int day, int year, int month);
 void gui_csv_manage_set_day_to (GtkSpinButton *spin_button, gpointer param);
 void gui_csv_manage_set_year_to (GtkSpinButton *spin_button, gpointer param);
 void gui_csv_manage_set_month_to (GtkSpinButton *spin_button, gpointer param);
 void gui_csv_manage_set_day_from (GtkSpinButton *spin_button, gpointer param);
 void gui_csv_manage_set_year_from (GtkSpinButton *spin_button, gpointer param);
 void gui_csv_manage_set_month_from (GtkSpinButton *spin_button, gpointer param);
-array_list * gui_csv_manage_filter_report_csv(array_list * report_csv_list, 
-					uint8_t day_from, uint8_t month_from, uint16_t year_from, 
-					uint8_t day_to, uint8_t month_to, uint16_t year_to);
+void gui_csv_manage_split_csv_callback(GtkWidget * widget, gpointer param);
 
 gui_io_vision_page * gui_io_vision_page_new(gui_base * gui_base_ref);
 void gui_io_vision_draw_socket(cairo_t* cr, double x, double y, double w, double h, char* label);
@@ -425,6 +442,10 @@ void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer p
 gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widget, gboolean state, gpointer param);
 void gui_print_params_set_feed_delay(GtkWidget *widget, GdkEvent  *event, gpointer param);
 
+
+gui_machine_overview * gui_machine_overview_new(gui_base * gui_base_ref);
+void gui_machine_overview_language(gui_machine_overview * this, lang * multi_lang);
+gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gpointer param);
 
 gui_lang_page * gui_lang_page_new(gui_base * gui_base_ref);
 void gui_lang_page_language(gui_lang_page * this, lang * multi_lang);
@@ -493,6 +514,8 @@ gui * gui_new()
 	/* create print parameters settings page */
 	this->print_params_page = gui_print_params_page_new(this->gui_base_ref); 
 
+	this->machine_overview = gui_machine_overview_new(this->gui_base_ref);
+
 	/* set language */
 	gui_set_language(this);
 
@@ -528,6 +551,9 @@ gboolean gui_cyclic_interupt(gpointer param)
 				gtk_button_set_label(GTK_BUTTON(this->control_page->btn[GC_BTN_CANCEL]), "Vyčistit");
 		}
 
+
+		gtk_widget_queue_draw(GTK_WIDGET(this->machine_overview->info_box));
+
 		/* set status of network control widget depend on network connection state */
 		gboolean conn = ((controler_iij_is_connected() == STATUS_CLIENT_CONNECTED) ? FALSE : TRUE);
 		gtk_widget_set_sensitive(GTK_WIDGET(this->network_page->iij_tcp_port_entry), conn);
@@ -544,7 +570,7 @@ gboolean gui_cyclic_interupt(gpointer param)
 
 		//if(strcmp(visible_page, "control_page") == 0)
 		{
-			if((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT))
+			if((controler_machine_status_val() != MACHINE_STATE_ERROR) && ((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT)))
 			{
 				gui_control_page_load_jobs(this->control_page);
 			}
@@ -678,6 +704,7 @@ void gui_set_language(gui * this)
 		settings_button_set_text(this->hotfolder_page->btn_return, multi_lang->set_btn_back_to_settngs);
 		settings_button_set_text(this->print_params_page->btn_return, multi_lang->set_btn_back_to_settngs);
 		settings_button_set_text(this->network_page->btn_return, multi_lang->set_btn_back_to_settngs);
+		settings_button_set_text(this->machine_overview->btn_return, multi_lang->set_btn_back_to_settngs);
 		settings_button_set_text(this->lang_page->btn_return, multi_lang->set_btn_back_to_settngs);
 
 		gui_settings_page_language(this->settings_page, multi_lang);
@@ -689,6 +716,8 @@ void gui_set_language(gui * this)
 		gui_network_page_language(this->network_page, multi_lang);
 
 		gui_csv_manage_language(this->csv_manage_page, multi_lang);
+
+		gui_machine_overview_language(this->machine_overview, multi_lang);
 
 		gui_lang_page_language(this->lang_page, multi_lang);
 	}
@@ -780,9 +809,9 @@ gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
 		{
 			int total_sheet_number = controler_get_total_sheet_number();
 			int stacked_sheet_number = controler_get_stacked_sheets();
-			int rejected_sheet_number = controler_get_rejected_sheets();
+			int companion_sheet_number = controler_get_feeded_companion_sheets();
 
-			uint32_t total_time = (total_sheet_number - (stacked_sheet_number-rejected_sheet_number)) * (controler_get_time_for_one_sheet());
+			uint32_t total_time = (total_sheet_number - (stacked_sheet_number - companion_sheet_number)) * (controler_get_time_for_one_sheet());
 
 			uint8_t hours = total_time/3600000;
 			uint8_t minutes = total_time/60000%60;
@@ -888,6 +917,11 @@ void gui_signals(gui * this)
 				G_CALLBACK(gui_settings_page_return_callback), 
 				this);
 
+	g_signal_connect(G_OBJECT(settings_button_get_instance(this->machine_overview->btn_return)), 
+				"button_press_event", 
+				G_CALLBACK(gui_settings_page_return_callback), 
+				this);
+
 
 	/* control page signals */
 	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_PRINT]),
@@ -954,6 +988,13 @@ void gui_signals(gui * this)
 				G_CALLBACK(gui_control_page_print_one_callback), 
 				this->control_page);
 
+	/* machine overview page signals*/
+	g_signal_connect(G_OBJECT(this->machine_overview->info_box), 
+				"draw", 
+				G_CALLBACK(gui_machine_overview_info_box_draw_callback), 
+				this->control_page);
+
+
 
 	/* csv manage page signals */
 	g_signal_connect(G_OBJECT(this->csv_manage_page->btn_return), 
@@ -978,7 +1019,10 @@ void gui_signals(gui * this)
 	g_signal_connect(G_OBJECT(this->csv_manage_page->spin_year_from),
 			 	"value_changed",
 				G_CALLBACK(gui_csv_manage_set_year_from), this->csv_manage_page);
-
+	g_signal_connect(G_OBJECT(this->csv_manage_page->btn_export), 
+				"clicked", 
+				G_CALLBACK(gui_csv_manage_split_csv_callback), 
+				this);
 
 	/* settings page signals */
 	g_signal_connect(G_OBJECT(settings_button_get_instance(this->settings_page->btn[S_BTN_IO_VISION])), 
@@ -1006,6 +1050,12 @@ void gui_signals(gui * this)
 				"button_press_event", 
 				G_CALLBACK(gui_settings_page_btn_back_callback),
 				this);
+
+	g_signal_connect(G_OBJECT(settings_button_get_instance(this->settings_page->btn[S_BTN_MACHINE_OVERVIEW])), 
+				"button_press_event", 
+				G_CALLBACK(gui_settings_page_btn_got_to_machine_overview_callback),
+				this);
+
 
 	/* language settings page signals */
 	g_signal_connect(G_OBJECT(this->lang_page->lang_list), 
@@ -1126,10 +1176,11 @@ void gui_create_main_window(gui * this)
 }
 
 
-char * gui_def_file_chooser(gui* this, char * title)
+char * gui_def_file_chooser(gui* this, char * title, GtkFileChooserAction choose_action, GtkFileFilter *filter, char * default_file_name)
 {
 	GtkWidget *dialog;
-	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+
+	GtkFileChooserAction action = choose_action;
 	gint res;
   	char * dirname = NULL;
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
@@ -1142,6 +1193,12 @@ char * gui_def_file_chooser(gui* this, char * title)
                                       multi_lang->file_chooser_select_btn,
                                       GTK_RESPONSE_APPLY,
                                       NULL);
+
+	if(filter != NULL)
+		gtk_file_chooser_add_filter (GTK_FILE_CHOOSER(dialog), filter);
+	
+	if(default_file_name != NULL)
+		 gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), default_file_name);
 
 	res = gtk_dialog_run (GTK_DIALOG (dialog));
 
@@ -1169,6 +1226,7 @@ void gui_pack(gui * this)
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->network_page->page, "network_page");
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->hotfolder_page->page, "hotfolder_page");
 	gtk_stack_add_named(GTK_STACK(this->page_stack), this->print_params_page->page, "print_params_page");
+	gtk_stack_add_named(GTK_STACK(this->page_stack), this->machine_overview->page, "machine_overview");
 
 	gtk_stack_set_visible_child_name (GTK_STACK(this->page_stack), "control_page");
 
@@ -1260,10 +1318,12 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	gtk_fixed_put(GTK_FIXED(this->page), this->xbf_pulse, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+510);
 	gtk_fixed_put(GTK_FIXED(this->page), this->img_machine, 50, height/4*3-50);
 
+
+
 	for(int i = 0; i < GC_BTN_N; i++)
 	{
 		if(i == GC_BTN_PRINT)
-			this->btn[i] = gtk_button_new_with_label ("Tisk");
+			this->btn[i] = gtk_button_new_with_label ("Start");
 		else if(i == GC_BTN_PAUSE)
 			this->btn[i] = gtk_button_new_with_label ("Pauza");
 		else if(i == GC_BTN_CONTINUE)
@@ -1302,19 +1362,31 @@ void gui_control_page_print_one_callback(GtkWidget * widget, gpointer param)
 	}
 }
 
+
 void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param)
 {
 	gui * this = (gui*) param;
 
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_day_from)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_day_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_to)));
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_to)));
 	if(filtered_job_list != NULL)
 	{
+		printf("report list size: %d\n", array_list_size(filtered_job_list));
+		//*
+		for(int i = 0; i < array_list_size(filtered_job_list); i++)
+		{
+			c_string * str = array_list_get(filtered_job_list, i);
+			if(str!=NULL)
+				printf("%s\n", c_string_get_char_array(str));
+			else
+				printf("EMPTY\n");
+		}
+		//*/
 		gui_base_update_report_csv_list(this->csv_manage_page->list_report_csv, 
 						filtered_job_list, 
 						this->csv_manage_page->job_list_store);
@@ -1479,8 +1551,6 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	
 	cairo_move_to(cr,width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+360);
 	cairo_show_text(cr, multi_lang->print_active);
-	
-
 
 	cairo_save(cr);
 	/* network connection status points */
@@ -1765,8 +1835,8 @@ void gui_control_page_load_jobs(gui_control_page * this)
 
 			const char * printed_job_name = controler_get_printed_job_name();
 			char * job_name = controler_get_job_name(i);
-
-			if((printed_job_name != NULL) && (job_name != NULL) && (strcmp(printed_job_name, job_name) == 0))
+			
+			if(((printed_job_name != NULL) && (job_name != NULL)) && (strcmp(printed_job_name, job_name) == 0))
 			{
 				if(controler_machine_status_val() == MACHINE_STATE_NEXT)
 					job_status = multi_lang->print_state_wait_for_data;
@@ -1995,7 +2065,7 @@ gui_csv_manage * gui_csv_manage_new(gui_base * gui_base_ref)
 }
 
 
-uint8_t gui_csv_manage_check_day(int8_t day, int16_t year, int8_t month)
+int gui_csv_manage_check_day(int day, int year, int month)
 {
 	if(month == 2)
 	{
@@ -2021,32 +2091,50 @@ uint8_t gui_csv_manage_check_day(int8_t day, int16_t year, int8_t month)
 }
 
 
-array_list * gui_csv_manage_filter_report_csv(array_list * report_csv_list, 
-					uint8_t day_from, uint8_t month_from, uint16_t year_from, 
-					uint8_t day_to, uint8_t month_to, uint16_t year_to)
+void gui_csv_manage_split_csv_callback(GtkWidget * widget, gpointer param)
 {
-	array_list * filtered_job_list = array_list_new();
+	gui * this = (gui*) param;
+	lang * multi_lang = multi_lang_get(controler_get_interface_language());
+	GtkFileFilter *filter = gtk_file_filter_new();
+	gtk_file_filter_set_name (GTK_FILE_FILTER(filter), "Report");
+	gtk_file_filter_add_pattern(GTK_FILE_FILTER(filter), "*.csv");
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_main_fs_title, GTK_FILE_CHOOSER_ACTION_SAVE, filter, "split_report.csv");
 
-	return filtered_job_list;
+	if(path != NULL)
+	{
+		printf("%s\n", path);
+		
+		array_list * filtered_csv_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_day_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_day_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_month_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->csv_manage_page->spin_year_to)));
+		controler_split_csv(filtered_csv_list, path);
+
+		array_list_destructor_with_release(&filtered_csv_list, c_string_finalize_v2);
+		g_free(path);
+	}
 }
 
 void gui_csv_manage_set_day_from (GtkSpinButton *spin_button, gpointer param)
 {
 	gui_csv_manage * this = (gui_csv_manage*) param;
-	uint8_t day = gtk_spin_button_get_value_as_int (spin_button);
+	int day = gtk_spin_button_get_value_as_int (spin_button);
 
 	gtk_spin_button_set_value (spin_button, 
 				(gdouble) gui_csv_manage_check_day(day, 
 					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)), 
 					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from))));
 	
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										day,
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)));
 	if(filtered_job_list != NULL)
 	{
 		gui_base_update_report_csv_list(this->list_report_csv, 
@@ -2061,20 +2149,20 @@ void gui_csv_manage_set_day_from (GtkSpinButton *spin_button, gpointer param)
 void gui_csv_manage_set_year_from (GtkSpinButton *spin_button, gpointer param)
 {
 	gui_csv_manage * this = (gui_csv_manage*) param;
-	uint8_t year = gtk_spin_button_get_value_as_int (spin_button);
+	int year = gtk_spin_button_get_value_as_int (spin_button);
 
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_from), 
 				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)), 
 					year, 
 					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from))));
 
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
-										year,
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										year,
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)));
 	if(filtered_job_list != NULL)
 	{
 		gui_base_update_report_csv_list(this->list_report_csv, 
@@ -2088,7 +2176,7 @@ void gui_csv_manage_set_year_from (GtkSpinButton *spin_button, gpointer param)
 void gui_csv_manage_set_month_from (GtkSpinButton *spin_button, gpointer param)
 {
 	gui_csv_manage * this = (gui_csv_manage*) param;
-	uint8_t month = gtk_spin_button_get_value_as_int (spin_button);
+	int month = gtk_spin_button_get_value_as_int (spin_button);
 
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_from), 
 				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)), 
@@ -2096,13 +2184,13 @@ void gui_csv_manage_set_month_from (GtkSpinButton *spin_button, gpointer param)
 					month));
 
 
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										month,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)));
 	if(filtered_job_list != NULL)
 	{
 		gui_base_update_report_csv_list(this->list_report_csv, 
@@ -2118,20 +2206,20 @@ void gui_csv_manage_set_month_from (GtkSpinButton *spin_button, gpointer param)
 void gui_csv_manage_set_day_to (GtkSpinButton *spin_button, gpointer param)
 {
 	gui_csv_manage * this = (gui_csv_manage*) param;
-	uint8_t day = gtk_spin_button_get_value_as_int (spin_button);
+	int day = gtk_spin_button_get_value_as_int (spin_button);
 
 	gtk_spin_button_set_value (spin_button, 
 				(gdouble) gui_csv_manage_check_day(day, 
 					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)), 
 					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to))));
 
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										day,
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)));
 	if(filtered_job_list != NULL)
 	{
 		gui_base_update_report_csv_list(this->list_report_csv, 
@@ -2146,7 +2234,7 @@ void gui_csv_manage_set_day_to (GtkSpinButton *spin_button, gpointer param)
 void gui_csv_manage_set_year_to (GtkSpinButton *spin_button, gpointer param)
 {
 	gui_csv_manage * this = (gui_csv_manage*) param;
-	uint8_t year = gtk_spin_button_get_value_as_int (spin_button);
+	int year = gtk_spin_button_get_value_as_int (spin_button);
 
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_to), 
 				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)), 
@@ -2155,13 +2243,13 @@ void gui_csv_manage_set_year_to (GtkSpinButton *spin_button, gpointer param)
 
 
 
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
-										year,
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)));
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_to)),
+										year);
 	if(filtered_job_list != NULL)
 	{
 		gui_base_update_report_csv_list(this->list_report_csv, 
@@ -2175,20 +2263,20 @@ void gui_csv_manage_set_year_to (GtkSpinButton *spin_button, gpointer param)
 void gui_csv_manage_set_month_to (GtkSpinButton *spin_button, gpointer param)
 {
 	gui_csv_manage * this = (gui_csv_manage*) param;
-	uint8_t month = gtk_spin_button_get_value_as_int (spin_button);
+	int month = gtk_spin_button_get_value_as_int (spin_button);
 
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON(this->spin_day_to), 
 				(gdouble) gui_csv_manage_check_day(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)), 
 					gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)), 
 					month));
 
-	array_list * filtered_job_list =  gui_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
+	array_list * filtered_job_list =  controler_csv_manage_filter_report_csv(this->gui_base_ref->report_csv_list, 
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_from)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_month_from)),
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_from)),
 										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_day_to)),
-										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)),
-										month);
+										month,
+										gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(this->spin_year_to)));
 	if(filtered_job_list != NULL)
 	{
 		gui_base_update_report_csv_list(this->list_report_csv, 
@@ -2281,6 +2369,8 @@ void gui_settings_page_language(gui_settings_page * this, lang * multi_lang)
 			settings_button_set_text(this->btn[i], multi_lang->set_btn_print_param);
 		else if(i == S_BTN_HOTFOLDERS)
 			settings_button_set_text(this->btn[i], multi_lang->set_btn_hotfolder);
+		else if(i == S_BTN_MACHINE_OVERVIEW)
+			settings_button_set_text(this->btn[i], multi_lang->set_btn_machine_overview);
 		else if(i == S_BTN_IO_VISION)
 			settings_button_set_text(this->btn[i], multi_lang->set_btn_io_vision);
 		else if(i == S_BTN_BACK)
@@ -2317,6 +2407,13 @@ void gui_settings_page_btn_go_to_hotfolder_settings_callback(GtkWidget* widget, 
 {
 	gui * this = (gui*) param;
 	gtk_stack_set_visible_child_name (GTK_STACK(this->page_stack), "hotfolder_page");
+}
+
+
+void gui_settings_page_btn_got_to_machine_overview_callback(GtkWidget * widget, GdkEventButton* event, gpointer param)
+{
+	gui * this = (gui*) param;
+	gtk_stack_set_visible_child_name(GTK_STACK(this->page_stack), "machine_overview");
 }
 
 
@@ -2835,7 +2932,7 @@ void gui_hotfolder_page_select_q_main_path_callback(GtkWidget * widget, gpointer
 	gui * this = (gui*) param;
 
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_main_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_main_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
 
 	if(path != NULL)
 	{
@@ -2850,7 +2947,8 @@ void gui_hotfolder_page_select_q_feedback_path_callback(GtkWidget * widget, gpoi
 	gui * this = (gui*) param;
 
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_feedback_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_feedback_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
+
 
 	if(path != NULL)
 	{
@@ -2866,7 +2964,7 @@ void gui_hotfolder_page_select_q_backup_path_callback(GtkWidget * widget, gpoint
 	gui * this = (gui*) param;
 
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_backup_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_q_backup_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
 
 	if(path != NULL)
 	{
@@ -2881,7 +2979,7 @@ void gui_hotfolder_page_select_pci_in_path_callback(GtkWidget * widget, gpointer
 	gui * this = (gui*) param;
 
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_pci_in_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_pci_in_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
 
 	if(path != NULL)
 	{
@@ -2896,7 +2994,7 @@ void gui_hotfolder_page_select_pci_out_path_callback(GtkWidget * widget, gpointe
 	gui * this = (gui*) param;
 
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_pci_out_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_pci_out_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
 
 	if(path != NULL)
 	{
@@ -2910,7 +3008,7 @@ void gui_hotfolder_page_select_gis_path_callback(GtkWidget * widget, gpointer pa
 {
 	gui * this = (gui*) param;
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_gis_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_gis_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
 
 	if(path != NULL)
 	{
@@ -2925,7 +3023,7 @@ void gui_hotfolder_page_select_report_path_callback(GtkWidget * widget, gpointer
 	gui * this = (gui*) param;
 
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
-	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_report_csv_fs_title);
+	char * path = gui_def_file_chooser(this, (char*) multi_lang->hot_report_csv_fs_title, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, NULL, NULL);
 
 	if(path != NULL)
 	{
@@ -3165,6 +3263,70 @@ void gui_print_params_page_max_stacked_sheet_callback (GtkWidget *widget, GdkEve
 }
 
 
+
+gui_machine_overview * gui_machine_overview_new(gui_base * gui_base_ref)
+{
+	gui_machine_overview * this = (gui_machine_overview *) malloc(sizeof(gui_machine_overview));
+
+	this->gui_base_ref = gui_base_ref;
+
+	double height = gui_base_ref->work_area_geometry.height;
+	double width = gui_base_ref->work_area_geometry.width;
+
+	this->page = gtk_fixed_new();
+	this->machine_img = gtk_image_new_from_pixbuf(gui_base_scale_icon(gui_base_load_icon(MACHINE_ICON_PATH), 1, width/2));
+
+	this->info_box = gtk_drawing_area_new();	
+	gtk_widget_set_size_request(GTK_WIDGET(this->info_box), width, height);
+
+	this->btn_return = settings_button_new(settings_btn_fg_s, fg, bg, fg, width/2, 50);
+	settings_button_set_font_size(this->btn_return, 18);
+	settings_button_set_selected(this->btn_return, 1);
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->machine_img, width/4, 400);
+	gtk_fixed_put(GTK_FIXED(this->page), this->info_box, 0,0);
+	gtk_fixed_put(GTK_FIXED(this->page), settings_button_get_instance(this->btn_return), width/4, 250);
+
+	return this;
+}
+
+
+void gui_machine_overview_language(gui_machine_overview * this, lang * multi_lang)
+{
+
+}
+
+gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gpointer param)
+{
+	gui_machine_overview* this = (gui_machine_overview*) param;
+	lang * multi_lang = multi_lang_get(controler_get_interface_language());
+	double height = this->gui_base_ref->work_area_geometry.height;
+	double width = this->gui_base_ref->work_area_geometry.width;
+
+
+	int left_horizontal_offset = 40;	
+	char temp_buff[32];
+	cairo_select_font_face(cr, "Arial",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_size(cr, 15);
+
+	cairo_move_to(cr,left_horizontal_offset , 400);
+	cairo_show_text(cr, multi_lang->g_counters_label);
+	cairo_fill(cr);
+
+	cairo_set_font_size(cr, 19);
+
+	sprintf(temp_buff, "%f%%", controler_get_statistic());
+	printf("%s\n", temp_buff);
+	cairo_text_extents_t ext_main_counter;
+	cairo_text_extents(cr, temp_buff, &ext_main_counter);
+	cairo_move_to(cr, 300 - ext_main_counter.width, 400);
+	cairo_show_text(cr, temp_buff);
+
+	cairo_fill(cr);
+
+	return TRUE;
+}
+
 gui_lang_page * gui_lang_page_new(gui_base * gui_base_ref)
 {
 	gui_lang_page * this = (gui_lang_page*) malloc(sizeof(gui_lang_page));
@@ -3240,6 +3402,7 @@ void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_
 
 			if(job_report != NULL)
 			{
+				printf("report list size in update: %d\n", array_list_size(report_csv_list));
 				gtk_list_store_append(job_report_list_store, &iter);
 							
 				if(job_report->order_name != NULL)

@@ -13,10 +13,10 @@
 #include "io_card/io_card_const.h"
 #include "io_card/io_mapping.h"
 #else
-#include "io_card/io_card_const.h"
-#include "io_card/io_mapping.h"
-//#include "io_card_sim/io_card_const.h"
-//#include "io_card_sim/io_mapping.h"
+//#include "io_card/io_card_const.h"
+//#include "io_card/io_mapping.h"
+#include "io_card_sim/io_card_const.h"
+#include "io_card_sim/io_mapping.h"
 #endif
 
 #include "com_tcp/com_states.h"
@@ -257,6 +257,10 @@ char * controler_pci_network_get_ip_address();
 uint8_t controler_job_list_changed();
 void controler_total_clear_hotfolder();
 
+array_list * controler_csv_manage_filter_report_csv(array_list * report_csv_list, 
+					int day_from, int month_from, int year_from, 
+					int day_to, int month_to, int year_to);
+uint8_t controler_split_csv(array_list * filtered_csv_list, char * address);
 
 void controler_set_max_stacked_sheets(int sheet_val);
 void controler_set_max_rejected_sheet_seq(int sheet_val);
@@ -269,6 +273,8 @@ bool controler_get_sheet_source_confirmation();
 int controler_get_sheet_source();
 int controler_get_max_stacked_sheet();
 int controler_get_stacked();
+
+double controler_get_statistic();
 
 uint8_t controler_set_q_main_hotfolder_path(const char * path);
 uint8_t controler_set_q_feedback_hotfolder_path(const char * path);

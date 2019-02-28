@@ -10,9 +10,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-#include <c_string.h>
-#include <array_list.h>
 #include <settings_button.h>
+#include <aclib.h>
 
 /** @ingroup configuration Main window title string. */
 #define MAIN_WINDOW_TITLE "Host-bk"

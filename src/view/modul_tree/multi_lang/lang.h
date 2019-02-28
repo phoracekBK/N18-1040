@@ -37,6 +37,7 @@ struct _lang_
 	const char * set_btn_lang_settings;
 	const char * set_btn_print_param;
 	const char * set_btn_hotfolder;
+	const char * set_btn_machine_overview;
 	const char * set_btn_io_vision;
 	const char * set_btn_back;
 	const char * set_btn_back_to_settngs;

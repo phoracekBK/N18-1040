@@ -195,8 +195,8 @@ q_job * q_job_copy(q_job * job)
 	char * job_name  = (char*) malloc(sizeof(char)*str_len);
 	memcpy(job_name, job->job_name, str_len);
 
-
 	char * date_time = NULL;
+
 	if(job->date_time != NULL)
 	{
 		str_len = strlen(job->date_time);
@@ -227,6 +227,27 @@ q_job * q_job_copy(q_job * job)
 		memcpy(new_job->bkcore_name, job->bkcore_name, str_len);
 	}
 
+	if(job->nominal != NULL)
+	{
+		str_len = strlen(job->nominal)+1;
+		new_job->nominal = (char*) malloc(sizeof(char)*str_len);
+		memcpy(new_job->nominal, job->nominal, str_len);
+	}
+
+	if(job->order_name != NULL)
+	{
+		str_len = strlen(job->order_name);
+		new_job->order_name = (char*) malloc(sizeof(char)*str_len);
+		memcpy(new_job->order_name, job->order_name, str_len);
+	}
+
+	if(job->stamp_type != NULL)
+	{
+		str_len = strlen(job->stamp_type)+1;
+		new_job->stamp_type  = (char*) malloc(sizeof(char)*str_len);
+		memcpy(new_job->stamp_type, job->stamp_type, str_len);
+	}
+
 	new_job->sheet_number = job->sheet_number;
 	new_job->stamp_number = job->stamp_number;
 
@@ -239,19 +260,52 @@ void q_job_finalize(void * job)
 	q_job * job_ref = (q_job*) job;
 
 	if(job_ref->job_name != NULL)
+	{
 		free(job_ref->job_name);
+		job_ref->job_name = NULL;
+	}	
 	
 	if(job_ref->camera_name != NULL)
+	{
 		free(job_ref->camera_name);
+		job_ref->camera_name = NULL;
+	}
 
 	if(job_ref->pdf_name != NULL)
+	{
 		free(job_ref->pdf_name);
+		job_ref->pdf_name = NULL;
+	}
 	
 	if(job_ref->bkcore_name != NULL)
+	{
 		free(job_ref->bkcore_name);
-	
-	if(job_ref->date_time != NULL)	
+		job_ref->bkcore_name = NULL;
+	}
+
+	if(job_ref->date_time != NULL)
+	{	
 		free(job_ref->date_time);
+		job_ref->date_time = NULL;
+	}
+
+	if(job_ref->nominal != NULL)
+	{
+		free(job_ref->nominal);
+		job_ref->nominal = NULL;
+	}
+
+	if(job_ref->order_name != NULL)
+	{
+		free(job_ref->order_name);
+		job_ref->order_name = NULL;
+	}
+
+	if(job_ref->stamp_type != NULL)
+	{
+		free(job_ref->stamp_type);
+		job_ref->stamp_type = NULL;
+	}
 
 	free(job);
 }

@@ -46,7 +46,11 @@
 
 #define GIS_HOT_FOLDER "./gis_hot/"
 
+#ifdef PLATFORM_STC_PC
 #define LOG_PATH "/home/stc/host-bk/log/"
+#else
+#define LOG_PATH "./log/"
+#endif
 
 #define JOB_INFO_CSV_PATH "./job_info_csv/"
 
@@ -165,6 +169,8 @@ uint32_t feeded_sheet_counter_pre;
 uint32_t stacked_sheet;
 uint32_t rejected_sheet;
 uint32_t feeded_sheet;
+uint64_t complet_feeded;
+uint64_t complet_rejected;
 
 int32_t non_stacked_upper_limit;
 int32_t non_revided_upper_limit;
@@ -777,10 +783,18 @@ void contorler_sheet_counter()
 			if((sheet_sensor_state != sheet_sensor_pre) && (sheet_sensor_state > 0))
 			{
 				feeded_sheet_counter++;
+
+				feeded_sheet++;
 				feeded_sheet_counter_in_job++;
 
 				if(machine_state == MACHINE_STATE_PRINT_COMPANION)
+				{
 					companion_sheet_feed_request_counter++;
+				}
+				else
+				{
+					complet_feeded++;
+				}
 
 				printf("%d\n", feeded_sheet_counter);
 			}
@@ -1351,11 +1365,11 @@ uint8_t controler_iij_connect()
 	if(res == STATUS_CLIENT_CONNECTED)
 	{	
 		iij_tcp_connection_req = true;	
-		c_log_add_record_with_cmd(log_ref, "Spojení s GISem navázáno.");
+		//c_log_add_record_with_cmd(log_ref, "Spojení s GISem navázáno.");
 	}
 	else
 	{
-		c_log_add_record_with_cmd(log_ref, "Spojení s GISem nebylo navázáno!");
+		//c_log_add_record_with_cmd(log_ref, "Spojení s GISem nebylo navázáno!");
 	}
 
 	return res;
@@ -1802,13 +1816,184 @@ uint8_t controler_job_list_changed()
 {
 	if(job_list_changed == 1)
 	{
+		pthread_mutex_lock(&(mutex));
 		job_list_changed = 0;
+		pthread_mutex_unlock(&(mutex));
+
 		return 1;
 	}
 	else
 	{
 		return 0;
 	}
+}
+
+
+uint8_t controler_split_csv(array_list * filtered_csv_list, char * address)
+{
+	uint8_t state = 0;
+
+	if(filtered_csv_list != NULL)
+	{
+		c_string * split_csv = c_string_new();
+
+		for(int i = 0; i < array_list_size(filtered_csv_list); i++)
+		{
+			c_string * report_item = array_list_get(filtered_csv_list, i);
+			char * csv_content = util_load_csv(c_string_get_char_array(job_log_path), c_string_get_char_array(report_item), NULL);
+	
+			if(csv_content != NULL)
+			{	
+				c_string_concat(split_csv, csv_content);
+
+				if(i+1 != array_list_size(filtered_csv_list))
+					c_string_concat(split_csv, "\n\n");
+
+				free(csv_content);
+			}
+			else
+			{
+				state = 2;
+			}
+		}
+		
+		FILE * csv_out = fopen(address, "w");
+		
+		if(csv_out != NULL)
+		{
+			int32_t size_out = fwrite(c_string_get_char_array(split_csv), sizeof(char), c_string_len(split_csv), csv_out);
+
+			if(size_out < 0)
+				state = 3;
+
+			fclose(csv_out);
+		}
+
+		c_string_finalize_v3(split_csv);
+	}
+	else
+	{
+		state = 1;
+	}
+
+	return state;
+}
+
+bool controler_date_lower_limit(int day_from, int month_from, int year_from, int day, int month, int year)
+{
+	bool A = (year_from < year);
+	bool B = (year_from == year);
+	bool C = (month_from < month);
+	bool D = (month_from == month);
+	bool E = (day_from < day);
+	bool F = (day_from == day);
+/*
+	printf("yf < y -> %d\n", A);
+	printf("yf == y -> %d\n", B);
+	printf("mf < m -> %d\n", C);
+	printf("mf == m -> %d\n", D);
+	printf("df < d -> %d\n", E);
+	printf("df == d -> %d\n", F);
+*/
+	return ((A || B) && (A || C || D) && (A || C || E || F) && ((!E) || (!F)) && ((!C) || (!D)) && ((!A) || (!B)));
+}
+
+bool controler_date_upper_limit(int day_to, int month_to, int year_to, int day, int month, int year)
+{
+	bool A = (year_to > year);
+	bool B = (year_to == year);
+	bool C = (month_to > month);
+	bool D = (month_to == month);
+	bool E = (day_to > day);
+	bool F = (day_to == day);
+
+ 	return ((A || B) && (A || C || D) && (A || C || E || F) && ((!E) || (!F)) && ((!C) || (!D)) && ((!A) || (!B)));
+}
+
+
+array_list * controler_csv_manage_filter_report_csv(array_list * report_csv_list, 
+					int day_from, int month_from, int year_from, 
+					int day_to, int month_to, int year_to)
+{
+	array_list * filtered_job_list = array_list_new();
+
+	if(report_csv_list != NULL)
+	{
+		for(int j = 0; j < array_list_size(report_csv_list); j++)
+		{
+			c_string * report_item = array_list_get(report_csv_list, j);
+
+			if(report_item != NULL)
+			{
+				char * csv_content = util_load_csv(c_string_get_char_array(job_log_path), c_string_get_char_array(report_item), NULL);
+	
+				uint32_t year = 0;
+				uint32_t month = 0;
+				uint32_t day = 0;
+				int i = 0;
+				uint8_t row = 0;
+				uint8_t item = 0;
+		
+				if(csv_content != NULL)
+				{
+					while((csv_content[i] != 0) && (row < 10) && ((row < 9) || (item < 2) || (isdigit(csv_content[i]) != 0)))
+					{
+						if(csv_content[i] == '\n')
+							row ++;
+
+						if((csv_content[i] == '/') && (row == 9))
+							item ++;
+
+						if((row == 9) && (isdigit(csv_content[i])))
+						{
+							switch(item)
+							{
+								case 0:
+									day = day*10+(csv_content[i]-48);
+								break;
+	
+								case 1:
+									month = month*10+(csv_content[i]-48);
+								break;
+	
+								case 2:
+									year = year*10+(csv_content[i]-48);
+								break;
+							}
+						}				
+		
+						i++;
+					}
+
+					year += 2000;
+	
+					bool date_from = controler_date_lower_limit(day_from, month_from, year_from, day, month, year);
+					bool date_to = controler_date_upper_limit(day_to,  month_to, year_to, day, month, year);
+
+					if(date_from && date_to)
+					{
+						c_string * report_item_copy = NULL;
+
+						report_item_copy = c_string_make_copy(report_item);
+	
+						if(report_item_copy != NULL)
+							array_list_add(filtered_job_list, report_item_copy);
+
+					//printf("%d | %d : csv %s -> %d/%d/%d x %d/%d/%d x %d/%d/%d\n", date_from, date_to, c_string_get_char_array(report_item),day_from, month_from, year_from, day,month,year, day_to, month_to, year_to);
+
+					}
+
+					free(csv_content);
+				}
+				else
+				{
+					printf("csv content not loaded %s/%s\n", c_string_get_char_array(job_log_path), c_string_get_char_array(report_item));
+				}
+			}
+		}
+	}
+		
+	return filtered_job_list;
 }
 
 
@@ -1849,6 +2034,8 @@ void controler_machine_state_read_hotfolder()
 
 		if(machine_print_req == false)
 		{
+			pthread_mutex_lock(&(mutex));
+
 			if(job_list != NULL)
 				array_list_destructor_with_release_v2(job_list, q_job_finalize);
 				
@@ -1868,6 +2055,8 @@ void controler_machine_state_read_hotfolder()
 				controler_total_clear_hotfolder();
 				clear_on_startup = 1;
 			}
+
+			pthread_mutex_unlock(&(mutex));
 		}
 	
 
@@ -2034,8 +2223,7 @@ void controler_machine_state_pause()
 	/* from pause state can return to print state only if the conditions are met */
 	if(machine_pause_req == false)
 	{
-		if((stacked_sheet_counter < max_stacked_sheets) && 
-		(io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) == 0) && 
+		if((io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_1_RJ_full) == 0) && 
 		(io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_2_SN_full) == 0))
 		{
 			feed_sheet = 0;
@@ -2126,9 +2314,21 @@ void controler_machine_state_prepare()
 									csv_line_index = 0;
 								}
 							
+							
 								rows ++;
 							}
-	
+							else
+							{	
+								if((rows > 4) || (q_job_get_flag(job) != 'k'))
+								{
+									if(isdigit(bkcore_csv_content[csv_pos]))
+									{
+										sheet_index[csv_line_index] = bkcore_csv_content[csv_pos];
+										csv_line_index++;
+									}
+								}
+							}	
+							
 							csv_pos++;
 						}
 					}
@@ -2170,7 +2370,7 @@ void controler_feed_control()
 
 void controler_record_feeding_time()
 {
-	if((stacked_sheet_counter_in_job > 0) && (sn_trig != stacker_status) && (stacker_status == MACHINE_SN_STACKING))
+	if(((stacked_sheet_counter_in_job > 0) && (sn_trig != stacker_status) && (stacker_status == MACHINE_SN_STACKING)))
 	{
 		time_for_nth_sheet[nth_sheet_time_index] = c_freq_millis() - last_feeded_sheet_millis;
 		nth_sheet_time_index = (nth_sheet_time_index +1) % 4;
@@ -2184,7 +2384,7 @@ uint64_t controler_get_time_for_one_sheet()
 {
 	uint64_t dia_time = 0;
 
-	if(stacked_sheet_counter > 0)
+	if((stacked_sheet_counter > 0))
 	{
 		for(int i = 0; i < 4; i++)
 		{
@@ -2194,7 +2394,7 @@ uint64_t controler_get_time_for_one_sheet()
 		if(stacked_sheet_counter > 3)
 			return (dia_time/4);
 		else
-			return dia_time/stacked_sheet_counter;
+			return dia_time/(stacked_sheet_counter);
 	}
 	else
 	{
@@ -3011,8 +3211,8 @@ void controler_machine_finish_print()
 	{
 		char * time_date = util_get_time_string();
 		
-		job_info_set_feeded_sheet_number(info, feeded_sheet_counter);
-		job_info_set_stacked_sheet_number(info, stacked_sheet_counter);
+		job_info_set_feeded_sheet_number(info, feeded_sheet_counter-companion_sheet_feed_request_counter);
+		job_info_set_stacked_sheet_number(info, stacked_sheet_counter-companion_sheet_feed_request_counter);
 		job_info_set_rejected_sheet_number(info, rejected_sheet_counter);
 		
 		if((stacked_sheet_counter -  companion_sheet_feed_request_counter) == job_info_get_total_sheet_number(info))
@@ -3552,6 +3752,7 @@ void controler_machine_stacker_counter(uint8_t stacker_status)
 	if((sn_trig != stacker_status) && (stacker_status == MACHINE_SN_STACKING))
 	{
 		stacked_sheet_counter ++;
+		stacked_sheet ++;
 		stacked_sheet_counter_in_job ++;
 	
 		rejected_sheet_seq_counter = 0;
@@ -3573,6 +3774,14 @@ void controler_machine_tab_insert_counter()
 	ti_trig = ti_trig_val;
 }
 
+double controler_get_statistic()
+{
+	if((complet_rejected == 0) || (complet_feeded == 0))
+		return 0.0;
+	else
+		return ((double) ((double) complet_rejected) /((double) (complet_feeded)) * 100.0);
+}
+
 void controler_machine_reject_counter()
 {
 	uint8_t rj_trig_val = io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_3_RJ_cnt);
@@ -3581,8 +3790,10 @@ void controler_machine_reject_counter()
 	{
 		rejected_sheet_counter ++;
 		rejected_sheet_seq_counter++;
-
+		complet_rejected++;
 		rejected_sheet_counter_in_job++;
+
+		rejected_sheet++;
 	}
 
 	rj_trig = rj_trig_val;
@@ -4325,6 +4536,8 @@ void controler_initialize_variables()
 	machine_print_one_req = false;
 	machine_jam_req = false;
 
+	complet_feeded = 0;
+	complet_rejected = 0;
 
 	fake_companion_req = false;
 	companion_faked = false;
@@ -4390,7 +4603,6 @@ void controler_initialize_variables()
 	feeded_sheet_counter = 0;
 	feeded_sheet_counter_in_job = 0;
 	feeded_sheet_counter_pre = 0;
-
 
 	stacked_sheet = 0;
 	rejected_sheet = 0;

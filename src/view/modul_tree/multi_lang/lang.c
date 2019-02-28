@@ -42,6 +42,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->set_btn_lang_settings = "Nastavení jazyka";
     cz_lang->set_btn_print_param = "Tiskové parametry";
     cz_lang->set_btn_hotfolder = "Nastavení hotfolderů";
+    cz_lang->set_btn_machine_overview = "Přehled stroje";
     cz_lang->set_btn_io_vision = "Zobrazení IO";
     cz_lang->set_btn_back = "Zpět na controlní panel";
     cz_lang->set_btn_back_to_settngs = "Zpět";
@@ -206,6 +207,7 @@ void lang_init_english(lang * en_lang)
     en_lang->set_btn_lang_settings = "Language settings";
     en_lang->set_btn_print_param = "Print parameters";
     en_lang->set_btn_hotfolder = "Hotfolder settings";
+    en_lang->set_btn_machine_overview = "Machine overview";
     en_lang->set_btn_io_vision = "IO vision";
     en_lang->set_btn_back = "Back to control page";
     en_lang->set_btn_back_to_settngs = "Back";

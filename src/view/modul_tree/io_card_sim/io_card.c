@@ -1,21 +1,14 @@
 #include "io_card.h"
 #include "io_card_const.h"
 
+
 struct _io_card_
 {
-	comedi_t *ref_a1;
-	comedi_t *ref_a2;
-
-	uint8_t *** io_ref;
-
 	unsigned int A1_in;
 	unsigned int A1_out;
 	unsigned int A2_in;
 	unsigned int A2_out;
 
-#if IO_CARD_SIMAULATION_EN == TRUE
-	pthread_t simulation_thread;
-#endif
 	int64_t timer;
 };
 
@@ -23,7 +16,7 @@ struct _io_card_
 
 const char * a1_in_labels[16] = {"MBR0", 				/* IN 0 */
 				"MBR1",					/* IN 1 */
-				"FEEDING_SENSOR",			/* IN 2 */
+				"RESERVE",				/* IN 2 */
 				"Non active",				/* IN 3 */
 				"Non acvite",				/* IN 4 */
 				"FN2",					/* IN 5 */
@@ -92,81 +85,28 @@ const char * a2_out_labels[16] = {"RESERVE",				/* OUT 0 */
 
 
 
-
-
 io_card * io_card_new()
 {
 	io_card * this = (io_card*) malloc(sizeof(io_card));
-	
-	this->timer = c_freq_millis();
 
-	/* connect cards */
-	this->ref_a1 = comedi_open(IO_CART_A1_REF);
-	this->ref_a2 = comedi_open(IO_CART_A2_REF);
+	this->A1_in = 0;
+	this->A1_out = 0;
+	this->A2_in = 0;
+	this->A2_out = 0;
 
-	if(((this->ref_a1 != NULL) && (this->ref_a2 != NULL)))
-	{
-		this->A1_in = 0;
-		this->A1_out = 0;
-		this->A2_in = 0;
-		this->A2_out = 0;	
+	this->timer = 0;
 
-		return this;
-	}
-	else
-	{
-		fputs("Can't connect IO cards\n", stderr);
-		free(this);
-		return NULL;
-	}
-}	
-
-
-const char ** io_card_get_a1_in_labels()
-{
-	return a1_in_labels;
+	return this;
 }
-
-const char ** io_card_get_a1_out_labels()
-{
-	return a1_out_labels;
-}
-
-const char ** io_card_get_a2_in_labels()
-{
-	return a2_in_labels;
-}
-
-const char ** io_card_get_a2_out_labels()
-{
-	return a2_out_labels;
-}
-
 
 void io_card_sync_inputs(io_card * this)
 {
-	if(comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_INPUT, 0x0, &this->A1_in, 0) < 0)
-	{
-		fputs("Can't read inputs from card A1!\n", stderr);
-	}
 
-	if(comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_INPUT, 0x0, &this->A2_in, 0) < 0)
-	{
-		fputs("Can't read inputs from card A2!\n", stderr);
-	} 
 }
 
 void io_card_sync_outputs(io_card * this)
 {
-	if(comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, &this->A1_out, 0) < 0)
-	{
-		fputs("Can't write utputs to card A1!\n", stderr);
-	}
 
-	if(comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, &this->A2_out, 0) < 0)
-	{
-		fputs("Can't write utputs to card A2!\n", stderr);
-	}
 }
 
 uint8_t io_card_get_output(io_card * this, int card, int addr)
@@ -230,17 +170,29 @@ uint8_t io_card_get_bit_value(io_card * this, int card, int bit1, int bit2, int 
 	return bit_val;
 }
 
+const char ** io_card_get_a1_in_labels()
+{
+	return a1_in_labels;
+}
+
+const char ** io_card_get_a1_out_labels()
+{
+	return a1_out_labels;
+}
+
+const char ** io_card_get_a2_in_labels()
+{
+	return a2_in_labels;
+}
+
+const char ** io_card_get_a2_out_labels()
+{
+	return a2_out_labels;
+}
+
+
 void io_card_finalize(io_card * this)
 {
-	this->A1_out = 0;
-	this->A2_out = 0;
 
-	comedi_dio_bitfield2(this->ref_a1, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, &this->A1_out, 0);
-	comedi_dio_bitfield2(this->ref_a2, IO_CARD_CHANNEL_OUTPUT, 0xFFFF, &this->A2_out, 0);
-
-	comedi_close(this->ref_a1);
-	comedi_close(this->ref_a2);
-
-	free(this);
 }
 

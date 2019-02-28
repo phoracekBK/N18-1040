@@ -23,8 +23,7 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include <array_list.h>
-#include <c_string.h>
+#include <aclib.h>
 
 #include "q_job/q_job.h"
 #include "util/util.h"

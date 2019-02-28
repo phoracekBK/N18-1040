@@ -40,8 +40,8 @@
 #ifdef PLATFORM_STC_PC
 #include "io_card/io_card.h"
 #else
-//#include "io_card_sim/io_card.h"
-#include "io_card/io_card.h"
+#include "io_card_sim/io_card.h"
+//#include "io_card/io_card.h"
 #endif
 
 #include "hotfolder/hotfolder.h"

@@ -1,12 +1,14 @@
 
 
 **TODO**
+* přidat na ovládací panel maják stav nakladače vykladače k slovnímu popisu stavu
+* nastavit když při zapnuté ena je nakladač nebo vykladač ve stavu připraven, pak je nutné upozornit obsluhu
+* rozšířit statistiku dobrých a špatných archů na denní produkci a za danou časovou dobu plus počet naložených, vytisknutých a vyhozených archů za den a za danou časovou dobu
+* vytvořit funkcionalitu, která bude zapínat větrák na separaci prokladových archů
 * přidat do ovládacího panelu tlačítko na vyprázdnění vykladače (vynulování počítadla na vyložené archy) (implementováno ale netestováno)
 * zrychlit ukončování jobu
 * nafakeovat tisk prokladu na jedno tlačítko
-* nastavit program aby při zácpě jakéhokoli druhu vyčistil pás, a vygeneroval náhrady do quadientu
 * přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
-* vyzkoušet vypnout všechny systémy (pc) a po znovuspuštění zkontrolovat že vše naběhlo vpořádku 
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
 * přidat do nastavení tiskových parametrů zpomalení nakládání -> nastavení rozestupů archů na pásu
 * přidat do controleru funkci pro nastřelování oddělovacích proužků
@@ -16,14 +18,15 @@
 * vytvořit kartu pro přehled stroje kde budou zobrazeny podrobnosti o stavu stroje (počítadla, režim, stav nakladače, vykladače, ...)
 * vytvořit dokumentaci zdrojových kódů
 * refaktorovat kód pro větší přehlednost
-* vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
 * (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
-* Zpomalit tisk pokud se blíží fixně nastavená hodnota počtu vyhozených archů ve výhybce
 
 
 
 **DONE**
 
+* nastavit program aby při zácpě jakéhokoli druhu vyčistil pás, a vygeneroval náhrady do quadientu
+* vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
+* vytvořit statistiku špatných a dobrých archů
 * zprovoznit vizualizaci stroje v hlavním panelu
 * přidat do nastavení tiskových parametrů nastavení zpomalení nakládání (časová prodleva naložení ovlivňující vzdálenost jednotlivých archů)
 * do každého modulu vytvořit unit testy a vytvořit testovací režim pro kontrolu funkčnosti všech klíčových funkcí
