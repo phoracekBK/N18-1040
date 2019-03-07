@@ -1,8 +1,9 @@
 
 
 **TODO**
-* přidat na ovládací panel maják stav nakladače vykladače k slovnímu popisu stavu
-* nastavit když při zapnuté ena je nakladač nebo vykladač ve stavu připraven, pak je nutné upozornit obsluhu
+* vytvořit modul pro správu statistiky tisku
+* vytvořit funkcionalitu na ovládání mechanismu na nastřelovací proužky
+* přidat do karty nastavení tiskových parametrů možnost nastavit čas nastřelování oddělovacího proužku ovlivňující jeho délku 
 * rozšířit statistiku dobrých a špatných archů na denní produkci a za danou časovou dobu plus počet naložených, vytisknutých a vyhozených archů za den a za danou časovou dobu
 * vytvořit funkcionalitu, která bude zapínat větrák na separaci prokladových archů
 * přidat do ovládacího panelu tlačítko na vyprázdnění vykladače (vynulování počítadla na vyložené archy) (implementováno ale netestováno)
@@ -24,6 +25,8 @@
 
 **DONE**
 
+* nastavit když při zapnuté ena je nakladač nebo vykladač ve stavu připraven, pak je nutné upozornit obsluhu
+* upravit maják stavu nakladače a vykladače aby blikal v případě že očekává jiný stav než jaký se na něm nachází
 * nastavit program aby při zácpě jakéhokoli druhu vyčistil pás, a vygeneroval náhrady do quadientu
 * vytvořit filter, který bude filtrovat podle data slučování reportovacích csv
 * vytvořit statistiku špatných a dobrých archů

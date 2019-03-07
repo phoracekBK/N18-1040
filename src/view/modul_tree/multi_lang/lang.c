@@ -57,8 +57,10 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->info_label_data_generation = "Generují se tisková data...";
     cz_lang->info_label_approx_max_stacked_sheet = "Blíží se maximální množství archů ve vykladači";
     cz_lang->info_label_max_stacked_sheet = "Dosaženo maximální množství archů ve vykladači";
+    cz_lang->info_label_feeder_stacker_not_prepared = "Podavač nebo vykladač nejsou připraveny";
  
     cz_lang->err_no_error = "Připraven";
+    cz_lang->err_paper_jam_conveyor = "Zásek papíru transportní pás!";
     cz_lang->err_cant_save_f_csv = "Nelze uložit zpětnovazební csv!";
     cz_lang->err_analyze_camera_csv = "Chyba analýzy camerového csv!";
     cz_lang->err_cant_load_bkcore_csv = "Nelze načíst řídící csv!";
@@ -148,6 +150,10 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->g_cnt_tab_insert_blb = "Nastřelovací proužky:";
     cz_lang->g_job_list_lbl = "Aktuální tisková úloha:";
     cz_lang->g_report_csv_list_lbl = "Historie vytištěných úloh:";
+    cz_lang->g_complet_feeded_sheets = "Celkový počet naložených archů:";
+    cz_lang->g_complet_stacked_sheets = "Celkový počet vyložených archů:";
+    cz_lang->g_complet_rejected_sheets = "Celkový počet vyhozených archů:";
+    cz_lang->g_error_rate = "Průměrná chybovost tisku:";
 
     cz_lang->par_max_stacked_sheet_lbl = "Maximum archů ve vykladači:";
     cz_lang->par_rejected_sheet_seq_lbl = "Maximální sekvence vadných archů:";
@@ -222,8 +228,10 @@ void lang_init_english(lang * en_lang)
     en_lang->info_label_data_generation = "New data generating...";
     en_lang->info_label_approx_max_stacked_sheet = "Approximation of maximum amount of sheets in stacker";
     en_lang->info_label_max_stacked_sheet = "Maximum amount of sheets in stacker";
+    en_lang->info_label_feeder_stacker_not_prepared = "Feeder or stacker not ready.";
 
     en_lang->err_no_error = "Ready";
+    en_lang->err_paper_jam_conveyor = "Zásek papíru transportní pás!";
     en_lang->err_cant_save_f_csv = "Can't save feedback csv!";
     en_lang->err_analyze_camera_csv = "Camera csv analyzing error!";
     en_lang->err_cant_load_bkcore_csv = "Can't load control csv!";
@@ -313,6 +321,11 @@ void lang_init_english(lang * en_lang)
     en_lang->g_cnt_tab_insert_blb = "Tab inserts:";
     en_lang->g_job_list_lbl = "Current print job:";
     en_lang->g_report_csv_list_lbl = "Printed job history:";
+
+    en_lang->g_complet_feeded_sheets = "Total amount of feeded sheets:";
+    en_lang->g_complet_stacked_sheets = "Total amount of stacked sheets:";
+    en_lang->g_complet_rejected_sheets = "Total amount of rejected sheets:";
+    en_lang->g_error_rate = "Error rate of printing:";
 
     en_lang->par_max_stacked_sheet_lbl = "Maximum number of sheets in the stecker:";
     en_lang->par_rejected_sheet_seq_lbl = "Maximum number of rejected sheets in sequence:";

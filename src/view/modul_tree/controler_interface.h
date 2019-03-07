@@ -6,15 +6,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <platform.h>
-#include <array_list.h>
+#include <aclib.h>
 
 
 #ifdef PLATFORM_STC_PC
 #include "io_card/io_card_const.h"
 #include "io_card/io_mapping.h"
 #else
-//#include "io_card/io_card_const.h"
-//#include "io_card/io_mapping.h"
 #include "io_card_sim/io_card_const.h"
 #include "io_card_sim/io_mapping.h"
 #endif
@@ -158,6 +156,7 @@
 #define MACHINE_ERR_PRINT_FINALIZING_FREEZE 33
 #define MACHINE_ERR_REJECT_BIN_FULL 34
 #define MACHINE_ERR_STACKER_FULL 35
+#define MACHINE_ERR_PAPER_JAM_CONVAYOR 36
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
 
@@ -256,6 +255,14 @@ char * controler_pci_network_get_ip_address();
 
 uint8_t controler_job_list_changed();
 void controler_total_clear_hotfolder();
+
+
+
+
+void controler_free_report_information_struct(rep_struct * this);
+
+void controler_lock_thread();
+void controler_unlock_thread();
 
 array_list * controler_csv_manage_filter_report_csv(array_list * report_csv_list, 
 					int day_from, int month_from, int year_from, 

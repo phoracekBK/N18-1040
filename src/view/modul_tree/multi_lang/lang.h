@@ -51,8 +51,11 @@ struct _lang_
 	const char * info_label_data_generation;
 	const char * info_label_approx_max_stacked_sheet;
 	const char * info_label_max_stacked_sheet;
+	const char * info_label_feeder_stacker_not_prepared;
+
 
 	const char * err_no_error;
+	const char * err_paper_jam_conveyor;
 	const char * err_cant_save_f_csv;
 	const char * err_analyze_camera_csv;
 	const char * err_cant_load_bkcore_csv;
@@ -143,6 +146,10 @@ struct _lang_
 	const char * g_cnt_tab_insert_blb;
 	const char * g_job_list_lbl;
 	const char * g_report_csv_list_lbl;
+	const char * g_complet_feeded_sheets;
+	const char * g_complet_stacked_sheets;
+	const char * g_complet_rejected_sheets;
+	const char * g_error_rate;
 
 	const char * par_max_stacked_sheet_lbl;
 	const char * par_rejected_sheet_seq_lbl;

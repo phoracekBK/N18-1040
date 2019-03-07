@@ -132,8 +132,6 @@ typedef struct _gui_machine_overview_ gui_machine_overview;
 */
 struct _gui_
 {
-	bool blink;
-
 	GtkWidget * main_win;
 	GtkWidget * window_container;
 	GtkWidget * page_stack;
@@ -343,6 +341,7 @@ struct _gui_base_
 {
 	GdkRectangle work_area_geometry;
 	array_list * report_csv_list;
+	bool blink;
 };
 
 
@@ -487,7 +486,6 @@ gui * gui_new()
 					this->gui_base_ref->work_area_geometry.height/12);
 	this->error_string = c_string_new();
 	this->info_label = c_string_new();
-	this->blink = false;
 	this->error_blink = 0;
 	
 	/* create control page */
@@ -565,12 +563,15 @@ gboolean gui_cyclic_interupt(gpointer param)
 
 		gtk_switch_set_active(GTK_SWITCH(this->network_page->iij_network_switch), !conn);
 
-		this->blink = !this->blink;
+		this->gui_base_ref->blink = !(this->gui_base_ref->blink);
 		this->error_blink = 0;
 
 		//if(strcmp(visible_page, "control_page") == 0)
 		{
-			if((controler_machine_status_val() != MACHINE_STATE_ERROR) && ((controler_job_list_changed() > 0) || (controler_machine_status_val() != MACHINE_STATE_WAIT)))
+			if((controler_machine_status_val() == MACHINE_STATE_NEXT) || 
+				(controler_machine_status_val() == MACHINE_STATE_PAUSE) || 
+				(controler_machine_status_val() == MACHINE_STATE_ERROR) || 
+				((controler_job_list_changed() > 0) && (controler_machine_status_val() == MACHINE_STATE_WAIT)))
 			{
 				gui_control_page_load_jobs(this->control_page);
 			}
@@ -624,7 +625,8 @@ gboolean gui_cyclic_interupt(gpointer param)
 	gtk_widget_set_visible(GTK_WIDGET(this->control_page->btn[GC_BTN_FAKE]),((controler_machine_status_val() == MACHINE_STATE_WAIT) && (controler_get_job_queue_size() > 0)) ||
 					(((controler_machine_status_val() == MACHINE_STATE_PRINT_MAIN) ||
 					(controler_machine_status_val() == MACHINE_STATE_READ_CSV_LINE) ||
-					(controler_machine_status_val() == MACHINE_STATE_PAUSE) || 
+					(controler_machine_status_val() == MACHINE_STATE_PAUSE) ||
+					(controler_machine_status_val() == MACHINE_STATE_FAKE_COMPANION) || 
 					(controler_machine_status_val() == MACHINE_STATE_ERROR)) && (strlen(controler_get_printed_job_name()) > 0)));
 
 	/* can set only if the machine state is in wait state */
@@ -648,7 +650,8 @@ gboolean gui_cyclic_interupt(gpointer param)
 			c_string_clear(this->error_string);
 	}
 
- 	if((controler_machine_status_val() == MACHINE_STATE_READY_TO_START) || (controler_machine_status_val() == MACHINE_STATE_PREPARE))
+ 	if(((controler_machine_status_val() == MACHINE_STATE_READY_TO_START) && (controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK) && 
+		(controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED)) || (controler_machine_status_val() == MACHINE_STATE_PREPARE))
 	{
 		c_string_set_string(this->info_label, (char *) multi_lang->info_label_preparing);
 	}
@@ -664,6 +667,10 @@ gboolean gui_cyclic_interupt(gpointer param)
 	{
 		c_string_set_string(this->info_label, (char *) multi_lang->info_label_fix_feeder_issue);
 	}
+
+	else if((controler_machine_status_val() == MACHINE_STATE_READY_TO_START) && 
+		((controler_get_stacker_status() != MACHINE_SN_STACKER_READY_TO_STACK) || (controler_get_feeder_status() != MACHINE_FN_READY_TO_FEED)))
+		c_string_set_string(this->info_label,(char*) multi_lang->info_label_feeder_stacker_not_prepared);
 	else if(controler_machine_status_val() == MACHINE_STATE_PAUSE)
 	{
 		if(controler_get_stacked() >= controler_get_max_stacked_sheet())
@@ -729,7 +736,7 @@ gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
 
 	if(c_string_len(this->error_string) > 0)
 	{
-		if(this->blink == true)
+		if(this->gui_base_ref->blink == true)
 		{
 	        	cairo_set_source_rgb(cr, 1, 0, 0);
 		}
@@ -745,7 +752,7 @@ gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
 		cairo_set_font_size(cr, 19);
 		cairo_text_extents_t extents;
 
-		if(this->blink == true)
+		if(this->gui_base_ref->blink == true)
 		{
 			cairo_text_extents(cr, c_string_get_char_array(this->error_string), &extents);
 		}
@@ -760,7 +767,7 @@ gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
         	cairo_set_source_rgb(cr, 0, 0, 0);
 		cairo_move_to(cr, 30, this->gui_base_ref->work_area_geometry.height/24.0 + ((double)extents.height/2.0)-2);
 		
-		if(this->blink == true)
+		if(this->gui_base_ref->blink == true)
 		{
 			cairo_show_text(cr, c_string_get_char_array(this->error_string));
 		}
@@ -992,7 +999,7 @@ void gui_signals(gui * this)
 	g_signal_connect(G_OBJECT(this->machine_overview->info_box), 
 				"draw", 
 				G_CALLBACK(gui_machine_overview_info_box_draw_callback), 
-				this->control_page);
+				this->machine_overview);
 
 
 
@@ -1591,25 +1598,52 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_fill(cr);
 
 
-	if((controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK) || (controler_get_stacker_status() == MACHINE_SN_STACKING)) 
+	if(((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && 
+		(controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK || controler_get_stacker_status() == MACHINE_SN_STACKING))) 
+	{
 		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
-	else if(controler_get_stacker_status() == MACHINE_SN_STACKER_READY)
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && (controler_get_stacker_status() == MACHINE_SN_STACKER_READY))
+	{
+		if(this->gui_base_ref->blink == true)
+			cairo_set_source_rgb(cr,1,0.5,0);
+		else
+			cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) == 0) && 
+		(controler_get_stacker_status() == MACHINE_SN_STACKER_READY || controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK))
+	{
 		cairo_set_source_rgb(cr,1,0.5,0);
+	}
 	else
+	{
 		cairo_set_source_rgb(cr,1,0,0);
+	}
 
 
 	cairo_arc(cr, 50, height/4*3+10, 10, 0, 2*M_PI);
 	cairo_fill(cr);
 
 
-
-	if((controler_get_feeder_status() == MACHINE_SN_STACKER_READY_TO_STACK) || (controler_get_feeder_status() == MACHINE_FN_FEEDING)) 
+	if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && ((controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED) || (controler_get_feeder_status() == MACHINE_FN_FEEDING))) 
+	{
 		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
-	else if(controler_get_feeder_status() == MACHINE_FN_FEEDER_READY)
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && (controler_get_feeder_status() == MACHINE_FN_FEEDER_READY))
+	{
+		if(this->gui_base_ref->blink == true)
+			cairo_set_source_rgb(cr,1,0.5,0);
+		else
+			cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) == 0) && (controler_get_feeder_status() == MACHINE_FN_FEEDER_READY || (controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED)))
+	{
 		cairo_set_source_rgb(cr,1,0.5,0);
+	}
 	else
+	{
 		cairo_set_source_rgb(cr,1,0,0);
+	}
 
 	cairo_arc(cr, width/4-70, height/4*3+25, 10, 0, 2*M_PI);
 	cairo_fill(cr);
@@ -1828,6 +1862,8 @@ void gui_control_page_load_jobs(gui_control_page * this)
 
 	if(this->job_list_store != NULL)
 	{
+		controler_lock_thread();
+
 		for(int i = 0; i < controler_get_job_queue_size(); i++)
 		{
 			gtk_list_store_append(this->job_list_store, &iter);
@@ -1863,8 +1899,10 @@ void gui_control_page_load_jobs(gui_control_page * this)
 					-1);
 		}
 
+		controler_unlock_thread();
 		gtk_tree_view_set_model (GTK_TREE_VIEW(this->job_list), GTK_TREE_MODEL(this->job_list_store));
         	g_object_unref(G_OBJECT(this->job_list_store));
+		this->job_list_store = NULL;
 	}
 }
 
@@ -1910,7 +1948,6 @@ void gui_control_page_load_report_csv_list(gui_control_page * this)
 
 				if((list_changed == false) && (array_list_size(this->gui_base_ref->report_csv_list) > 0))
 				{	
-					printf("repost list changed\n");
 					array_list_destructor_with_release(&this->gui_base_ref->report_csv_list, c_string_finalize_v2);
 					this->gui_base_ref->report_csv_list = current_csv_list;
 					gui_base_update_report_csv_list(this->job_report_list, this->gui_base_ref->report_csv_list, this->job_report_list_store);
@@ -3298,11 +3335,11 @@ void gui_machine_overview_language(gui_machine_overview * this, lang * multi_lan
 
 gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gpointer param)
 {
-	gui_machine_overview* this = (gui_machine_overview*) param;
+	gui_machine_overview * this = (gui_machine_overview*) param;
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
+
 	double height = this->gui_base_ref->work_area_geometry.height;
 	double width = this->gui_base_ref->work_area_geometry.width;
-
 
 	int left_horizontal_offset = 40;	
 	char temp_buff[32];
@@ -3316,7 +3353,6 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 	cairo_set_font_size(cr, 19);
 
 	sprintf(temp_buff, "%f%%", controler_get_statistic());
-	printf("%s\n", temp_buff);
 	cairo_text_extents_t ext_main_counter;
 	cairo_text_extents(cr, temp_buff, &ext_main_counter);
 	cairo_move_to(cr, 300 - ext_main_counter.width, 400);
@@ -3324,6 +3360,82 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 
 	cairo_fill(cr);
 
+	/*  */
+	if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && ((controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED) || (controler_get_feeder_status() == MACHINE_FN_FEEDING))) 
+	{
+		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && (controler_get_feeder_status() == MACHINE_FN_FEEDER_READY))
+	{
+		if(this->gui_base_ref->blink == true)
+			cairo_set_source_rgb(cr,1,0.5,0);
+		else
+			cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) == 0) && (controler_get_feeder_status() == MACHINE_FN_FEEDER_READY || (controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED)))
+	{
+		cairo_set_source_rgb(cr,1,0.5,0);
+	}
+	else
+	{
+		cairo_set_source_rgb(cr,1,0,0);
+	}
+
+	cairo_arc(cr, width/4*3-50, height/1.8, 15, 0, 2*M_PI);
+	cairo_fill(cr);
+
+
+	if(((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && 
+		(controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK || controler_get_stacker_status() == MACHINE_SN_STACKING))) 
+	{
+		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && (controler_get_stacker_status() == MACHINE_SN_STACKER_READY))
+	{
+		if(this->gui_base_ref->blink == true)
+			cairo_set_source_rgb(cr,1,0.5,0);
+		else
+			cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+	else if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) == 0) && 
+		(controler_get_stacker_status() == MACHINE_SN_STACKER_READY || controler_get_stacker_status() == MACHINE_SN_STACKER_READY_TO_STACK))
+	{
+		cairo_set_source_rgb(cr,1,0.5,0);
+	}
+	else
+	{
+		cairo_set_source_rgb(cr,1,0,0);
+	}
+
+
+	cairo_arc(cr, width/4+70, height/1.82, 15,0, 2*M_PI);
+	cairo_fill(cr);
+
+	if((controler_get_card_output(IO_CARD_A2, A2_IN_5_camera_trigger) > 0) || 
+		(controler_get_card_output(IO_CARD_A1, A1_IN_9_FN_jam) > 0) || 
+		(controler_get_card_output(IO_CARD_A2, A2_IN_4_RJ_jam) >0)) 
+	{
+		cairo_set_source_rgb(cr,1,0,0);
+	}
+	else
+	{
+		cairo_set_source_rgb(cr, 0.2,0.8,0.1);
+	}
+
+	cairo_rectangle(cr, width/4+width/16, height/1.9,width/2-width/8,20);
+	cairo_fill(cr);
+
+/*
+	cairo_text_extents_t ext_gis_status;
+	cairo_text_extents(cr, controler_get_gis_status(), &ext_gis_status);
+	cairo_move_to(cr, width-(width/4-350)/2 - ext_gis_status.width, 5*height/24+260);
+	cairo_show_text(cr, controler_get_gis_status());
+
+    en_lang->g_complet_feeded_sheets = "Total amount of feeded sheets:";
+    en_lang->g_complet_stacked_sheets = "Total amount of stacked sheets:";
+    en_lang->g_complet_rejected_sheets = "Total amount of rejected sheets:";
+    cz_lang->g_error_rate = "Průměrná chybovost tisku:";
+*/
 	return TRUE;
 }
 
@@ -3380,6 +3492,7 @@ gui_base * gui_base_new()
 {
 	gui_base * this = (gui_base*) malloc(sizeof(gui_base));
 
+	this->blink = false;
 	GdkDisplay* display = gdk_display_get_default(); 
 	GdkMonitor* monitor = gdk_display_get_monitor(display, 0); 
 	gdk_monitor_get_workarea(monitor, &(this->work_area_geometry));
@@ -3402,7 +3515,6 @@ void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_
 
 			if(job_report != NULL)
 			{
-				printf("report list size in update: %d\n", array_list_size(report_csv_list));
 				gtk_list_store_append(job_report_list_store, &iter);
 							
 				if(job_report->order_name != NULL)
@@ -3429,8 +3541,7 @@ void gui_base_update_report_csv_list(GtkWidget * tree_view, array_list * report_
 				else
 					gtk_list_store_set (job_report_list_store, &iter, REP_DATE_TIME, "", -1);
 				
-				/* memory leak, free the string values */
-				free(job_report);
+				controler_free_report_information_struct(job_report);
 			}
 			
 		}
