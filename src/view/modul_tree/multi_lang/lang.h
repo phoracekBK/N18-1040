@@ -53,6 +53,17 @@ struct _lang_
 	const char * info_label_max_stacked_sheet;
 	const char * info_label_feeder_stacker_not_prepared;
 
+	const char * statistics_mon;
+	const char * statistics_tue;
+	const char * statistics_wed;
+	const char * statistics_thu;	
+	const char * statistics_fri;
+	const char * statistics_sat;
+	const char * statistics_sun;
+	const char * statistics_feeded_sheets;
+	const char * statistics_stacked_sheets;
+	const char * statistics_rejected_sheets;
+	const char * statistics_error_rate;
 
 	const char * err_no_error;
 	const char * err_paper_jam_conveyor;

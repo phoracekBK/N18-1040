@@ -568,9 +568,8 @@ gboolean gui_cyclic_interupt(gpointer param)
 
 		//if(strcmp(visible_page, "control_page") == 0)
 		{
-			if((controler_machine_status_val() == MACHINE_STATE_NEXT) || 
-				(controler_machine_status_val() == MACHINE_STATE_PAUSE) || 
-				(controler_machine_status_val() == MACHINE_STATE_ERROR) || 
+			if(((controler_machine_status_val() != MACHINE_STATE_WAIT) &&
+				(controler_machine_status_val() != MACHINE_STATE_ERROR)) || 
 				((controler_job_list_changed() > 0) && (controler_machine_status_val() == MACHINE_STATE_WAIT)))
 			{
 				gui_control_page_load_jobs(this->control_page);
@@ -3344,22 +3343,225 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 	int left_horizontal_offset = 40;	
 	char temp_buff[32];
 	cairo_select_font_face(cr, "Arial",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size(cr, 15);
-
-	cairo_move_to(cr,left_horizontal_offset , 400);
-	cairo_show_text(cr, multi_lang->g_counters_label);
-	cairo_fill(cr);
-
 	cairo_set_font_size(cr, 19);
 
-	sprintf(temp_buff, "%f%%", controler_get_statistic());
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+80);
+	cairo_show_text(cr, multi_lang->statistics_mon);
+
+	
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+280);
+	cairo_show_text(cr, multi_lang->statistics_tue);
+
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+480);
+	cairo_show_text(cr, multi_lang->statistics_wed);
+
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+680);
+	cairo_show_text(cr, multi_lang->statistics_thu);
+
+
+	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+80);
+	cairo_show_text(cr, multi_lang->statistics_fri);
+
+
+	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+280);
+	cairo_show_text(cr, multi_lang->statistics_sat);
+
+
+	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+480);
+	cairo_show_text(cr, multi_lang->statistics_sun);
+
+
+	/* total statistics */
+	sprintf(temp_buff, "%ld",  controler_get_statistics_total_rejected_sheets());
+	cairo_move_to(cr, width/4+150, height/1.35);
+	cairo_show_text(cr, temp_buff);
+
+	sprintf(temp_buff, "%f%%", controler_get_statistics_error_rate());
+	cairo_move_to(cr, width/4+150, height/1.3);
+	cairo_show_text(cr, temp_buff);
+
+	sprintf(temp_buff, "%ld", controler_get_statistics_total_stacked_sheets());
+	cairo_move_to(cr, width/4+40, height/1.35);
+	cairo_show_text(cr, temp_buff);
+
+
+	sprintf(temp_buff, "%ld", controler_get_statistics_total_feeded_sheets());
+	cairo_move_to(cr, width/4*3-70, height/1.35);
+	cairo_show_text(cr, temp_buff);
+
+	for(int i = 0; i<7; i++)
+	{
+		sprintf(temp_buff, "%ld", controler_get_statistics_on_day_total_feeded_sheets((i+1)%7));
+		cairo_text_extents_t ext_feeded_counter;
+		cairo_text_extents(cr, temp_buff, &ext_feeded_counter);
+
+		if(i >= 4)
+			cairo_move_to(cr,width-40 - ext_feeded_counter.width , (5*height/24)+110 + 200*(i-4));
+		else
+			cairo_move_to(cr,width/4-40 - ext_feeded_counter.width , (5*height/24)+110 + (200*i));
+
+		cairo_show_text(cr, temp_buff);
+
+		sprintf(temp_buff, "%ld", controler_get_statistics_on_day_total_stacked_sheets((i+1)%7));
+		cairo_text_extents_t ext_stacked_counter;
+		cairo_text_extents(cr, temp_buff, &ext_stacked_counter);
+		
+		if(i >= 4)
+			cairo_move_to(cr,width-40 - ext_stacked_counter.width , (5*height/24)+140 + 200*(i-4));
+		else
+			cairo_move_to(cr,width/4-40 - ext_stacked_counter.width , (5*height/24)+140 + (200*i));
+	
+		cairo_show_text(cr, temp_buff);
+
+		sprintf(temp_buff, "%ld", controler_get_statistics_on_day_total_rejected_sheets((i+1)%7));
+		cairo_text_extents_t ext_rejected_counter;
+		cairo_text_extents(cr, temp_buff, &ext_rejected_counter);
+
+		if(i >= 4)
+			cairo_move_to(cr,width-40 - ext_rejected_counter.width , (5*height/24)+170+200*(i-4));
+		else
+			cairo_move_to(cr,width/4-40 - ext_rejected_counter.width , (5*height/24)+170+(200*i));
+
+		cairo_show_text(cr, temp_buff);
+
+		sprintf(temp_buff, "%f%%", controler_get_statistics_on_day_error_rate((i+1)%7));
+		cairo_text_extents_t ext_error_rate;
+		cairo_text_extents(cr, temp_buff, &ext_error_rate);
+
+		if(i >= 4)
+			cairo_move_to(cr,width-40 - ext_error_rate.width , (5*height/24)+200 +200*(i-4));
+		else
+			cairo_move_to(cr,width/4-40 - ext_error_rate.width , (5*height/24)+200 +(200*i));
+
+		cairo_show_text(cr, temp_buff);
+	}
+
+
+	cairo_fill(cr);
+	
+	cairo_set_font_size(cr, 15);
+
+	/* monday */
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+110);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+140);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+170);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+200);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+
+	/* tuesday */
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+310);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+340);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+370);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+400);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+	/* wednesday */
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+510);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+540);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+570);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+600);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+	/* thursday */
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+710);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+740);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+770);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+800);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+
+	/* friday */
+	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+110);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+140);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+170);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+200);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+	/* saturday */
+	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+310);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+340);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+370);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+400);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+	/* sunday */
+	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+510);
+	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+540);
+	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+570);
+	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
+
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+600);
+	cairo_show_text(cr, multi_lang->statistics_error_rate);
+
+	cairo_fill(cr);
+/*
+    cz_lang->statistics_mon = "Statistika tisku Pondělí:";
+    cz_lang->statistics_tue = "Statistika tisku Úterý:";
+    cz_lang->statistics_wed = "Statistika tisku Středa:";
+    cz_lang->statistics_thu = "Statistika tisku čtvrtek:";	
+    cz_lang->statistics_fri = "Statistika tisku Pátek:";
+    cz_lang->statistics_sat = "Statistika tisku Sobota:";
+    cz_lang->statistics_sun = "Statistika tisku Neděle:";
+    cz_lang->statistics_feeded_sheets = "Naložené archy:";
+    cz_lang->statistics_stacked_sheets = "Vyložené archy:";
+    cz_lang->statistics_rejected_sheets = "Vyhozené archy";
+    cz_lang->statistics_error_rate = "Chybovost tisku:";
+
+*/
+
+/*
+	sprintf(temp_buff, "%f%%", controler_get_statistics_error_rate(-1));
 	cairo_text_extents_t ext_main_counter;
 	cairo_text_extents(cr, temp_buff, &ext_main_counter);
-	cairo_move_to(cr, 300 - ext_main_counter.width, 400);
+	cairo_move_to(cr, width/4-40 - ext_main_counter.width, 400);
 	cairo_show_text(cr, temp_buff);
 
 	cairo_fill(cr);
-
+*/
 	/*  */
 	if((controler_get_card_output(IO_CARD_A1, A1_OUT_10_ENA) > 0) && ((controler_get_feeder_status() == MACHINE_FN_READY_TO_FEED) || (controler_get_feeder_status() == MACHINE_FN_FEEDING))) 
 	{

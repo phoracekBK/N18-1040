@@ -48,6 +48,18 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->set_btn_back_to_settngs = "Zpět";
 
 
+    cz_lang->statistics_mon = "STATISTIKA TISKU PONDĚLÍ";
+    cz_lang->statistics_tue = "STATISTIKA TISKU ÚTERÝ";
+    cz_lang->statistics_wed = "STATISTIKA TISKU STŘEDA";
+    cz_lang->statistics_thu = "STATISTIKA TISKU ČTVRTEK";	
+    cz_lang->statistics_fri = "STATISIKA TISKU PÁTEK";
+    cz_lang->statistics_sat = "STATISTIKA TISKU SOBOTA";
+    cz_lang->statistics_sun = "STATISTIKA TISKU NEDĚLE";
+    cz_lang->statistics_feeded_sheets = "Naložené archy:";
+    cz_lang->statistics_stacked_sheets = "Vyložené archy:";
+    cz_lang->statistics_rejected_sheets = "Vyhozené archy";
+    cz_lang->statistics_error_rate = "Chybovost tisku:";
+
     cz_lang->info_label_preparing = "Čekejte, spouštění tisku...";
     cz_lang->info_label_finishing = "Čekejte, ukončování tisku...";
     cz_lang->info_label_feed_sheet_confirm = "Potvrďte naložení prokladového archu.";
@@ -217,6 +229,19 @@ void lang_init_english(lang * en_lang)
     en_lang->set_btn_io_vision = "IO vision";
     en_lang->set_btn_back = "Back to control page";
     en_lang->set_btn_back_to_settngs = "Back";
+
+
+    en_lang->statistics_mon = "PRINT STATISTICS MONDAY";
+    en_lang->statistics_tue = "PRINT STATISTICS TUESDAY";
+    en_lang->statistics_wed = "PRINT STATISTICS WEDNESDAY";
+    en_lang->statistics_thu = "PRINT STATISTICS THURSDAY";	
+    en_lang->statistics_fri = "PRINT STATISTICS FRIDAY";
+    en_lang->statistics_sat = "PRINT STATISTICS SATURDAY";
+    en_lang->statistics_sun = "PRINT STATISTICS SUNDAY";
+    en_lang->statistics_feeded_sheets = "Feeded sheets:";
+    en_lang->statistics_stacked_sheets = "Stacked sheets:";
+    en_lang->statistics_rejected_sheets = "Rejected sheets:";
+    en_lang->statistics_error_rate = "Print error rate:";
 
 
     en_lang->info_label_preparing = "Please wait, print is starting...";

@@ -281,7 +281,16 @@ int controler_get_sheet_source();
 int controler_get_max_stacked_sheet();
 int controler_get_stacked();
 
-double controler_get_statistic();
+double controler_get_statistics_on_day_error_rate(int8_t day);
+int64_t controler_get_statistics_on_day_total_feeded_sheets(int8_t day);
+int64_t controler_get_statistics_on_day_total_stacked_sheets(int8_t day);
+int64_t controler_get_statistics_on_day_total_rejected_sheets(int8_t day);
+
+double controler_get_statistics_error_rate();
+int64_t controler_get_statistics_total_feeded_sheets();
+int64_t controler_get_statistics_total_stacked_sheets();
+int64_t controler_get_statistics_total_rejected_sheets();
+
 
 uint8_t controler_set_q_main_hotfolder_path(const char * path);
 uint8_t controler_set_q_feedback_hotfolder_path(const char * path);

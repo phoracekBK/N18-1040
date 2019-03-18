@@ -25,6 +25,7 @@
 
 **DONE**
 
+* přidat dodatečné informace do logu
 * nastavit když při zapnuté ena je nakladač nebo vykladač ve stavu připraven, pak je nutné upozornit obsluhu
 * upravit maják stavu nakladače a vykladače aby blikal v případě že očekává jiný stav než jaký se na něm nachází
 * nastavit program aby při zácpě jakéhokoli druhu vyčistil pás, a vygeneroval náhrady do quadientu

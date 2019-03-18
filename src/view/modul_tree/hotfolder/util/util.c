@@ -2,79 +2,100 @@
 
 int util_dir_is_empty(char * address)
 {
-        DIR * dir_ref = opendir(address);
         int res = -1;
 
-        if(dir_ref != NULL)
-        {
-                struct dirent * dir_cont = NULL;
-                res = 0;
+	if(address != NULL)
+	{
+  	      DIR * dir_ref = opendir(address);
 
-                while((dir_cont =readdir(dir_ref)) != NULL)
-                {
-                        if(dir_cont->d_type != DT_DIR)
-                        {
-				printf("%s\n", dir_cont->d_name);
-                                res ++;
-                        }
-                }
+  	      if(dir_ref != NULL)
+  	      {
+  	              struct dirent * dir_cont = NULL;
+       	              res = 0;
 
-                closedir(dir_ref);
-        }
- 
+                	while((dir_cont =readdir(dir_ref)) != NULL)
+                	{
+                	        if(dir_cont->d_type != DT_DIR)
+                       		{
+					printf("%s\n", dir_cont->d_name);
+                        	        res ++;
+                        	}
+                	}
+
+                	closedir(dir_ref);
+        	}
+	}
+ 	
         return res;
 }
 
 uint8_t util_move_file(char * src, char* dest, char* name)
 {
-	char dest_addr[255];
-	char src_addr[255];
+	if((src != NULL) && (dest != NULL) && (name != NULL))
+	{
+		char dest_addr[255];
+		char src_addr[255];
 
-	sprintf(dest_addr, "%s/%s", dest, name);
-	sprintf(src_addr, "%s/%s", src, name);
+		sprintf(dest_addr, "%s/%s", dest, name);
+		sprintf(src_addr, "%s/%s", src, name);
 
-	printf("%s -> %s\n", src_addr, dest_addr);
-
-	return rename(src_addr, dest_addr);
+		printf("%s -> %s\n", src_addr, dest_addr);
+	
+		return rename(src_addr, dest_addr);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 uint8_t util_copy_file(char * src, char * dest, char * name)
 {
-	FILE  *ptr_src, *ptr_dest;
-	int  in;
-	char src_addr[255];
-	char dest_addr[255];
-
-	sprintf(src_addr, "%s/%s", src, name);
-	sprintf(dest_addr, "%s/%s", dest, name);
-
-	printf("%s -> %s\n", src_addr, dest_addr);
-
-	ptr_src = fopen(src_addr, "rb");
-	ptr_dest = fopen(dest_addr, "wb");
-
-	if(ptr_src == NULL)
-		return  1;
-
-	if(ptr_dest == NULL)
-		return  2;
-
-	while((in = fgetc(ptr_src)) != EOF)
+	if((src != NULL) && (dest != NULL) && (name != NULL))
 	{
-		fputc(in, ptr_dest);
+		FILE  *ptr_src, *ptr_dest;
+		int  in;
+		char src_addr[255];
+		char dest_addr[255];
+
+		sprintf(src_addr, "%s/%s", src, name);
+		sprintf(dest_addr, "%s/%s", dest, name);
+
+		printf("%s -> %s\n", src_addr, dest_addr);
+
+		ptr_src = fopen(src_addr, "rb");
+		ptr_dest = fopen(dest_addr, "wb");
+
+		if(ptr_src == NULL)
+			return  1;
+
+		if(ptr_dest == NULL)
+			return  2;
+
+		while((in = fgetc(ptr_src)) != EOF)
+		{
+			fputc(in, ptr_dest);
+		}
+
+		fclose(ptr_src);
+		fclose(ptr_dest);
+
+		return  0;
 	}
-
-	fclose(ptr_src);
-	fclose(ptr_dest);
-
-	return  0;
+	else
+	{
+		return 3;
+	}
 }
 
 void util_delete_file(char* path, char * name)
 {
-	char file_addr[255];
-	sprintf(file_addr, "%s/%s", path, name);				
-	remove(file_addr);
+	if(path != NULL && name != NULL)
+	{
+		char file_addr[255];
+		sprintf(file_addr, "%s/%s", path, name);				
+		remove(file_addr);
+	}
 }
 
 /**
@@ -83,19 +104,22 @@ void util_delete_file(char* path, char * name)
 */
 int32_t util_save_csv(char* addr, char * name, char* buff)
 {
-	char csv_addr[255];
-	sprintf(csv_addr, "%s/%s", addr, name);
-
-	FILE * csv_out = fopen(csv_addr, "w");
-
-	if(csv_out != NULL)
+	if((addr != NULL) && (name != NULL) && (buff != NULL))
 	{
-		printf("%s\n", csv_addr);
-		//printf("csv content - %s\n", buff);
-		int32_t size_out = fwrite(buff, sizeof(char), strlen(buff), csv_out);
-		fclose(csv_out);
+		char csv_addr[255];
+		sprintf(csv_addr, "%s/%s", addr, name);
 
-		return size_out;
+		FILE * csv_out = fopen(csv_addr, "w");
+
+		if(csv_out != NULL)
+		{
+			printf("%s\n", csv_addr);
+			//printf("csv content - %s\n", buff);
+			int32_t size_out = fwrite(buff, sizeof(char), strlen(buff), csv_out);
+			fclose(csv_out);
+
+			return size_out;
+		}
 	}
 
 	return -1;
@@ -103,17 +127,24 @@ int32_t util_save_csv(char* addr, char * name, char* buff)
 
 int32_t util_file_size(char * path, char * file_name)
 {
-        char file_path[255];
-        sprintf(file_path,"%s/%s", path, file_name);
+	if((path != NULL) && (file_name != NULL))
+	{
+        	char file_path[255];
+        	sprintf(file_path,"%s/%s", path, file_name);
 
-        struct stat buffer;
-        int status = -1;
-        status = stat(file_path, &buffer);
+        	struct stat buffer;
+        	int status = -1;
+        	status = stat(file_path, &buffer);
 
-        if(status == 0)
-                return buffer.st_size;
-        else
-                return 0;
+        	if(status == 0)
+        	        return buffer.st_size;
+        	else
+       		        return 0;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /**
@@ -126,29 +157,32 @@ int32_t util_file_size(char * path, char * file_name)
 */
 char * util_load_csv(char * addr, char* name, int32_t * size)
 {
-	char csv_addr[255];
-	sprintf(csv_addr, "%s/%s", addr,name);
-    	int file_size = util_file_size(addr, name);
-
-	if(file_size >= 0)
+	if((addr != NULL) && (name != NULL))
 	{
-		FILE * csv_in = fopen(csv_addr, "r");
+		char csv_addr[255];
+		sprintf(csv_addr, "%s/%s", addr,name);
+    		int file_size = util_file_size(addr, name);
 
-		if (csv_in != NULL)
+		if(file_size >= 0)
 		{
-			char * csv_content = (char *) malloc(sizeof(char)*(file_size+1));
+			FILE * csv_in = fopen(csv_addr, "r");
 
-			fread(csv_content, sizeof(char), file_size, csv_in);
-			csv_content[file_size] = 0;
+			if (csv_in != NULL)
+			{
+				char * csv_content = (char *) malloc(sizeof(char)*(file_size+1));
 
-			if(size != NULL)
-				*size = file_size;
-		
-			fclose(csv_in);
+				fread(csv_content, sizeof(char), file_size, csv_in);
+				csv_content[file_size] = 0;
 
-			return csv_content;
-		}
-	}	
+				if(size != NULL)
+					*size = file_size;
+			
+				fclose(csv_in);
+
+				return csv_content;
+			}
+		}	
+	}
 
 	return NULL;
 }
