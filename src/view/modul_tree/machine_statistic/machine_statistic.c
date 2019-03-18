@@ -34,7 +34,7 @@ machine_statistic * machine_statistic_new()
 			for(int i=0; i < 7; i++)
 			{
 
-				this->day_array[i].total_feeded_sheets = i+1;
+				this->day_array[i].total_feeded_sheets = 0;
 				this->day_array[i].total_stacked_sheets = 0;
 				this->day_array[i].total_rejected_sheets = 0;
 				this->day_array[i].error_rate = 0;
@@ -142,15 +142,17 @@ uint64_t machine_statistic_get_total_rejected_sheets(machine_statistic * this)
 
 double machine_statistic_get_total_error_rate(machine_statistic * this)
 {
-	double total_error_rate = 0.0;
+	uint64_t total_feeded_sheets = 0;
+	uint64_t total_rejected_sheets = 0;
 
 	for(int i = 0; i < 7; i++)
 	{
-		total_error_rate += this->day_array[i].error_rate;
+		total_feeded_sheets += this->day_array[i].total_feeded_sheets;
+		total_rejected_sheets += this->day_array[i].total_rejected_sheets;
 	}
 
-	if(total_error_rate > 0.0)
-		return (total_error_rate/7.0);
+	if((total_feeded_sheets > 0) && (total_rejected_sheets > 0))
+		return ((double) ((double) total_rejected_sheets)/((double) (total_feeded_sheets)) * 100.0);
 	else
 		return 0.0;
 }

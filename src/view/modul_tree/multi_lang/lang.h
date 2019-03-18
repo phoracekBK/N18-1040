@@ -183,6 +183,8 @@ struct _lang_
 	const char * stacker_status_ready_to_stack;
 	const char * stacker_status_stacking;	
 	const char * gui_go_to_csv_manage_page_label;
+	const char * fan_intensity_lbl;
+	const char * fan_control_lbl;
 	
 	const char * filter_day;
 	const char * filter_year;

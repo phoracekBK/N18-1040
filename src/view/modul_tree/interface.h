@@ -29,6 +29,7 @@
 #include <c_freq.h>
 #include <platform.h>
 #include <aclib.h>
+#include <c_regulation.h>
 
 /* system configuration */
 #include "config.h"

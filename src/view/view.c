@@ -292,6 +292,11 @@ struct _gui_print_params_page_
 	GtkWidget * sheet_source_combo;
 	GtkWidget * print_confirm_switch;
 
+	GtkWidget * fan_intensity_spin;
+	GtkWidget * fan_control_switch;
+
+	GtkWidget * fan_intensity_lbl;
+	GtkWidget * fan_control_lbl;
 
 	settings_button * btn_return;
 	gui_base * gui_base_ref;
@@ -440,6 +445,9 @@ void gui_print_params_set_max_rejected_sheet_seq(GtkWidget *widget, GdkEvent  *e
 void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer param);
 gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widget, gboolean state, gpointer param);
 void gui_print_params_set_feed_delay(GtkWidget *widget, GdkEvent  *event, gpointer param);
+void gui_print_params_set_fan_intensity(GtkSpinButton * spin_button, gpointer param);
+gboolean gui_print_params_set_fan_activity_callback (GtkSwitch *widget, gboolean state, gpointer param);
+
 
 
 gui_machine_overview * gui_machine_overview_new(gui_base * gui_base_ref);
@@ -562,6 +570,8 @@ gboolean gui_cyclic_interupt(gpointer param)
 		gtk_widget_set_sensitive(GTK_WIDGET(this->network_page->iij_connection_entry), controler_iij_network_connected() != STATUS_CLIENT_CONNECTED);
 
 		gtk_switch_set_active(GTK_SWITCH(this->network_page->iij_network_switch), !conn);
+
+		gtk_switch_set_active(GTK_SWITCH(this->print_params_page->fan_control_switch), ((controler_get_fan_activity() == 0) ? FALSE : TRUE));
 
 		this->gui_base_ref->blink = !(this->gui_base_ref->blink);
 		this->error_blink = 0;
@@ -690,6 +700,8 @@ gboolean gui_cyclic_interupt(gpointer param)
 		if(c_string_len(this->info_label) > 0)
 			c_string_clear(this->info_label);
 	}	
+
+	gtk_widget_set_sensitive(GTK_WIDGET(this->print_params_page->fan_control_switch), controler_machine_status_val() == MACHINE_STATE_WAIT);
 	
 	gtk_widget_queue_draw(GTK_WIDGET(this->drawing_area));
 
@@ -1130,17 +1142,22 @@ void gui_signals(gui * this)
 				"key-release-event", 
 				G_CALLBACK(gui_print_params_set_feed_delay), 
 				this->print_params_page);
-
-
 	g_signal_connect(G_OBJECT(this->print_params_page->sheet_source_combo), 
 				"changed", 
 				G_CALLBACK(gui_print_params_set_sheet_source_callback), 
 				this->print_params_page);
-
 	g_signal_connect(G_OBJECT(this->print_params_page->print_confirm_switch), 
 				"state_set", 
 				G_CALLBACK(gui_print_params_set_print_confirmation_state_callback), 
 				this->print_params_page);
+	g_signal_connect(G_OBJECT(this->print_params_page->fan_control_switch), 
+				"state_set", 
+				G_CALLBACK(gui_print_params_set_fan_activity_callback), 
+				NULL);
+	g_signal_connect(G_OBJECT(this->print_params_page->fan_intensity_spin),
+			 	"value_changed",
+				G_CALLBACK(gui_print_params_set_fan_intensity), 
+				NULL);
 }
 
 /**
@@ -1483,15 +1500,15 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	sprintf(temp_buff, "%d", controler_get_feeded_sheets());
 	cairo_text_extents_t ext_main_counter;
 	cairo_text_extents(cr, temp_buff, &ext_main_counter);
-	cairo_move_to(cr, width/4-80 - ext_main_counter.width, 5*height/24+160);
+	cairo_move_to(cr, width/4-left_horizontal_offset - ext_main_counter.width, 5*height/24+160);
 	cairo_show_text(cr, temp_buff);
-	cairo_move_to(cr, width/4-80, height/4*3+130);
+	cairo_move_to(cr, width/4-left_horizontal_offset, height/4*3+130);
 	cairo_show_text(cr, temp_buff);
 
 	sprintf(temp_buff, "%d", controler_get_feeded_companion_sheets());
 	cairo_text_extents_t ext_companion_counter;
 	cairo_text_extents(cr, temp_buff, &ext_companion_counter);
-	cairo_move_to(cr, width/4-80 - ext_companion_counter.width, 5*height/24+200);
+	cairo_move_to(cr, width/4- left_horizontal_offset - ext_companion_counter.width, 5*height/24+200);
 	cairo_show_text(cr, temp_buff);
 	cairo_move_to(cr, width/4-140, height/4*3+130);
 	cairo_show_text(cr, temp_buff);
@@ -1499,7 +1516,7 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	sprintf(temp_buff, "%d", controler_get_rejected_sheets());
 	cairo_text_extents_t ext_reject_counter;
 	cairo_text_extents(cr, temp_buff, &ext_reject_counter);
-	cairo_move_to(cr, width/4-80 - ext_reject_counter.width, 5*height/24+290);
+	cairo_move_to(cr, width/4-left_horizontal_offset - ext_reject_counter.width, 5*height/24+290);
 	cairo_show_text(cr, temp_buff);
 	cairo_move_to(cr, 130, height/4*3+130);
 	cairo_show_text(cr, temp_buff);
@@ -1507,19 +1524,19 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	sprintf(temp_buff, "%d", controler_get_tab_inserts());
 	cairo_text_extents_t ext_ti_counter;
 	cairo_text_extents(cr, temp_buff, &ext_ti_counter);
-	cairo_move_to(cr, width/4-80 - ext_ti_counter.width, 5*height/24+390);
+	cairo_move_to(cr, width/4-left_horizontal_offset - ext_ti_counter.width, 5*height/24+390);
 	cairo_show_text(cr, temp_buff);
 
 	sprintf(temp_buff, "%d/%d",controler_get_total_sheet_number(), controler_get_stacked_sheets()-controler_get_feeded_companion_sheets());
 	cairo_text_extents_t ext_stacked_counter;
 	cairo_text_extents(cr, temp_buff, &ext_stacked_counter);
-	cairo_move_to(cr, width/4-80 - ext_stacked_counter.width, 5*height/24+430);
+	cairo_move_to(cr, width/4-left_horizontal_offset - ext_stacked_counter.width, 5*height/24+430);
 	cairo_show_text(cr, temp_buff);
 
 	sprintf(temp_buff, "%d", controler_get_rejected_sheet_in_job());
 	cairo_text_extents_t ext_compenzation_counter;
 	cairo_text_extents(cr, temp_buff, &ext_compenzation_counter);
-	cairo_move_to(cr, width/4-80 - ext_compenzation_counter.width, 5*height/24+470);
+	cairo_move_to(cr, width/4-left_horizontal_offset - ext_compenzation_counter.width, 5*height/24+470);
 	cairo_show_text(cr, temp_buff);
 
 
@@ -3130,6 +3147,16 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 	gtk_widget_set_size_request(GTK_WIDGET(this->print_confirm_switch), 100,35);
 	gtk_switch_set_active(GTK_SWITCH(this->print_confirm_switch), controler_get_sheet_source_confirmation());
 
+	this->fan_intensity_spin = gtk_spin_button_new_with_range(0,100,10);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(this->fan_intensity_spin), (int) controler_get_fan_intensity());
+	gtk_widget_set_size_request(GTK_WIDGET(this->fan_intensity_spin), 150, 35);
+
+	this->fan_control_switch = gtk_switch_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->fan_control_switch), 100, 35);
+
+	this->fan_intensity_lbl = gtk_label_new(NULL);
+	this->fan_control_lbl = gtk_label_new(NULL);
+
 
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_lbl, width/4, 250+80+(50*i));
@@ -3137,6 +3164,14 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 	i++;
 	gtk_fixed_put(GTK_FIXED(this->page), this->print_confirm_lbl, width/4, 250+80+(50*i));
 	gtk_fixed_put(GTK_FIXED(this->page), this->print_confirm_switch, width/4*3-300, 250+80+(50*i));
+	i++;
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->fan_intensity_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->fan_intensity_spin, width/4*3-300, 250+80+(50*i));
+	i++;
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->fan_control_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->fan_control_switch, width/4*3-300, 250+80+(50*i));
 	i++;
 
 	gtk_fixed_put(GTK_FIXED(this->page), settings_button_get_instance(this->btn_return), 
@@ -3163,7 +3198,9 @@ void gui_print_params_page_language(gui_print_params_page * this, lang * multi_l
 		}
 	}
 
-	
+	gtk_label_set_text(GTK_LABEL(this->fan_control_lbl), multi_lang->fan_control_lbl);
+	gtk_label_set_text(GTK_LABEL(this->fan_intensity_lbl), multi_lang->fan_intensity_lbl);
+
 	gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(this->sheet_source_combo));
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang->par_sheet_source_main);
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang->par_sheet_source_companion);
@@ -3175,6 +3212,16 @@ void gui_print_params_page_language(gui_print_params_page * this, lang * multi_l
 
 }
 
+void gui_print_params_set_fan_intensity(GtkSpinButton * spin_button, gpointer param)
+{
+	controler_set_fan_intensity((uint8_t) gtk_spin_button_get_value_as_int(spin_button));
+}
+
+gboolean gui_print_params_set_fan_activity_callback (GtkSwitch *widget, gboolean state, gpointer param)
+{
+	controler_set_fan_activity(((state == true) ? 1 : 0));
+	return TRUE;
+}
 
 void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer param)
 {
@@ -3350,15 +3397,15 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 
 	
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+280);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+230);
 	cairo_show_text(cr, multi_lang->statistics_tue);
 
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+480);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+380);
 	cairo_show_text(cr, multi_lang->statistics_wed);
 
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+680);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+530);
 	cairo_show_text(cr, multi_lang->statistics_thu);
 
 
@@ -3366,11 +3413,11 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 	cairo_show_text(cr, multi_lang->statistics_fri);
 
 
-	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+280);
+	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+230);
 	cairo_show_text(cr, multi_lang->statistics_sat);
 
 
-	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+480);
+	cairo_move_to(cr,width/4*3+left_horizontal_offset , (5*height/24)+380);
 	cairo_show_text(cr, multi_lang->statistics_sun);
 
 
@@ -3399,9 +3446,9 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 		cairo_text_extents(cr, temp_buff, &ext_feeded_counter);
 
 		if(i >= 4)
-			cairo_move_to(cr,width-40 - ext_feeded_counter.width , (5*height/24)+110 + 200*(i-4));
+			cairo_move_to(cr,width-40 - ext_feeded_counter.width , (5*height/24)+110 + 150*(i-4));
 		else
-			cairo_move_to(cr,width/4-40 - ext_feeded_counter.width , (5*height/24)+110 + (200*i));
+			cairo_move_to(cr,width/4-40 - ext_feeded_counter.width , (5*height/24)+110 + (150*i));
 
 		cairo_show_text(cr, temp_buff);
 
@@ -3410,9 +3457,9 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 		cairo_text_extents(cr, temp_buff, &ext_stacked_counter);
 		
 		if(i >= 4)
-			cairo_move_to(cr,width-40 - ext_stacked_counter.width , (5*height/24)+140 + 200*(i-4));
+			cairo_move_to(cr,width-40 - ext_stacked_counter.width , (5*height/24)+140 + 150*(i-4));
 		else
-			cairo_move_to(cr,width/4-40 - ext_stacked_counter.width , (5*height/24)+140 + (200*i));
+			cairo_move_to(cr,width/4-40 - ext_stacked_counter.width , (5*height/24)+140 + (150*i));
 	
 		cairo_show_text(cr, temp_buff);
 
@@ -3421,9 +3468,9 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 		cairo_text_extents(cr, temp_buff, &ext_rejected_counter);
 
 		if(i >= 4)
-			cairo_move_to(cr,width-40 - ext_rejected_counter.width , (5*height/24)+170+200*(i-4));
+			cairo_move_to(cr,width-40 - ext_rejected_counter.width , (5*height/24)+170+150*(i-4));
 		else
-			cairo_move_to(cr,width/4-40 - ext_rejected_counter.width , (5*height/24)+170+(200*i));
+			cairo_move_to(cr,width/4-40 - ext_rejected_counter.width , (5*height/24)+170+(150*i));
 
 		cairo_show_text(cr, temp_buff);
 
@@ -3432,9 +3479,9 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 		cairo_text_extents(cr, temp_buff, &ext_error_rate);
 
 		if(i >= 4)
-			cairo_move_to(cr,width-40 - ext_error_rate.width , (5*height/24)+200 +200*(i-4));
+			cairo_move_to(cr,width-40 - ext_error_rate.width , (5*height/24)+200 +150*(i-4));
 		else
-			cairo_move_to(cr,width/4-40 - ext_error_rate.width , (5*height/24)+200 +(200*i));
+			cairo_move_to(cr,width/4-40 - ext_error_rate.width , (5*height/24)+200 +(150*i));
 
 		cairo_show_text(cr, temp_buff);
 	}
@@ -3459,42 +3506,42 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 
 
 	/* tuesday */
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+310);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+260);
 	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+340);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+290);
 	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+370);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+320);
 	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+400);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+350);
 	cairo_show_text(cr, multi_lang->statistics_error_rate);
 
 	/* wednesday */
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+510);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+410);
 	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+540);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+440);
 	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+570);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+470);
 	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+600);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+500);
 	cairo_show_text(cr, multi_lang->statistics_error_rate);
 
 	/* thursday */
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+710);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+560);
 	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+740);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+590);
 	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+770);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+620);
 	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
 
-	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+800);
+	cairo_move_to(cr,left_horizontal_offset , (5*height/24)+650);
 	cairo_show_text(cr, multi_lang->statistics_error_rate);
 
 
@@ -3512,29 +3559,29 @@ gboolean gui_machine_overview_info_box_draw_callback(GtkWidget * widget, cairo_t
 	cairo_show_text(cr, multi_lang->statistics_error_rate);
 
 	/* saturday */
-	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+310);
+	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+260);
 	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
 
-	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+340);
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+290);
 	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
 
-	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+370);
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+320);
 	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
 
-	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+400);
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+350);
 	cairo_show_text(cr, multi_lang->statistics_error_rate);
 
 	/* sunday */
-	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+510);
+	cairo_move_to(cr, width/4*3 + left_horizontal_offset , (5*height/24)+410);
 	cairo_show_text(cr, multi_lang->statistics_feeded_sheets);
 
-	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+540);
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+440);
 	cairo_show_text(cr, multi_lang->statistics_stacked_sheets);
 
-	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+570);
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+470);
 	cairo_show_text(cr, multi_lang->statistics_rejected_sheets);
 
-	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+600);
+	cairo_move_to(cr,width/4*3 + left_horizontal_offset , (5*height/24)+500);
 	cairo_show_text(cr, multi_lang->statistics_error_rate);
 
 	cairo_fill(cr);

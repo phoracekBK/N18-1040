@@ -91,6 +91,7 @@
 #define CFG_PP_NON_REVIDED_SHEET_LIMIT "non_revided_sheet_limit"
 #define CFG_PP_GR_MACHINE_MODE "gr_machine_mode"
 #define CFG_PP_FEED_DELAY "feed_delay"
+#define CFG_PP_FAN_INTENSITY "fan_intensity"
 
 
 #define CFG_LANG_INDEX "lang_index"
@@ -267,6 +268,11 @@ int nth_sheet_time_index;
 bool fake_companion_req;
 bool companion_faked;
 
+soft_pwm * fan_regulation;
+uint8_t fan_intensity;
+uint8_t fan_intensity_set;
+uint8_t fan_activity;
+
 
 /**************************************************** functions declarations *****************************************************/
 
@@ -334,6 +340,8 @@ void controler_feed_control();
 void controler_record_feeding_time();
 
 void controler_save_statistics(int8_t day);
+
+void controler_fun_control();
 
 void * controler_gis_runtime_state_reading(void * param);
 int controler_gis_load_status_id(char ** msg);
@@ -818,6 +826,7 @@ void contorler_sheet_counter()
 
 				feeded_sheet++;
 				feeded_sheet_counter_in_job++;
+				machine_statistic_increment_feeded_sheets(statistics_ref);
 
 				if(machine_state == MACHINE_STATE_PRINT_COMPANION)
 				{
@@ -826,7 +835,6 @@ void contorler_sheet_counter()
 				else
 				{
 					complet_feeded++;
-					machine_statistic_increment_feeded_sheets(statistics_ref);
 				}
 
 				printf("%d\n", feeded_sheet_counter);
@@ -2418,6 +2426,63 @@ void controler_feed_control()
 	feeded_sheet_counter_pre = bkcore_csv_pos;
 }
 
+
+void controler_fun_control()
+{
+	if(machine_state == MACHINE_STATE_PRINT_COMPANION)
+	{
+		fan_intensity = fan_intensity_set;
+	}
+	else if((machine_state != MACHINE_STATE_PRINT_COMPANION) && (machine_state != MACHINE_STATE_WAIT))
+	{
+		fan_intensity = 0;
+		fan_activity = 0;
+	}
+	else
+	{
+		fan_intensity = ((fan_activity > 0) ? fan_intensity_set : 0);
+	}
+
+	io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_0_FUN_CONTROL, soft_pwm_run(fan_regulation, fan_intensity));
+}
+
+void controler_set_fan_intensity(uint8_t intensity)
+{
+	if(intensity <= 100)
+	{
+		fan_intensity_set = intensity;		
+
+		c_log_add_record_with_cmd(log_ref, "Nastavena intenzita ventilátoru: %d%%", intensity);
+
+		controler_update_config(CFG_GROUP_PRINT_PARAMS, 
+				CFG_PP_FAN_INTENSITY, 
+				CONFIG_TYPE_INT, 
+				&fan_intensity, 
+				"Nastavení intenzity ventilátoru bylo úspěšně aktualizováno.", 
+				"Nepodařilo se aktualizovat intenzitu ventilázoru!");
+
+	}
+	else
+	{
+		c_log_add_record_with_cmd(log_ref, "Nelze nastavit intenzitu ventilázoru: %d", intensity);
+	}
+}
+
+uint8_t controler_get_fan_intensity()
+{
+	return fan_intensity_set;
+}
+
+uint8_t controler_get_fan_activity()
+{
+	return fan_activity;
+}
+
+void controler_set_fan_activity(uint8_t activity)
+{
+	fan_activity = activity;
+}
+
 void controler_save_statistics(int8_t day)
 {
 	config_setting_t * root, *group, *sub_group, *settings;
@@ -2535,7 +2600,7 @@ uint64_t controler_get_time_for_one_sheet()
 
 int8_t controler_machine_slow_down()
 {
-	int x = 10;
+	int x = 20;
 	int8_t slmx = (stacked_sheet < (max_stacked_sheets - x));
 	int8_t sgemx = (stacked_sheet >= (max_stacked_sheets - x));
 	int8_t sgem = !(stacked_sheet >= max_stacked_sheets);
@@ -2990,7 +3055,7 @@ void controler_machine_state_save_q_csv()
 					else
 					{
 						c_log_add_record_with_cmd(log_ref, 
-							"Nesoulad vyhozených archů a náhrad z kamerového csv: %d x %d, obsah zpětnovazebního csv:\n %s", 
+							"Nesoulad vyhozených archů a náhrad z kamerového csv: %d x %d, obsah zpětnovazebního csv:\n%s", 
 							rejected_sheet_counter_in_job, line_number, c_string_get_char_array(q_feedback_csv_content));
 
 
@@ -3094,7 +3159,7 @@ void controler_machine_state_ready_to_start()
 		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1) > 0)
 		{
 //|| (((timer + 10000) < c_freq_millis()) && (q_job_get_flag(job) == 'p'))
-			if((((timer + 25000) < c_freq_millis())) && 
+			if((((timer + 5000) < c_freq_millis())) && 
 				(((((strcmp(c_string_get_char_array(print_controler_status), "Printing") == 0) || (companion_faked == true)) && 
 				(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) > 0)) || 
 				io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) == 0)))
@@ -3140,7 +3205,7 @@ void controler_machine_state_wait_for_print_finish()
 
 
 	if(((delay_on_end+25000) < c_freq_millis()) || (feeded_sheet_counter_in_job == (stacked_sheet_counter_in_job + rejected_sheet_counter_in_job) && 
-			(delay_on_end+15000 < c_freq_millis())))
+			(delay_on_end+5000 < c_freq_millis())))
 	{
 		if((feeded_sheet_counter_in_job == job_info_get_job_sheet_number(info, job_info_get_job_index(info))) && 
 			(feeded_sheet_counter_in_job == (stacked_sheet_counter_in_job + rejected_sheet_counter_in_job)))
@@ -3791,6 +3856,9 @@ void controler_safety_system_in()
 			}
 		}
 	}
+
+	
+	controler_fun_control();
 
 
 	/* safety protection of input states */
@@ -4924,6 +4992,12 @@ uint8_t controler_load_config()
 		feed_delay = setting_val_int;
 	else
 		return 19;
+
+	
+	if(config_setting_lookup_int(settings, CFG_PP_FAN_INTENSITY, &setting_val_int) == CONFIG_TRUE)
+		fan_intensity_set = setting_val_int;
+	else
+		return 20;
 	
 
 	/* load language settings */
@@ -4932,7 +5006,7 @@ uint8_t controler_load_config()
 	if(config_setting_lookup_int(settings, CFG_LANG_INDEX, &setting_val_int) == CONFIG_TRUE)
 		lang_index = setting_val_int;
 	else
-		return 20;
+		return 21;
 
 
 
@@ -4956,24 +5030,24 @@ uint8_t controler_load_config()
 		else if(day_index == 6)
 			sub_settings = config_setting_get_member(settings, CFG_GROUP_STATISTICS_SAT);
 		else
-			return 53;
+			return 54;
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_FEEDED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 		{
 			machine_statistic_restore_feeded_sheets(statistics_ref, setting_val_int, day_index);		
 		}
 		else
-			return 21+(day_index*4);
+			return 22+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_STACKED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_stacked_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 22+(day_index*4);
+			return 23+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_REJECTED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_rejected_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 23+(day_index*4);
+			return 24+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_float(sub_settings, CFG_STATISTICS_ERROR_RATE, &setting_val_float) == CONFIG_TRUE))
 		{
@@ -4982,7 +5056,7 @@ uint8_t controler_load_config()
 			
 		}
 		else
-			return 24+(day_index*4);
+			return 25+(day_index*4);
 
 	}
 
@@ -5008,6 +5082,10 @@ void controler_initialize_variables()
 	fake_companion_req = false;
 	companion_faked = false;
 
+
+	fan_regulation = soft_pwm_new(1000, 100);
+	fan_intensity = 0;
+	fan_activity = 0;
 
 	machine_mode = GR_PRINT_INSPECTION;
 
@@ -5173,6 +5251,10 @@ void controler_default_config()
 	feed_delay = 500;
 	settings = config_setting_add(print_params, CFG_PP_FEED_DELAY, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, 500);	
+
+	fan_intensity_set = 50;
+	settings = config_setting_add(print_params, CFG_PP_FAN_INTENSITY, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 50);	
 
 /*
 	machine_mode = GR_PRINT_INSPECTION;

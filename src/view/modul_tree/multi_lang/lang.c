@@ -119,6 +119,8 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->set_net_iij_connection_test_label = "IP adresa počítače IIJ:";
     cz_lang->set_net_pci_connection_test_label = "IP adresa počítače PCI:";
     cz_lang->set_net_quadient_connection_test_label = "IP adresa počítače Quadient:";
+    cz_lang->fan_intensity_lbl = "Nastavení intenzity ventilátoru (%):";
+    cz_lang->fan_control_lbl = "Ovládání ventilátoru";
 
     cz_lang->file_chooser_btn_browse = "Procházet";
     cz_lang->file_chooser_cancel_btn = "Zrušit";
@@ -303,6 +305,8 @@ void lang_init_english(lang * en_lang)
     en_lang->set_net_iij_connection_test_label = "IP address of IIJ computer:";
     en_lang->set_net_pci_connection_test_label = "IP address of PCI computer:";
     en_lang->set_net_quadient_connection_test_label = "IP address of Quadient computer:";
+    en_lang->fan_intensity_lbl = "Fan intensity settings (%):";
+    en_lang->fan_control_lbl = "Fan control:";
 
     en_lang->file_chooser_btn_browse = "Browse";
     en_lang->file_chooser_cancel_btn = "Cancel";

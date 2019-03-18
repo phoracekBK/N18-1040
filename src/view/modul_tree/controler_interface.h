@@ -256,7 +256,10 @@ char * controler_pci_network_get_ip_address();
 uint8_t controler_job_list_changed();
 void controler_total_clear_hotfolder();
 
-
+void controler_set_fan_intensity(uint8_t intensity);
+uint8_t controler_get_fan_intensity();
+uint8_t controler_get_fan_activity();
+void controler_set_fan_activity(uint8_t activity);
 
 
 void controler_free_report_information_struct(rep_struct * this);

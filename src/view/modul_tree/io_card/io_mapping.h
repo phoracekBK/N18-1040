@@ -94,7 +94,7 @@ enum _mapping_a2_in_
 /* mapping of output on card A2 */
 enum _mapping_a2_out_
 {
-	A2_OUT_0_RESERVE = 0,
+	A2_OUT_0_FUN_CONTROL = 0,
 	A2_OUT_1_RESERVE,
 	A2_OUT_2_RESERVE,
 	A2_OUT_3_RESERVE,

@@ -66,7 +66,7 @@ const char * a2_in_labels[16] = {"TI_incyc",				/* IN 0 */
 				"RESERVE"};				/* IN 15 */
 
 
-const char * a2_out_labels[16] = {"RESERVE",				/* OUT 0 */
+const char * a2_out_labels[16] = {"FUN_CONTROL",			/* OUT 0 */
 				"RESERVE",				/* OUT 1 */
 				"RESERVE",				/* OUT 2 */
 				"RESERVE",				/* OUT 3 */

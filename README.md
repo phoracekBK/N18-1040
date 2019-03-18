@@ -1,30 +1,28 @@
 
 
 **TODO**
-* vytvořit modul pro správu statistiky tisku
 * vytvořit funkcionalitu na ovládání mechanismu na nastřelovací proužky
 * přidat do karty nastavení tiskových parametrů možnost nastavit čas nastřelování oddělovacího proužku ovlivňující jeho délku 
-* rozšířit statistiku dobrých a špatných archů na denní produkci a za danou časovou dobu plus počet naložených, vytisknutých a vyhozených archů za den a za danou časovou dobu
-* vytvořit funkcionalitu, která bude zapínat větrák na separaci prokladových archů
-* přidat do ovládacího panelu tlačítko na vyprázdnění vykladače (vynulování počítadla na vyložené archy) (implementováno ale netestováno)
-* zrychlit ukončování jobu
 * nafakeovat tisk prokladu na jedno tlačítko
 * přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
-* přidat do nastavení tiskových parametrů zpomalení nakládání -> nastavení rozestupů archů na pásu
-* přidat do controleru funkci pro nastřelování oddělovacích proužků
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
 * zpomalit tisk pokud se náhrady blíží nastavení hodnotě (500) ve vykladači
 
-* vytvořit kartu pro přehled stroje kde budou zobrazeny podrobnosti o stavu stroje (počítadla, režim, stav nakladače, vykladače, ...)
 * vytvořit dokumentaci zdrojových kódů
-* refaktorovat kód pro větší přehlednost
 * (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
 
 
 
 **DONE**
 
+* přidat do nastavení tiskových parametrů zpomalení nakládání -> nastavení rozestupů archů na pásu
+* vytvořit kartu pro přehled stroje kde budou zobrazeny podrobnosti o stavu stroje (počítadla, režim, stav nakladače, vykladače, ...)
+* vytvořit funkcionalitu, která bude zapínat větrák na separaci prokladových archů
+* zrychlit ukončování jobu
+* přidat do ovládacího panelu tlačítko na vyprázdnění vykladače (vynulování počítadla na vyložené archy) (implementováno ale netestováno)
+* rozšířit statistiku dobrých a špatných archů na denní produkci a za danou časovou dobu plus počet naložených, vytisknutých a vyhozených archů za den a za danou časovou dobu
+* vytvořit modul pro správu statistiky tisku
 * přidat dodatečné informace do logu
 * nastavit když při zapnuté ena je nakladač nebo vykladač ve stavu připraven, pak je nutné upozornit obsluhu
 * upravit maják stavu nakladače a vykladače aby blikal v případě že očekává jiný stav než jaký se na něm nachází
