@@ -256,10 +256,18 @@ char * controler_pci_network_get_ip_address();
 uint8_t controler_job_list_changed();
 void controler_total_clear_hotfolder();
 
-void controler_set_fan_intensity(uint8_t intensity);
-uint8_t controler_get_fan_intensity();
+void controler_set_fan_intensity(int intensity);
+int controler_get_fan_intensity();
 uint8_t controler_get_fan_activity();
 void controler_set_fan_activity(uint8_t activity);
+
+void controler_tab_insert_set_sequence(int32_t sequence);
+int32_t controler_tab_insert_get_sequence();
+void controler_tab_insert_set_automat(bool automat);
+bool controler_tab_insert_get_automat();
+void controler_tab_inset_set_length(int32_t length);
+int32_t controler_tab_insert_get_length();
+void controler_tab_insert_manual_insert();
 
 
 void controler_free_report_information_struct(rep_struct * this);
@@ -377,6 +385,7 @@ char * controler_get_job_pdf_name(int job_index);
 char * controler_get_job_bkcore_csv_name(int job_index);
 char * controler_get_job_camera_csv_name(int job_index);
 char * controler_get_job_date_time(int job_index);
+char * controler_get_job_stamp_type(int job_index);
 char * controler_get_job_nominal_value(int job_index);
 int controler_get_job_stamp_number(int job_index);
 int controler_get_job_sheet_number(int job_index);

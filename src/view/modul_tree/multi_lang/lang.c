@@ -29,7 +29,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->gui_job_state = "Aktuální stav";
     cz_lang->gui_job_order_name = "Jméno jobu";
     cz_lang->gui_job_q_name = "Job-identifikátor";
-    cz_lang->gui_job_nominal = "Nominal";
+    cz_lang->gui_job_stamp_type_name = "Druh kolku";
     cz_lang->gui_job_sheet_number = "Celkový počet archů";
     cz_lang->gui_job_stamp_number = "Celkový počet kolků";
     cz_lang->gui_job_date_time = "Datum a čas";
@@ -121,6 +121,11 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->set_net_quadient_connection_test_label = "IP adresa počítače Quadient:";
     cz_lang->fan_intensity_lbl = "Nastavení intenzity ventilátoru (%):";
     cz_lang->fan_control_lbl = "Ovládání ventilátoru";
+    cz_lang->tab_insert_len_lbl = "Doba nastřelování oddělovacího proužku (ms):";
+    cz_lang->tab_insert_req_lbl = "Manuální nastřelení oddělovacího proužku:";	
+    cz_lang->tab_insert_automat_lbl = "Automatické nastřelování oddělovací proužku:";
+    cz_lang->tab_insert_sequence_lbl = "Nastřelit oddělovací proužek po (archy): ";
+    cz_lang->insert_tab_lbl = "Nastřelit";
 
     cz_lang->file_chooser_btn_browse = "Procházet";
     cz_lang->file_chooser_cancel_btn = "Zrušit";
@@ -214,7 +219,7 @@ void lang_init_english(lang * en_lang)
     en_lang->gui_job_state = "Actual state";
     en_lang->gui_job_order_name = "Job name";
     en_lang->gui_job_q_name = "Job-identificator";
-    en_lang->gui_job_nominal = "Nominal";
+    en_lang->gui_job_stamp_type_name = "Stamp type";
     en_lang->gui_job_sheet_number = "Total sheet number";
     en_lang->gui_job_stamp_number = "Total stamp number";
     en_lang->gui_job_date_time = "Date and time";
@@ -307,6 +312,12 @@ void lang_init_english(lang * en_lang)
     en_lang->set_net_quadient_connection_test_label = "IP address of Quadient computer:";
     en_lang->fan_intensity_lbl = "Fan intensity settings (%):";
     en_lang->fan_control_lbl = "Fan control:";
+    en_lang->tab_insert_len_lbl = "Time interval for separating tab inserting (ms):";
+    en_lang->tab_insert_req_lbl = "Manual insert of separating tab:";	
+    en_lang->tab_insert_automat_lbl = "Automatic inserting of separating tab:";
+    en_lang->tab_insert_sequence_lbl = "Insert separator sheet every (sheets): ";
+    en_lang->insert_tab_lbl = "Insert";
+
 
     en_lang->file_chooser_btn_browse = "Browse";
     en_lang->file_chooser_cancel_btn = "Cancel";

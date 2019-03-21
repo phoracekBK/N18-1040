@@ -92,6 +92,9 @@
 #define CFG_PP_GR_MACHINE_MODE "gr_machine_mode"
 #define CFG_PP_FEED_DELAY "feed_delay"
 #define CFG_PP_FAN_INTENSITY "fan_intensity"
+#define CFG_PP_TAB_INSERT_LENGTH "tab_insert_length"
+#define CFG_PP_TAB_INSERT_SEQUENCE "tab_insert_sequence"
+#define CFG_PP_TAB_INSERT_AUTOMAT "tab_insert_automat"
 
 
 #define CFG_LANG_INDEX "lang_index"
@@ -105,12 +108,6 @@
 #define CFG_NETWORK_IIJ_PC_TCP_PORT "iij_pc_tcp_port"
 #define CFG_NETWORK_IIJ_PC_IP_ADDRESS "iij_pc_ip_address"
 
-/*
-				this->day_array[i].total_feeded_sheets = 0;
-				this->day_array[i].total_stacked_sheets = 0;
-				this->day_array[i].total_rejected_sheets = 0;
-				this->day_array[i].error_rate = 0;
-*/
 #define CFG_STATISTICS_TOTAL_FEEDED_SHEETS "total_feeded_sheets"
 #define CFG_STATISTICS_TOTAL_STACKED_SHEETS "total_stacked_sheets"
 #define CFG_STATISTICS_TOTAL_REJECTED_SHEETS "total_rejected_sheets"
@@ -269,10 +266,18 @@ bool fake_companion_req;
 bool companion_faked;
 
 soft_pwm * fan_regulation;
-uint8_t fan_intensity;
-uint8_t fan_intensity_set;
+int fan_intensity;
+int fan_intensity_set;
 uint8_t fan_activity;
 
+
+uint8_t tab_insert_step;
+uint64_t timer_tab_insert;
+uint8_t tab_insert_req;
+int tab_insert_len;
+bool tab_insert_automat;
+int32_t tab_insert_sequence;
+bool tab_insert_done;
 
 /**************************************************** functions declarations *****************************************************/
 
@@ -342,6 +347,7 @@ void controler_record_feeding_time();
 void controler_save_statistics(int8_t day);
 
 void controler_fun_control();
+void controler_tab_insert_control();
 
 void * controler_gis_runtime_state_reading(void * param);
 int controler_gis_load_status_id(char ** msg);
@@ -570,6 +576,80 @@ uint8_t controler_machine_status_val()
 }
 
 
+uint64_t controler_date_to_int(char * file_name)
+{
+	uint64_t int_time = 0;
+
+	char * csv_content = util_load_csv(c_string_get_char_array(job_log_path), file_name, NULL);
+	
+	uint32_t year = 0;
+	uint32_t month = 0;
+	uint32_t day = 0;
+	uint32_t hour = 0;
+	uint32_t minute = 0;
+	uint32_t second = 0;
+	int i = 0;
+	uint8_t row = 0;
+	uint8_t item = 0;
+		
+	if(csv_content != NULL)
+	{
+		while((csv_content[i] != 0) && (row < 10) && ((row < 9) || (item < 6) || (isdigit(csv_content[i]) != 0)))
+		{
+			if(csv_content[i] == '\n')
+				row ++;
+
+			if(((csv_content[i] == '/') || (csv_content[i] == '-') || ((item > 2) && (csv_content[i] == ':'))) && (row == 9))
+				item ++;
+
+			if((row == 9) && (isdigit(csv_content[i])))
+			{
+				switch(item)
+				{
+					case 0:
+						day = day*10+(csv_content[i]-48);
+					break;
+	
+					case 1:
+						month = month*10+(csv_content[i]-48);
+					break;
+	
+					case 2:
+						year = year*10+(csv_content[i]-48);
+					break;
+			
+					case 3:
+						hour = hour*10+(csv_content[i]-48);
+					break;
+					
+					case 4: 
+						minute = minute*10+(csv_content[i]-48);
+					break;
+			
+					case 5:
+						second = second*10+(csv_content[i]-48);
+					break; 
+				}		
+			}				
+			i++;
+		}
+
+		int_time += second;
+		int_time += minute*60;
+		int_time += hour*3600;
+		int_time += day*24*3600;
+		int_time += ((uint32_t)((double)month)*30.416)*24*3600;
+		int_time += year*365*24*3600;
+	
+		free(csv_content);
+		
+	}
+
+
+
+	return int_time;
+}
+
 array_list * controler_get_report_csv_list()
 {
 	DIR * dir_ref = opendir(controler_get_job_report_hotfolder_path());
@@ -580,6 +660,7 @@ array_list * controler_get_report_csv_list()
 	{
 		struct dirent * dir_cont;
 		temp_csv_list = array_list_new();
+		array_list * date_csv_list = array_list_new();
 
 		while((dir_cont = readdir(dir_ref)) != NULL)
 		{
@@ -588,7 +669,29 @@ array_list * controler_get_report_csv_list()
 				if(util_str_ends_with(dir_cont->d_name, ".csv", 0) == 0)
 				{
 					c_string * csv_file_name = c_string_new_with_init(dir_cont->d_name);
-					array_list_add(temp_csv_list, csv_file_name);
+
+					uint64_t * int_date = malloc(sizeof(uint64_t));
+					*int_date = controler_date_to_int(dir_cont->d_name);
+					
+					if(array_list_size(temp_csv_list) > 0)
+					{
+						for(int i = 0; i< array_list_size(temp_csv_list); i++)
+						{
+							uint64_t * pre_int_date = array_list_get(date_csv_list, i);
+
+							if(*pre_int_date < *int_date)
+							{
+								array_list_add_to_index(date_csv_list, i, int_date);
+								array_list_add_to_index(temp_csv_list, i, csv_file_name);
+								break;
+							}
+						}
+					}
+					else
+					{
+						array_list_add(date_csv_list, int_date);
+						array_list_add(temp_csv_list, csv_file_name);
+					}  
 				}
 				else
 				{
@@ -602,11 +705,15 @@ array_list * controler_get_report_csv_list()
 			}
 		}
 
+		array_list_destructor_with_release_v2(date_csv_list, free);
 		closedir(dir_ref);
 	}
 
 	return temp_csv_list;
 }
+//86
+//35 65 95 120 150
+
 
 uint8_t controler_print_start(const char * job_name)
 {
@@ -2426,6 +2533,79 @@ void controler_feed_control()
 	feeded_sheet_counter_pre = bkcore_csv_pos;
 }
 
+void controler_tab_insert_runtime()
+{
+	if(machine_state != MACHINE_STATE_WAIT)
+	{
+		if((((stacked_sheet_counter) % tab_insert_sequence)) >= tab_insert_sequence)
+		{
+			if(tab_insert_step == 0)
+				tab_insert_req = 1;
+		}
+		else
+		{
+			if(tab_insert_step == 5)
+			{
+				tab_insert_step = 0;
+				tab_insert_done = false;
+			}
+		}
+	}
+}
+
+void controler_tab_insert_control()
+{
+	if(tab_insert_req > 0)
+	{
+		tab_insert_step = 1;
+		tab_insert_req = 0;
+		tab_insert_done = false;
+	}
+
+	if(tab_insert_step == 1)
+	{
+		//insert tab
+		//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_1_RESERVE, 1);
+		timer_tab_insert = c_freq_millis();
+		tab_insert_step = 2;
+	}
+	else if(tab_insert_step == 2)
+	{
+		if((timer_tab_insert + tab_insert_len) < c_freq_millis())
+		{
+			//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_1_RESERVE, 0);
+			timer_tab_insert = c_freq_millis();
+			tab_insert_step = 3;
+		}
+	}
+	else if(tab_insert_step == 3)
+	{
+		//cut tab
+		if((timer_tab_insert + 100) < c_freq_millis())
+		{
+			//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_RESERVE, 1);
+			timer_tab_insert = c_freq_millis();
+			tab_insert_step = 4;
+		}
+	}
+	else if(tab_insert_step == 4)
+	{
+		if((timer_tab_insert + 500) < c_freq_millis())
+		{
+			//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_RESERVE, 0);
+			tab_insert_step = 5;
+		}
+	}
+	else if(tab_insert_step == 5)
+	{
+		tab_insert_done = true;
+	}
+	else
+	{
+		tab_insert_step = 0;
+	}
+
+}
 
 void controler_fun_control()
 {
@@ -2443,21 +2623,21 @@ void controler_fun_control()
 		fan_intensity = ((fan_activity > 0) ? fan_intensity_set : 0);
 	}
 
-	io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_0_FUN_CONTROL, soft_pwm_run(fan_regulation, fan_intensity));
+	io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_0_FUN_CONTROL, soft_pwm_run(fan_regulation, (uint8_t) fan_intensity));
 }
 
-void controler_set_fan_intensity(uint8_t intensity)
+void controler_set_fan_intensity(int intensity)
 {
 	if(intensity <= 100)
 	{
-		fan_intensity_set = intensity;		
+		fan_intensity_set = intensity;
 
 		c_log_add_record_with_cmd(log_ref, "Nastavena intenzita ventilátoru: %d%%", intensity);
 
 		controler_update_config(CFG_GROUP_PRINT_PARAMS, 
 				CFG_PP_FAN_INTENSITY, 
 				CONFIG_TYPE_INT, 
-				&fan_intensity, 
+				&fan_intensity_set, 
 				"Nastavení intenzity ventilátoru bylo úspěšně aktualizováno.", 
 				"Nepodařilo se aktualizovat intenzitu ventilázoru!");
 
@@ -2468,7 +2648,72 @@ void controler_set_fan_intensity(uint8_t intensity)
 	}
 }
 
-uint8_t controler_get_fan_intensity()
+
+void controler_tab_insert_set_sequence(int32_t sequence)
+{
+	tab_insert_sequence = sequence;
+
+	c_log_add_record_with_cmd(log_ref, "Nastaveno nastřelení oddělovacího proužku každých %d archů.", sequence);
+
+	controler_update_config(CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_TAB_INSERT_SEQUENCE, 
+			CONFIG_TYPE_INT, 
+			&tab_insert_sequence, 
+			"Nastavení sekvence pro separování archů oddělovacím proužkem aktualizováno.", 
+			"Nepodařilo se aktualizovat sekcenci pro separování oddělovacím proužkem!");
+}
+
+int32_t controler_tab_insert_get_sequence()
+{
+	return tab_insert_sequence;
+}
+
+void controler_tab_insert_set_automat(bool automat)
+{
+	tab_insert_automat = automat;
+	c_log_add_record_with_cmd(log_ref, "Automatické nastřelovnání oddělovacího proužku nastaveno na: %s", ((tab_insert_automat == true) ? "TRUE" : "FALSE"));
+
+	controler_update_config(CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_TAB_INSERT_AUTOMAT, 
+			CONFIG_TYPE_BOOL, 
+			&tab_insert_automat, 
+			"Nastavení automatického nastřelování oddělovacího proužku aktualizováno.", 
+			"Nepodařilo se aktualizovat nastavení pro automatické nastřelování oddělovacího proužku!");
+}
+
+bool controler_tab_insert_get_automat()
+{
+	return tab_insert_automat;
+}
+
+void controler_tab_inset_set_length(int32_t length)
+{
+	tab_insert_len = length;
+
+	c_log_add_record_with_cmd(log_ref, "Nastavena doba pro nastřelování oddělovacího proužku na %d ms.", length);
+
+	controler_update_config(CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_TAB_INSERT_LENGTH, 
+			CONFIG_TYPE_INT, 
+			&tab_insert_len, 
+			"Nastavení doby pro nastřelování oddělovacího proužku aktualizováno.", 
+			"Nepodařilo se aktualizovat dobu pro nastřelování oddělovacího proužku!");
+}
+
+int32_t controler_tab_insert_get_length()
+{
+	return tab_insert_len;
+}
+
+void controler_tab_insert_manual_insert()
+{
+	if(machine_state == MACHINE_STATE_WAIT)
+		tab_insert_req = 1;
+}
+
+
+
+int controler_get_fan_intensity()
 {
 	return fan_intensity_set;
 }
@@ -2554,7 +2799,7 @@ void controler_save_statistics(int8_t day)
 		config_setting_set_float(settings, machine_statistic_get_error_rate(statistics_ref, day));
 
 		config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
-		c_log_add_record_with_cmd(log_ref, "Statistika chybovosti uložena: %f%", machine_statistic_get_stacked_sheets(statistics_ref, day));
+		c_log_add_record_with_cmd(log_ref, "Statistika chybovosti uložena: %f%", machine_statistic_get_error_rate(statistics_ref, day));
 	}
 	else
 	{
@@ -2859,31 +3104,39 @@ void controler_machine_state_print_companion()
 		feed_sheet = 1;
 	}
 	else if(feed_sheet == 1)
+	{
+		if((timer + 3000) < c_freq_millis())
+		{
+			feed_sheet = 2;
+			timer = c_freq_millis();
+		}
+	}
+	else if(feed_sheet == 2)
 	{	
 		/* wait for TA_BF true state or given time */
 		if(((timer+MACHINE_XBF_INTERVAL) <= c_freq_millis()))
 		{
 			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_9_TA_cyc, 0);
-			feed_sheet = 2;
+			feed_sheet = 3;
 		}
 
 		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) > 0)
 		{
 			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_9_TA_cyc, 0);
 			timer = c_freq_millis();
-			feed_sheet = 3;
+			feed_sheet = 4;
 		}
 	}
-	else if(feed_sheet == 2)
+	else if(feed_sheet == 3)
 	{	
 		/* wait for TA_BF true state */
 		if(io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) > 0)
 		{
-			feed_sheet = 3;
+			feed_sheet = 4;
 			timer = c_freq_millis();
 		}
 	}
-	else if((feed_sheet == 3) && (io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) == 0))
+	else if((feed_sheet == 4) && (io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_10_TA_BF) == 0))
 	{
 		/* wait 10s for sure, that the companion sheet was successfuly feeded (response 2Hz flashing) */
 		if(((timer+10000) <= c_freq_millis()) || ((io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_2_FEEDING_SENSOR) > 0) && ((timer+6000) <= c_freq_millis())))
@@ -3115,8 +3368,14 @@ void controler_machine_state_save_q_csv()
 								c_string_get_char_array(q_feedback_csv_content));
 
 						error_code = MACHINE_ERR_COUNTERS_MISMATCH;
+						machine_state = MACHINE_STATE_CLEAR_HOT_FOLDER;
+
+
+						/*
 						machine_state = MACHINE_STATE_PAUSE;
 						machine_pause_req = true;
+						*/
+						
 				}	}
 				else
 				{
@@ -3523,7 +3782,7 @@ void controler_machine_state_clear_hotfolder()
 
 void controler_machine_finish_job()
 {
-	//controler_save_statistics(machine_statistic_get_day());
+	controler_save_statistics(machine_statistic_get_day());
 
 	printed_job_index = -1;
 	bkcore_csv_pos = 0;
@@ -3860,6 +4119,8 @@ void controler_safety_system_in()
 	
 	controler_fun_control();
 
+	controler_tab_insert_runtime();
+	controler_tab_insert_control();
 
 	/* safety protection of input states */
 	if(io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_6_LNA_E_stop) == 0)
@@ -4998,7 +5259,23 @@ uint8_t controler_load_config()
 		fan_intensity_set = setting_val_int;
 	else
 		return 20;
-	
+
+
+	if(config_setting_lookup_int(settings, CFG_PP_TAB_INSERT_LENGTH, &setting_val_int) == CONFIG_TRUE)
+		tab_insert_len = setting_val_int;
+	else
+		return 21;
+
+	if(config_setting_lookup_int(settings, CFG_PP_TAB_INSERT_SEQUENCE, &setting_val_int) == CONFIG_TRUE)
+		tab_insert_sequence = setting_val_int;
+	else
+		return 22;
+
+	if(config_setting_lookup_bool(settings, CFG_PP_TAB_INSERT_AUTOMAT, &setting_val_int) == CONFIG_TRUE)
+		tab_insert_automat = setting_val_int;
+	else
+		return 23;
+
 
 	/* load language settings */
 	settings = config_lookup(&(cfg_ref), CFG_GROUP_LANGUAGE);
@@ -5006,7 +5283,7 @@ uint8_t controler_load_config()
 	if(config_setting_lookup_int(settings, CFG_LANG_INDEX, &setting_val_int) == CONFIG_TRUE)
 		lang_index = setting_val_int;
 	else
-		return 21;
+		return 24;
 
 
 
@@ -5030,33 +5307,28 @@ uint8_t controler_load_config()
 		else if(day_index == 6)
 			sub_settings = config_setting_get_member(settings, CFG_GROUP_STATISTICS_SAT);
 		else
-			return 54;
+			return 58;
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_FEEDED_SHEETS, &setting_val_int) == CONFIG_TRUE))
-		{
 			machine_statistic_restore_feeded_sheets(statistics_ref, setting_val_int, day_index);		
-		}
 		else
-			return 22+(day_index*4);
+			return 23+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_STACKED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_stacked_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 23+(day_index*4);
+			return 25+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_REJECTED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_rejected_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 24+(day_index*4);
+			return 26+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_float(sub_settings, CFG_STATISTICS_ERROR_RATE, &setting_val_float) == CONFIG_TRUE))
-		{
 			machine_statistic_restore_error_rate(statistics_ref, setting_val_float, day_index);		
-			printf("%f\n", setting_val_float);
 			
-		}
 		else
-			return 25+(day_index*4);
+			return 27+(day_index*4);
 
 	}
 
@@ -5082,6 +5354,11 @@ void controler_initialize_variables()
 	fake_companion_req = false;
 	companion_faked = false;
 
+
+	tab_insert_step = 0;
+	tab_insert_done = false;
+	timer_tab_insert = 0;
+	tab_insert_req = 0;
 
 	fan_regulation = soft_pwm_new(1000, 100);
 	fan_intensity = 0;
@@ -5255,6 +5532,19 @@ void controler_default_config()
 	fan_intensity_set = 50;
 	settings = config_setting_add(print_params, CFG_PP_FAN_INTENSITY, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, 50);	
+
+	
+	tab_insert_len = 500;
+	settings = config_setting_add(print_params, CFG_PP_TAB_INSERT_LENGTH, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 500);	
+
+	tab_insert_sequence = 500;
+	settings = config_setting_add(print_params, CFG_PP_TAB_INSERT_SEQUENCE, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 500);
+
+	tab_insert_automat = false;
+	settings = config_setting_add(print_params, CFG_PP_TAB_INSERT_AUTOMAT, CONFIG_TYPE_BOOL);
+	config_setting_set_bool(settings, false);
 
 /*
 	machine_mode = GR_PRINT_INSPECTION;
@@ -5487,6 +5777,12 @@ char * controler_get_job_date_time(int job_index)
 {
 	return controler_return_job_string_info(q_job_get_date_time, job_index);
 }
+
+char * controler_get_job_stamp_type(int job_index)
+{
+	return controler_return_job_string_info(q_job_get_stamp_type, job_index);
+}
+
 
 int controler_get_job_stamp_number(int job_index)
 {

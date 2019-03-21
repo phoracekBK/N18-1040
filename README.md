@@ -1,13 +1,10 @@
 
 
 **TODO**
-* vytvořit funkcionalitu na ovládání mechanismu na nastřelovací proužky
-* přidat do karty nastavení tiskových parametrů možnost nastavit čas nastřelování oddělovacího proužku ovlivňující jeho délku 
-* nafakeovat tisk prokladu na jedno tlačítko
+* seřadit výpis s reporty podle data vytvoření
+* nafakeovat tisk prokladu na jedno tlačítko (implementováno, nutno doladit)
 * přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
-* přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
-* zpomalit tisk pokud se náhrady blíží nastavení hodnotě (500) ve vykladači
 
 * vytvořit dokumentaci zdrojových kódů
 * (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
@@ -16,6 +13,10 @@
 
 **DONE**
 
+* přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
+* přidat do karty nastavení tiskových parametrů možnost nastavit čas nastřelování oddělovacího proužku ovlivňující jeho délku 
+* vytvořit funkcionalitu na ovládání mechanismu na nastřelovací proužky
+* upravit ukládání konfigurace intenzity ventilátoru do souboru -> problém s převodem 8-bitové proměnné na 32-bitovou
 * přidat do nastavení tiskových parametrů zpomalení nakládání -> nastavení rozestupů archů na pásu
 * vytvořit kartu pro přehled stroje kde budou zobrazeny podrobnosti o stavu stroje (počítadla, režim, stav nakladače, vykladače, ...)
 * vytvořit funkcionalitu, která bude zapínat větrák na separaci prokladových archů

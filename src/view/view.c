@@ -20,7 +20,7 @@ enum _gui_job_list_items_
 {
 	JOB_STATE= 0,
 	JOB_ORDER_NAME,
-	JOB_NOMINAL,
+	JOB_STAMP_TYPE,
 	JOB_SHEET_NUMBER,
 	JOB_STAMP_NUMBER,
 	JOB_Q_NAME,
@@ -294,9 +294,17 @@ struct _gui_print_params_page_
 
 	GtkWidget * fan_intensity_spin;
 	GtkWidget * fan_control_switch;
-
 	GtkWidget * fan_intensity_lbl;
 	GtkWidget * fan_control_lbl;
+
+	GtkWidget * tab_insert_len_lbl;
+	GtkWidget * tab_insert_len_spin;
+	GtkWidget * tab_insert_req_lbl;
+	GtkWidget * tab_insert_req_btn;
+	GtkWidget * tab_insert_automat_switch;
+	GtkWidget * tab_insert_automat_lbl;
+	GtkWidget * tab_insert_seq_entry;
+	GtkWidget * tab_insert_seq_lbl;
 
 	settings_button * btn_return;
 	gui_base * gui_base_ref;
@@ -447,7 +455,10 @@ gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widg
 void gui_print_params_set_feed_delay(GtkWidget *widget, GdkEvent  *event, gpointer param);
 void gui_print_params_set_fan_intensity(GtkSpinButton * spin_button, gpointer param);
 gboolean gui_print_params_set_fan_activity_callback (GtkSwitch *widget, gboolean state, gpointer param);
-
+void gui_print_params_set_tab_insert_sequence(GtkWidget *widget, GdkEvent  *event, gpointer param);
+gboolean gui_print_params_tab_insert_automat (GtkSwitch *widget, gboolean state, gpointer param);
+void gui_print_params_set_tab_insert_length(GtkSpinButton * spin_button, gpointer param);
+void gui_print_params_tab_insert_manual(GtkWidget *widget, gpointer param);
 
 
 gui_machine_overview * gui_machine_overview_new(gui_base * gui_base_ref);
@@ -1158,6 +1169,23 @@ void gui_signals(gui * this)
 			 	"value_changed",
 				G_CALLBACK(gui_print_params_set_fan_intensity), 
 				NULL);
+	g_signal_connect(G_OBJECT(this->print_params_page->tab_insert_len_spin),
+			 	"value_changed",
+				G_CALLBACK(gui_print_params_set_tab_insert_length), 
+				NULL);
+	g_signal_connect(G_OBJECT(this->print_params_page->tab_insert_automat_switch),
+			 	"state_set",
+				G_CALLBACK(gui_print_params_tab_insert_automat), 
+				NULL);
+	g_signal_connect(G_OBJECT(this->print_params_page->tab_insert_req_btn),
+			 	"clicked",
+				G_CALLBACK(gui_print_params_tab_insert_manual), 
+				NULL);
+	g_signal_connect(G_OBJECT(this->print_params_page->tab_insert_seq_entry), 
+				"key-release-event", 
+				G_CALLBACK(gui_print_params_set_tab_insert_sequence), 
+				NULL);
+
 }
 
 /**
@@ -1502,7 +1530,7 @@ gboolean gui_control_info_box_draw_callback(GtkWidget * widget, cairo_t * cr, gp
 	cairo_text_extents(cr, temp_buff, &ext_main_counter);
 	cairo_move_to(cr, width/4-left_horizontal_offset - ext_main_counter.width, 5*height/24+160);
 	cairo_show_text(cr, temp_buff);
-	cairo_move_to(cr, width/4-left_horizontal_offset, height/4*3+130);
+	cairo_move_to(cr, width/4-left_horizontal_offset- ext_main_counter.width, height/4*3+130);
 	cairo_show_text(cr, temp_buff);
 
 	sprintf(temp_buff, "%d", controler_get_feeded_companion_sheets());
@@ -1728,7 +1756,7 @@ void gui_control_page_language(gui_control_page * this)
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
 					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_order_name, JOB_ORDER_NAME)));
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
-					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_nominal, JOB_NOMINAL)));
+					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_stamp_type_name, JOB_STAMP_TYPE)));
 
 	gtk_tree_view_append_column (GTK_TREE_VIEW(this->job_list), 
 					GTK_TREE_VIEW_COLUMN(gui_control_page_new_tree_column((gchar*) multi_lang->gui_job_sheet_number, JOB_SHEET_NUMBER)));
@@ -1907,7 +1935,7 @@ void gui_control_page_load_jobs(gui_control_page * this)
         	       	gtk_list_store_set (this->job_list_store, &iter,
 					JOB_STATE, ((job_status == NULL) ? " " : job_status),
 					JOB_ORDER_NAME, ((controler_get_job_order_name(i) == NULL) ? " " : controler_get_job_order_name(i)),
-					JOB_NOMINAL, ((controler_get_job_nominal_value(i) == NULL) ? " " : controler_get_job_nominal_value(i)),
+					JOB_STAMP_TYPE, ((controler_get_job_stamp_type(i) == NULL) ? " " : controler_get_job_stamp_type(i)),
 					JOB_SHEET_NUMBER, controler_get_job_sheet_number(i), 
 					JOB_STAMP_NUMBER, controler_get_job_stamp_number(i),
 					JOB_Q_NAME, ((controler_get_job_name(i) == NULL) ? " " : controler_get_job_name(i)),
@@ -3158,6 +3186,29 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 	this->fan_control_lbl = gtk_label_new(NULL);
 
 
+	this->tab_insert_len_lbl = gtk_label_new(NULL);
+	this->tab_insert_len_spin = gtk_spin_button_new_with_range(100,10000,100);
+	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_len_spin), 300, 35);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(this->tab_insert_len_spin), controler_tab_insert_get_length());
+
+	this->tab_insert_req_lbl = gtk_label_new(NULL);
+	this->tab_insert_req_btn = gtk_button_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_req_btn), 100, 35);
+
+	this->tab_insert_automat_switch = gtk_switch_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_automat_switch), 100, 35);
+	gtk_switch_set_active(GTK_SWITCH(this->tab_insert_automat_switch), controler_tab_insert_get_automat());
+
+	this->tab_insert_automat_lbl = gtk_label_new(NULL);
+
+	this->tab_insert_seq_entry = gtk_entry_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_seq_entry), 300, 35);	
+	char sequence_str[12];
+	sprintf(sequence_str, "%d", controler_tab_insert_get_sequence());
+	gtk_entry_set_text(GTK_ENTRY(this->tab_insert_seq_entry), sequence_str);
+
+	this->tab_insert_seq_lbl = gtk_label_new(NULL);
+
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_lbl, width/4, 250+80+(50*i));
 	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_combo, width/4*3-300, 250+80+(50*i));
@@ -3172,6 +3223,22 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->fan_control_lbl ,width/4, 250+80+(50*i));
 	gtk_fixed_put(GTK_FIXED(this->page), this->fan_control_switch, width/4*3-300, 250+80+(50*i));
+	i++;
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_len_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_len_spin, width/4*3-300, 250+80+(50*i));
+	i++;
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_req_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_req_btn, width/4*3-300, 250+80+(50*i));
+	i++;
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_seq_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_seq_entry, width/4*3-300, 250+80+(50*i));
+	i++;
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_automat_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_automat_switch, width/4*3-300, 250+80+(50*i));
 	i++;
 
 	gtk_fixed_put(GTK_FIXED(this->page), settings_button_get_instance(this->btn_return), 
@@ -3201,6 +3268,14 @@ void gui_print_params_page_language(gui_print_params_page * this, lang * multi_l
 	gtk_label_set_text(GTK_LABEL(this->fan_control_lbl), multi_lang->fan_control_lbl);
 	gtk_label_set_text(GTK_LABEL(this->fan_intensity_lbl), multi_lang->fan_intensity_lbl);
 
+	gtk_label_set_text(GTK_LABEL(this->tab_insert_len_lbl), multi_lang->tab_insert_len_lbl);
+	gtk_label_set_text(GTK_LABEL(this->tab_insert_req_lbl), multi_lang->tab_insert_req_lbl);
+	gtk_label_set_text(GTK_LABEL(this->tab_insert_automat_lbl), multi_lang->tab_insert_automat_lbl);
+	gtk_label_set_text(GTK_LABEL(this->tab_insert_seq_lbl), multi_lang->tab_insert_sequence_lbl);
+	
+	gtk_button_set_label(GTK_BUTTON(this->tab_insert_req_btn), multi_lang->insert_tab_lbl);
+
+
 	gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(this->sheet_source_combo));
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang->par_sheet_source_main);
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT(this->sheet_source_combo), multi_lang->par_sheet_source_companion);
@@ -3212,6 +3287,25 @@ void gui_print_params_page_language(gui_print_params_page * this, lang * multi_l
 
 }
 
+
+void gui_print_params_set_tab_insert_length(GtkSpinButton * spin_button, gpointer param)
+{
+	controler_tab_inset_set_length(gtk_spin_button_get_value_as_int(spin_button));
+}
+
+
+gboolean gui_print_params_tab_insert_automat (GtkSwitch *widget, gboolean state, gpointer param)
+{
+	controler_tab_insert_set_automat(state);
+	return TRUE;
+}
+
+
+void gui_print_params_set_tab_insert_sequence(GtkWidget *widget, GdkEvent  *event, gpointer param)
+{
+	controler_tab_insert_set_sequence(atoi(gtk_entry_get_text(GTK_ENTRY(widget))));
+}
+
 void gui_print_params_set_fan_intensity(GtkSpinButton * spin_button, gpointer param)
 {
 	controler_set_fan_intensity((uint8_t) gtk_spin_button_get_value_as_int(spin_button));
@@ -3221,6 +3315,12 @@ gboolean gui_print_params_set_fan_activity_callback (GtkSwitch *widget, gboolean
 {
 	controler_set_fan_activity(((state == true) ? 1 : 0));
 	return TRUE;
+}
+
+
+void gui_print_params_tab_insert_manual(GtkWidget *widget, gpointer param)
+{
+	controler_tab_insert_manual_insert();
 }
 
 void gui_print_params_set_sheet_source_callback (GtkComboBox *widget, gpointer param)

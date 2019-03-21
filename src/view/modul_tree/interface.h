@@ -24,7 +24,7 @@
 #include <sys/time.h>
 #include <math.h>
 #include <unistd.h>
-
+#include <time.h>
 
 #include <c_freq.h>
 #include <platform.h>

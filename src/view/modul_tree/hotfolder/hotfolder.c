@@ -264,11 +264,11 @@ void hot_bkcore_csv_info(q_job * job, char * address)
 				str[str_pos] = 0;
 
 				if(row == 3)
-					q_job_set_nominal(job, str);
+					q_job_set_stamp_type(job, str);
 				else if(row == 2)
 					q_job_set_order_name(job, str);
 				else if(row == 4)
-					q_job_set_stamp_type(job, str);
+					q_job_set_nominal(job, str);
 
 				row++;
 				str_pos = 0;

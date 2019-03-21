@@ -24,7 +24,7 @@ struct _lang_
 	const char * gui_job_state;
 	const char * gui_job_order_name;
 	const char * gui_job_q_name;
-	const char * gui_job_nominal;
+	const char * gui_job_stamp_type_name;
 	const char * gui_job_sheet_number;
 	const char * gui_job_stamp_number;
 	const char * gui_job_date_time;
@@ -185,7 +185,12 @@ struct _lang_
 	const char * gui_go_to_csv_manage_page_label;
 	const char * fan_intensity_lbl;
 	const char * fan_control_lbl;
-	
+	const char * tab_insert_len_lbl;
+	const char * tab_insert_req_lbl;	
+	const char * tab_insert_automat_lbl;
+	const char * tab_insert_sequence_lbl;
+	const char * insert_tab_lbl;
+
 	const char * filter_day;
 	const char * filter_year;
 	const char * filter_month;
