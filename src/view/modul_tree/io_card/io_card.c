@@ -75,8 +75,8 @@ const char * a2_in_labels[16] = {"TI_incyc",				/* IN 0 */
 
 const char * a2_out_labels[16] = {"FUN_CONTROL",			/* OUT 0 */
 				"RESERVE",				/* OUT 1 */
-				"RESERVE",				/* OUT 2 */
-				"RESERVE",				/* OUT 3 */
+				"TI_tape_cut",				/* OUT 2 */
+				"TI_motor_drive",			/* OUT 3 */
 				"RESERVE",				/* OUT 4 */
 				"RESERVE",				/* OUT 5 */
 				"RESERVE",				/* OUT 6 */

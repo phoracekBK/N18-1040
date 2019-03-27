@@ -266,6 +266,8 @@ int32_t controler_tab_insert_get_sequence();
 void controler_tab_insert_set_automat(bool automat);
 bool controler_tab_insert_get_automat();
 void controler_tab_inset_set_length(int32_t length);
+void controler_tab_insert_set_cut_delay(int32_t sheets);
+int32_t controler_tab_insert_get_cut_delay();
 int32_t controler_tab_insert_get_length();
 void controler_tab_insert_manual_insert();
 

@@ -93,6 +93,7 @@
 #define CFG_PP_FEED_DELAY "feed_delay"
 #define CFG_PP_FAN_INTENSITY "fan_intensity"
 #define CFG_PP_TAB_INSERT_LENGTH "tab_insert_length"
+#define CFG_PP_TAB_INSERT_CUT_DELAY "tab_cut_delay"
 #define CFG_PP_TAB_INSERT_SEQUENCE "tab_insert_sequence"
 #define CFG_PP_TAB_INSERT_AUTOMAT "tab_insert_automat"
 
@@ -190,6 +191,8 @@ uint32_t rejected_sheet;
 uint32_t feeded_sheet;
 uint64_t complet_feeded;
 uint64_t complet_rejected;
+uint32_t stacked_for_ti;
+uint8_t stacked_sensor_for_ti_pre;
 
 int32_t non_stacked_upper_limit;
 int32_t non_revided_upper_limit;
@@ -277,7 +280,9 @@ uint8_t tab_insert_req;
 int tab_insert_len;
 bool tab_insert_automat;
 int32_t tab_insert_sequence;
-bool tab_insert_done;
+bool tab_insert_busy;
+uint32_t last_ti_req;
+int32_t ti_delay;
 
 /**************************************************** functions declarations *****************************************************/
 
@@ -2462,6 +2467,7 @@ void controler_machine_state_prepare()
 					if(status == 0)
 					{
 						machine_state = MACHINE_STATE_READY_TO_START;
+						
 						timer = c_freq_millis();
 
 						/* prepare job info structure for current job */
@@ -2533,72 +2539,99 @@ void controler_feed_control()
 	feeded_sheet_counter_pre = bkcore_csv_pos;
 }
 
+
+/*
+** send tab insert signal into control function and with reasing edge starts inserting the tab
+** signal is send only if the stacked counter not equal with last send singal value
+*/
 void controler_tab_insert_runtime()
 {
-	if(machine_state != MACHINE_STATE_WAIT)
+	if((stacked_sensor_for_ti_pre != stacker_status) && (stacker_status == MACHINE_SN_STACKING))
 	{
-		if((((stacked_sheet_counter) % tab_insert_sequence)) >= tab_insert_sequence)
+		stacked_for_ti++;
+	}
+
+	stacked_sensor_for_ti_pre = stacker_status;
+
+
+	if((tab_insert_automat > 0))
+	{
+		if((stacked_for_ti > 0) && (((stacked_for_ti) % tab_insert_sequence) == 0))
 		{
-			if(tab_insert_step == 0)
-				tab_insert_req = 1;
-		}
-		else
-		{
-			if(tab_insert_step == 5)
+			if((tab_insert_busy == false) && (last_ti_req != stacked_for_ti))
 			{
-				tab_insert_step = 0;
-				tab_insert_done = false;
+				tab_insert_req = 1;
+				last_ti_req = stacked_for_ti;
 			}
 		}
 	}
 }
 
+
+/*
+** todo výstup z TI který se po nastavení na true po aktivaci posuvu se musí být vždy 150 - 200 ms aktivovaný jinak je problém s posuvem
+** a je nutné vyvolat chybovou hlášku "Problém s posuvem pásky"
+*/
 void controler_tab_insert_control()
 {
 	if(tab_insert_req > 0)
 	{
 		tab_insert_step = 1;
 		tab_insert_req = 0;
-		tab_insert_done = false;
+		tab_insert_busy = true;
 	}
 
 	if(tab_insert_step == 1)
 	{
-		//insert tab
-		//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_1_RESERVE, 1);
-		timer_tab_insert = c_freq_millis();
+		// cut for clear tab inserter
+		io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_TI_tape_cut, 1);
 		tab_insert_step = 2;
 	}
 	else if(tab_insert_step == 2)
 	{
-		if((timer_tab_insert + tab_insert_len) < c_freq_millis())
+		if((timer_tab_insert + 50) < c_freq_millis())
 		{
-			//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_1_RESERVE, 0);
-			timer_tab_insert = c_freq_millis();
+			io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_TI_tape_cut, 0);
 			tab_insert_step = 3;
 		}
 	}
 	else if(tab_insert_step == 3)
 	{
-		//cut tab
-		if((timer_tab_insert + 100) < c_freq_millis())
-		{
-			//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_RESERVE, 1);
-			timer_tab_insert = c_freq_millis();
-			tab_insert_step = 4;
-		}
+		//insert tab
+		io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_3_TI_motor_drive, 1);
+		timer_tab_insert = c_freq_millis();
+		tab_insert_step = 4;
 	}
 	else if(tab_insert_step == 4)
 	{
-		if((timer_tab_insert + 500) < c_freq_millis())
+		if((timer_tab_insert + tab_insert_len) < c_freq_millis())
 		{
-			//io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_RESERVE, 0);
+			io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_3_TI_motor_drive, 0);
+			timer_tab_insert = c_freq_millis();
 			tab_insert_step = 5;
 		}
 	}
 	else if(tab_insert_step == 5)
 	{
-		tab_insert_done = true;
+		//cut tab
+		if((timer_tab_insert + 100) < c_freq_millis() && (((stacked_for_ti) % tab_insert_sequence) >= ti_delay))
+		{
+			io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_TI_tape_cut, 1);
+			timer_tab_insert = c_freq_millis();
+			tab_insert_step = 6;
+		}
+	}
+	else if(tab_insert_step == 6)
+	{
+		if((timer_tab_insert + 50) < c_freq_millis())
+		{
+			io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_TI_tape_cut, 0);
+			tab_insert_step = 7;
+		}
+	}
+	else if(tab_insert_step == 7)
+	{
+		tab_insert_busy = false;
 	}
 	else
 	{
@@ -2671,6 +2704,8 @@ int32_t controler_tab_insert_get_sequence()
 void controler_tab_insert_set_automat(bool automat)
 {
 	tab_insert_automat = automat;
+	stacked_for_ti = 0;
+
 	c_log_add_record_with_cmd(log_ref, "Automatické nastřelovnání oddělovacího proužku nastaveno na: %s", ((tab_insert_automat == true) ? "TRUE" : "FALSE"));
 
 	controler_update_config(CFG_GROUP_PRINT_PARAMS, 
@@ -2684,6 +2719,26 @@ void controler_tab_insert_set_automat(bool automat)
 bool controler_tab_insert_get_automat()
 {
 	return tab_insert_automat;
+}
+
+
+void controler_tab_insert_set_cut_delay(int32_t sheets)
+{
+	ti_delay = sheets;
+
+	c_log_add_record_with_cmd(log_ref, "Nastavena doba pro opoždění střihu nastřelovacího proužku, %d", sheets);
+
+	controler_update_config(CFG_GROUP_PRINT_PARAMS, 
+			CFG_PP_TAB_INSERT_CUT_DELAY, 
+			CONFIG_TYPE_INT, 
+			&ti_delay, 
+			"Nastavení opoždění střihu nastřelovacího proužku aktualizováno.", 
+			"Nepodařilo se aktualizovat opoždění střihu nastřelovacího proužku!");
+}
+
+int32_t controler_tab_insert_get_cut_delay()
+{
+	return ti_delay;
 }
 
 void controler_tab_inset_set_length(int32_t length)
@@ -4296,7 +4351,7 @@ void controler_safety_system_in()
 		{
 			if((machine_mode == GR_PRINT_INSPECTION) || (machine_mode == GR_PRINT))
 			{
-				if(iij_tcp_connection_req == true && c_timer_delay(iij_connection_try_timer, 1000) > 0)
+				if((iij_tcp_connection_req == true) && (c_timer_delay(iij_connection_try_timer, 1000) > 0))
 					controler_iij_connect();
 
 				if(error_code == MACHINE_ERR_NO_ERROR)
@@ -5260,21 +5315,25 @@ uint8_t controler_load_config()
 	else
 		return 20;
 
-
 	if(config_setting_lookup_int(settings, CFG_PP_TAB_INSERT_LENGTH, &setting_val_int) == CONFIG_TRUE)
 		tab_insert_len = setting_val_int;
 	else
 		return 21;
 
+	if(config_setting_lookup_int(settings, CFG_PP_TAB_INSERT_CUT_DELAY, &setting_val_int) == CONFIG_TRUE)
+		ti_delay = setting_val_int;
+	else
+		return 22;
+
 	if(config_setting_lookup_int(settings, CFG_PP_TAB_INSERT_SEQUENCE, &setting_val_int) == CONFIG_TRUE)
 		tab_insert_sequence = setting_val_int;
 	else
-		return 22;
+		return 23;
 
 	if(config_setting_lookup_bool(settings, CFG_PP_TAB_INSERT_AUTOMAT, &setting_val_int) == CONFIG_TRUE)
 		tab_insert_automat = setting_val_int;
 	else
-		return 23;
+		return 24;
 
 
 	/* load language settings */
@@ -5283,7 +5342,7 @@ uint8_t controler_load_config()
 	if(config_setting_lookup_int(settings, CFG_LANG_INDEX, &setting_val_int) == CONFIG_TRUE)
 		lang_index = setting_val_int;
 	else
-		return 24;
+		return 25;
 
 
 
@@ -5307,28 +5366,28 @@ uint8_t controler_load_config()
 		else if(day_index == 6)
 			sub_settings = config_setting_get_member(settings, CFG_GROUP_STATISTICS_SAT);
 		else
-			return 58;
+			return 59;
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_FEEDED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_feeded_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 23+(day_index*4);
+			return 26+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_STACKED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_stacked_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 25+(day_index*4);
+			return 26+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_int(sub_settings, CFG_STATISTICS_TOTAL_REJECTED_SHEETS, &setting_val_int) == CONFIG_TRUE))
 			machine_statistic_restore_rejected_sheets(statistics_ref, setting_val_int, day_index);		
 		else
-			return 26+(day_index*4);
+			return 27+(day_index*4);
 
 		if((sub_settings != NULL) && (config_setting_lookup_float(sub_settings, CFG_STATISTICS_ERROR_RATE, &setting_val_float) == CONFIG_TRUE))
 			machine_statistic_restore_error_rate(statistics_ref, setting_val_float, day_index);		
 			
 		else
-			return 27+(day_index*4);
+			return 28+(day_index*4);
 
 	}
 
@@ -5350,13 +5409,17 @@ void controler_initialize_variables()
 
 	complet_feeded = 0;
 	complet_rejected = 0;
+	
+	stacked_for_ti = 0;
+	stacked_sensor_for_ti_pre = 0;
 
 	fake_companion_req = false;
 	companion_faked = false;
 
 
 	tab_insert_step = 0;
-	tab_insert_done = false;
+	tab_insert_busy = false;
+	last_ti_req = 0;
 	timer_tab_insert = 0;
 	tab_insert_req = 0;
 
@@ -5525,7 +5588,7 @@ void controler_default_config()
 	config_setting_set_int(settings, 3);	
 
 
-	feed_delay = 500;
+	feed_delay = 100;
 	settings = config_setting_add(print_params, CFG_PP_FEED_DELAY, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, 500);	
 
@@ -5534,9 +5597,13 @@ void controler_default_config()
 	config_setting_set_int(settings, 50);	
 
 	
-	tab_insert_len = 500;
+	tab_insert_len = 100;
 	settings = config_setting_add(print_params, CFG_PP_TAB_INSERT_LENGTH, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, 500);	
+
+	ti_delay = 3;
+	settings = config_setting_add(print_params, CFG_PP_TAB_INSERT_CUT_DELAY, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 3);	
 
 	tab_insert_sequence = 500;
 	settings = config_setting_add(print_params, CFG_PP_TAB_INSERT_SEQUENCE, CONFIG_TYPE_INT);

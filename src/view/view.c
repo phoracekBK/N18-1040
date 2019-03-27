@@ -305,7 +305,9 @@ struct _gui_print_params_page_
 	GtkWidget * tab_insert_automat_lbl;
 	GtkWidget * tab_insert_seq_entry;
 	GtkWidget * tab_insert_seq_lbl;
-
+	GtkWidget * tab_insert_cut_delay_entry;
+	GtkWidget * tab_insert_cut_delay_lbl;
+	
 	settings_button * btn_return;
 	gui_base * gui_base_ref;
 };
@@ -455,9 +457,10 @@ gboolean gui_print_params_set_print_confirmation_state_callback (GtkSwitch *widg
 void gui_print_params_set_feed_delay(GtkWidget *widget, GdkEvent  *event, gpointer param);
 void gui_print_params_set_fan_intensity(GtkSpinButton * spin_button, gpointer param);
 gboolean gui_print_params_set_fan_activity_callback (GtkSwitch *widget, gboolean state, gpointer param);
-void gui_print_params_set_tab_insert_sequence(GtkWidget *widget, GdkEvent  *event, gpointer param);
+void gui_print_params_set_tab_insert_sequence(GtkSpinButton *spin_button, gpointer param);
 gboolean gui_print_params_tab_insert_automat (GtkSwitch *widget, gboolean state, gpointer param);
 void gui_print_params_set_tab_insert_length(GtkSpinButton * spin_button, gpointer param);
+void gui_print_params_set_ti_cut_delay(GtkSpinButton * spin_button, gpointer param);
 void gui_print_params_tab_insert_manual(GtkWidget *widget, gpointer param);
 
 
@@ -580,7 +583,7 @@ gboolean gui_cyclic_interupt(gpointer param)
 		gtk_widget_set_sensitive(GTK_WIDGET(this->network_page->quadient_connection_entry), controler_quadient_network_connected() != STATUS_CLIENT_CONNECTED);
 		gtk_widget_set_sensitive(GTK_WIDGET(this->network_page->iij_connection_entry), controler_iij_network_connected() != STATUS_CLIENT_CONNECTED);
 
-		gtk_switch_set_active(GTK_SWITCH(this->network_page->iij_network_switch), !conn);
+		//gtk_switch_set_active(GTK_SWITCH(this->network_page->iij_network_switch), !conn);
 
 		gtk_switch_set_active(GTK_SWITCH(this->print_params_page->fan_control_switch), ((controler_get_fan_activity() == 0) ? FALSE : TRUE));
 
@@ -1182,10 +1185,13 @@ void gui_signals(gui * this)
 				G_CALLBACK(gui_print_params_tab_insert_manual), 
 				NULL);
 	g_signal_connect(G_OBJECT(this->print_params_page->tab_insert_seq_entry), 
-				"key-release-event", 
+				"value_changed", 
 				G_CALLBACK(gui_print_params_set_tab_insert_sequence), 
+				this->print_params_page);
+	g_signal_connect(G_OBJECT(this->print_params_page->tab_insert_cut_delay_entry), 
+				"value_changed", 
+				G_CALLBACK(gui_print_params_set_ti_cut_delay), 
 				NULL);
-
 }
 
 /**
@@ -3187,7 +3193,7 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 
 
 	this->tab_insert_len_lbl = gtk_label_new(NULL);
-	this->tab_insert_len_spin = gtk_spin_button_new_with_range(100,10000,100);
+	this->tab_insert_len_spin = gtk_spin_button_new_with_range(12,280,1);
 	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_len_spin), 300, 35);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(this->tab_insert_len_spin), controler_tab_insert_get_length());
 
@@ -3201,14 +3207,30 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 
 	this->tab_insert_automat_lbl = gtk_label_new(NULL);
 
-	this->tab_insert_seq_entry = gtk_entry_new();
+	this->tab_insert_seq_entry = gtk_spin_button_new_with_range(1,10000, 10);
 	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_seq_entry), 300, 35);	
-	char sequence_str[12];
-	sprintf(sequence_str, "%d", controler_tab_insert_get_sequence());
-	gtk_entry_set_text(GTK_ENTRY(this->tab_insert_seq_entry), sequence_str);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(this->tab_insert_seq_entry), controler_tab_insert_get_sequence());
 
 	this->tab_insert_seq_lbl = gtk_label_new(NULL);
 
+
+	int seq = controler_tab_insert_get_sequence();
+	this->tab_insert_cut_delay_entry = gtk_spin_button_new_with_range(0,3,1);
+
+	if((seq <= 20) && (seq > 3))
+		gtk_spin_button_set_range(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry),0, seq-6);
+	else if(seq > 20)
+		gtk_spin_button_set_range(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry),0, 10);
+	else
+		gtk_spin_button_set_range(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry),0, 0);
+
+	gtk_widget_set_size_request(GTK_WIDGET(this->tab_insert_cut_delay_entry), 300, 35);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry), controler_tab_insert_get_cut_delay());
+	
+	this->tab_insert_cut_delay_lbl = gtk_label_new(NULL);
+	
+	
+	
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_lbl, width/4, 250+80+(50*i));
 	gtk_fixed_put(GTK_FIXED(this->page), this->sheet_source_combo, width/4*3-300, 250+80+(50*i));
@@ -3235,6 +3257,11 @@ gui_print_params_page * gui_print_params_page_new(gui_base * gui_base_ref)
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_seq_lbl ,width/4, 250+80+(50*i));
 	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_seq_entry, width/4*3-300, 250+80+(50*i));
+	i++;
+
+
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_cut_delay_lbl ,width/4, 250+80+(50*i));
+	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_cut_delay_entry, width/4*3-300, 250+80+(50*i));
 	i++;
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->tab_insert_automat_lbl ,width/4, 250+80+(50*i));
@@ -3284,6 +3311,7 @@ void gui_print_params_page_language(gui_print_params_page * this, lang * multi_l
 	
 	gtk_label_set_text(GTK_LABEL(this->sheet_source_lbl), multi_lang->par_sheet_source_lbl);
 	gtk_label_set_text(GTK_LABEL(this->print_confirm_lbl), multi_lang->par_print_confirm_lbl);
+	gtk_label_set_text(GTK_LABEL(this->tab_insert_cut_delay_lbl), multi_lang->tab_insert_cut_delay);
 
 }
 
@@ -3293,6 +3321,10 @@ void gui_print_params_set_tab_insert_length(GtkSpinButton * spin_button, gpointe
 	controler_tab_inset_set_length(gtk_spin_button_get_value_as_int(spin_button));
 }
 
+void gui_print_params_set_ti_cut_delay(GtkSpinButton * spin_button, gpointer param)
+{
+	controler_tab_insert_set_cut_delay(gtk_spin_button_get_value_as_int(spin_button));
+}
 
 gboolean gui_print_params_tab_insert_automat (GtkSwitch *widget, gboolean state, gpointer param)
 {
@@ -3301,9 +3333,19 @@ gboolean gui_print_params_tab_insert_automat (GtkSwitch *widget, gboolean state,
 }
 
 
-void gui_print_params_set_tab_insert_sequence(GtkWidget *widget, GdkEvent  *event, gpointer param)
+void gui_print_params_set_tab_insert_sequence(GtkSpinButton * spin_button, gpointer param)
 {
-	controler_tab_insert_set_sequence(atoi(gtk_entry_get_text(GTK_ENTRY(widget))));
+	gui_print_params_page * this = (gui_print_params_page*) param;
+	int seq = gtk_spin_button_get_value_as_int(spin_button);
+
+	controler_tab_insert_set_sequence(seq);
+
+	if((seq <= 20) && (seq > 3))
+		gtk_spin_button_set_range(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry),0, seq-6);
+	else if(seq > 20)
+		gtk_spin_button_set_range(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry),0, 10);
+	else
+		gtk_spin_button_set_range(GTK_SPIN_BUTTON(this->tab_insert_cut_delay_entry),0, 0);
 }
 
 void gui_print_params_set_fan_intensity(GtkSpinButton * spin_button, gpointer param)

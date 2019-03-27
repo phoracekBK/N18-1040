@@ -96,8 +96,8 @@ enum _mapping_a2_out_
 {
 	A2_OUT_0_FUN_CONTROL = 0,
 	A2_OUT_1_RESERVE,
-	A2_OUT_2_RESERVE,
-	A2_OUT_3_RESERVE,
+	A2_OUT_2_TI_tape_cut,
+	A2_OUT_3_TI_motor_drive,
 	A2_OUT_4_RESERVE,
 	A2_OUT_5_RESERVE,
 	A2_OUT_6_RESERVE,

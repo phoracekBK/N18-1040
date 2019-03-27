@@ -1,7 +1,6 @@
 
 
 **TODO**
-* seřadit výpis s reporty podle data vytvoření
 * nafakeovat tisk prokladu na jedno tlačítko (implementováno, nutno doladit)
 * přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
@@ -12,7 +11,9 @@
 
 
 **DONE**
-
+* upravit řídící funkci pro nastřelovací proužek, aby si na začátku nejprve střihla naprázdno a vyčistila se
+* přidat možnost pro parametrizaci střihu pro nastřelovací proužek
+* seřadit výpis s reporty podle data vytvoření
 * přidat do nastavení tiskových parametrů, při x-tém vyloženém archu nastřelit oddělovací proužek
 * přidat do karty nastavení tiskových parametrů možnost nastavit čas nastřelování oddělovacího proužku ovlivňující jeho délku 
 * vytvořit funkcionalitu na ovládání mechanismu na nastřelovací proužky

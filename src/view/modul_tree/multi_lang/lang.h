@@ -190,6 +190,7 @@ struct _lang_
 	const char * tab_insert_automat_lbl;
 	const char * tab_insert_sequence_lbl;
 	const char * insert_tab_lbl;
+	const char * tab_insert_cut_delay;
 
 	const char * filter_day;
 	const char * filter_year;

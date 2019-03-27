@@ -126,6 +126,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->tab_insert_automat_lbl = "Automatické nastřelování oddělovací proužku:";
     cz_lang->tab_insert_sequence_lbl = "Nastřelit oddělovací proužek po (archy): ";
     cz_lang->insert_tab_lbl = "Nastřelit";
+    cz_lang->tab_insert_cut_delay = "Střihnout oddělovací proužek po (archy):";
 
     cz_lang->file_chooser_btn_browse = "Procházet";
     cz_lang->file_chooser_cancel_btn = "Zrušit";
@@ -317,6 +318,7 @@ void lang_init_english(lang * en_lang)
     en_lang->tab_insert_automat_lbl = "Automatic inserting of separating tab:";
     en_lang->tab_insert_sequence_lbl = "Insert separator sheet every (sheets): ";
     en_lang->insert_tab_lbl = "Insert";
+    en_lang->tab_insert_cut_delay = "Cut separator separating tab after (sheets):";
 
 
     en_lang->file_chooser_btn_browse = "Browse";
