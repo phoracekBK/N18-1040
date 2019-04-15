@@ -62,8 +62,8 @@ const char * a2_in_labels[16] = {"TI_incyc",				/* IN 0 */
 				"RJ_jam",				/* IN 4 */
 				"camera_trigger",			/* IN 5 */
 				"LNA_E_STOP",				/* IN 6 */
-				"RESERVE",				/* IN 7 */
-				"RESERVE",				/* IN 8 */
+				"SIGNAL_TAPE_OUT",			/* IN 7 */
+				"CAMERA_NOK_SIGNAL",			/* IN 8 */
 				"RESERVE",				/* IN 9 */
 				"RESERVE",				/* IN 10 */
 				"RESERVE",				/* IN 11 */

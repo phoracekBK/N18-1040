@@ -41,6 +41,7 @@ struct _lang_
 	const char * set_btn_io_vision;
 	const char * set_btn_back;
 	const char * set_btn_back_to_settngs;
+	const char * clear_counter_lbl;
 
 	const char * info_label_preparing;
 	const char * info_label_finishing;
@@ -102,6 +103,7 @@ struct _lang_
 	const char * err_print_finalizing_freeze;
 	const char * err_stacker_full;
 	const char * err_reject_bin_full;
+	const char * err_tape_missing;
 	const char * err_unknown_error;
 
 	const char * set_lan_label;

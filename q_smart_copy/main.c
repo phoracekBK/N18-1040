@@ -90,7 +90,7 @@ int main(int argv, char ** argc)
 			HANDLE hFind = NULL; 
 
 
-			DIR * dir_ref = opendir(argc[0]);
+			DIR * dir_ref = opendir(argc[1]);
 
 			if(dir_ref != NULL)
 			{
@@ -100,15 +100,26 @@ int main(int argv, char ** argc)
 				{
 					if(dir_cont->d_type != DT_DIR)
 					{
-						util_copy_file(argc[0], argc[1], dir_cont->d_name);
-						util_move_file(argc[0], argc[2], dir_cont->d_name);
+						if(util_copy_file(argc[1], argc[2], dir_cont->d_name) != 0)
+							printf("cant copy %s!\n", dir_cont->d_name);
+						
+						Sleep(100);
+
+						util_move_file(argc[1], argc[3], dir_cont->d_name);
+
+						Sleep(100);
 					}
 				}
 	
 				closedir(dir_ref);
 			}
+			else
+			{
+				printf("cant open directory!\n");
+				break;
+			}
 
-			Sleep(1);
+			Sleep(1000);
 		}
 	}
 	else

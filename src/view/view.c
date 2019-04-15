@@ -176,6 +176,8 @@ struct _gui_control_page_
 	GtkWidget * ena_switch;
 	GtkWidget * xbf_pulse;
 
+	GtkWidget * null_counters;
+
 	GtkWidget * print_mode_combo;
 /*
 	GtkWidget * gis_status_label;
@@ -399,6 +401,7 @@ void gui_control_page_set_ena_callback(GtkSwitch *widget, gboolean state, gpoint
 void gui_control_page_manual_sheet_feed(GtkWidget * widget, gpointer param);
 void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param);
 void gui_control_page_print_one_callback(GtkWidget * widget, gpointer param);
+void gui_control_page_null_counters(GtkWidget * widget, gpointer param);
 
 gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref);
 void gui_settings_page_language(gui_settings_page * this, lang * multi_lang);
@@ -960,6 +963,12 @@ void gui_signals(gui * this)
 				"clicked", 
 				G_CALLBACK(gui_control_page_btn_print_callback), 
 				this->control_page);
+
+	g_signal_connect(G_OBJECT(this->control_page->null_counters),
+				"clicked", 
+				G_CALLBACK(gui_control_page_null_counters), 
+				NULL);
+
 	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_PAUSE]), 
 				"clicked", 
 				G_CALLBACK(gui_control_page_btn_pause_callback), 
@@ -1330,6 +1339,9 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	this->xbf_pulse = gtk_button_new_with_label("XBF");
 	gtk_widget_set_size_request(GTK_WIDGET(this->xbf_pulse), 100, 35);
 
+	this->null_counters = gtk_button_new();
+	gtk_widget_set_size_request(GTK_WIDGET(this->null_counters), 350, 35);
+
 	this->info_box = gtk_drawing_area_new();
 	gtk_widget_set_size_request(GTK_WIDGET(this->info_box), width, height);
 
@@ -1369,6 +1381,7 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 
 	gtk_fixed_put(GTK_FIXED(this->page), this->job_list, width/4, (5*height/24)+50);
 	gtk_fixed_put(GTK_FIXED(this->page), this->btn_settings, width/4*3+(width/4-350)/2, height-130);	
+	gtk_fixed_put(GTK_FIXED(this->page), this->null_counters, width/4, height-130);	
 	gtk_fixed_put(GTK_FIXED(this->page), this->btn_export, width/4*3-350, height-130);	
 	gtk_fixed_put(GTK_FIXED(this->page), this->log_report_scroll_area, width/4, (5*height/24)+(height/8)+220);
 	gtk_fixed_put(GTK_FIXED(this->page), this->ena_switch, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+470);
@@ -1419,6 +1432,12 @@ void gui_control_page_print_one_callback(GtkWidget * widget, gpointer param)
 	}
 }
 
+
+
+void gui_control_page_null_counters(GtkWidget * widget, gpointer param)
+{	
+	controler_clear_stacking_counters();
+}
 
 void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param)
 {
@@ -1754,6 +1773,7 @@ void gui_control_page_language(gui_control_page * this)
 	lang * multi_lang = multi_lang_get(controler_get_interface_language());
 
 	gtk_button_set_label(GTK_BUTTON(this->btn_export), multi_lang->gui_go_to_csv_manage_page_label);
+	gtk_button_set_label(GTK_BUTTON(this->null_counters), multi_lang->clear_counter_lbl);
 
 	/* columns for the job list tree widget */
 	gui_control_page_delete_columns(this->job_list);

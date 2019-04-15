@@ -157,6 +157,7 @@
 #define MACHINE_ERR_REJECT_BIN_FULL 34
 #define MACHINE_ERR_STACKER_FULL 35
 #define MACHINE_ERR_PAPER_JAM_CONVAYOR 36
+#define MACHINE_ERR_TAPE_MISSING 37
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
 
@@ -272,6 +273,7 @@ int32_t controler_tab_insert_get_length();
 void controler_tab_insert_manual_insert();
 
 
+void controler_clear_stacking_counters();
 void controler_free_report_information_struct(rep_struct * this);
 
 void controler_lock_thread();

@@ -1,9 +1,10 @@
 
 
 **TODO**
-* nafakeovat tisk prokladu na jedno tlačítko (implementováno, nutno doladit)
-* přidat informaci na hlavní ovládací panel o nastaveném zdroji pro prokladový arch
+* přidat datovou strukturu pro uložení do konfigurate
+* umožnit přerušení a obnovení tisku po vypnutí programu
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
+* implementovat kontrolu chyby při nastřelování oddělovacího proužku(implementováno, netestováno)
 
 * vytvořit dokumentaci zdrojových kódů
 * (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
@@ -11,6 +12,14 @@
 
 
 **DONE**
+* nastavit aby se v daný den počítadla nulovala (přidány celková počítadla, je nutné je ukládat do souboru) (implementováno, netestováno)
+* přidat tlačítko na nulování vyložených archů pro spomalení tisku
+* upravit nastavování pracovního režimu stroje, aby jej bylo možné nastavovat pouze ze stavu kdy se čeká na spuštění tisku
+* vypnout kontrolu estop při pauze, aby bylo možné korektně pozastavit tisk i při vypnutém stroji
+* nafakeovat tisk prokladu na jedno tlačítko (implementováno, nutno doladit)
+* opravit automatické připojování odpojeného gisu
+* namapovat signál z kamery
+* opravit automatické připojování gisu
 * upravit řídící funkci pro nastřelovací proužek, aby si na začátku nejprve střihla naprázdno a vyčistila se
 * přidat možnost pro parametrizaci střihu pro nastřelovací proužek
 * seřadit výpis s reporty podle data vytvoření

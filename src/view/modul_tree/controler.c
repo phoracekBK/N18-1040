@@ -113,6 +113,7 @@
 #define CFG_STATISTICS_TOTAL_STACKED_SHEETS "total_stacked_sheets"
 #define CFG_STATISTICS_TOTAL_REJECTED_SHEETS "total_rejected_sheets"
 #define CFG_STATISTICS_ERROR_RATE "error_rate"
+#define CFG_STATISTICS_DAY_PRE "previous_day"
 
 /**************************************************** global variables **********************************************************/
 
@@ -283,6 +284,7 @@ int32_t tab_insert_sequence;
 bool tab_insert_busy;
 uint32_t last_ti_req;
 int32_t ti_delay;
+int64_t ti_fail_delay_check;
 
 /**************************************************** functions declarations *****************************************************/
 
@@ -1888,6 +1890,9 @@ const char* controler_get_error_str()
 		case MACHINE_ERR_PAPER_JAM_CONVAYOR:
 			error_str = multi_lang->err_paper_jam_conveyor;
 			break;
+		case MACHINE_ERR_TAPE_MISSING:
+			error_str = multi_lang->err_tape_missing;
+			break;
 
 		default:
 			error_str = multi_lang->err_unknown_error;
@@ -2203,11 +2208,13 @@ void controler_machine_state_read_hotfolder()
 				job_list_changed = 1;
 			}
 
+			/*
 			if(clear_on_startup == 0)
 			{			
 				controler_total_clear_hotfolder();
 				clear_on_startup = 1;
 			}
+			*/
 
 			pthread_mutex_unlock(&(mutex));
 		}
@@ -2398,9 +2405,7 @@ void controler_machine_state_pause()
 
 			if(stacked_sheet >= max_stacked_sheets)
 			{
-				stacked_sheet = 0;
-				rejected_sheet = 0;
-				feeded_sheet = 0;
+				controler_clear_stacking_counters();
 			}
 
 			if(machine_jam_req == true)
@@ -2413,6 +2418,14 @@ void controler_machine_state_pause()
 	{
 		machine_state = MACHINE_STATE_FAKE_COMPANION;
 	}
+}
+
+
+void controler_clear_stacking_counters()
+{
+	stacked_sheet = 0;
+	rejected_sheet = 0;
+	feeded_sheet = 0;
 }
 
 void controler_machine_state_prepare()
@@ -2581,10 +2594,23 @@ void controler_tab_insert_control()
 		tab_insert_busy = true;
 	}
 
+
+	/*
+	if((tab_insert_step > 1) && (ti_fail_delay_check + 150) < c_freq_millis())
+	{
+		if(io_card_get_input(io_card_ref,IO_CARD_A2, A2_IN_7_SIGNAL_TAPE_OUT) > 0)
+		{
+			error_code = MACHINE_ERR_TAPE_MISSING;
+		}
+	}
+	*/
+
 	if(tab_insert_step == 1)
 	{
 		// cut for clear tab inserter
 		io_card_set_output(io_card_ref, IO_CARD_A2, A2_OUT_2_TI_tape_cut, 1);
+
+		ti_fail_delay_check = c_freq_millis();
 		tab_insert_step = 2;
 	}
 	else if(tab_insert_step == 2)
@@ -2789,6 +2815,73 @@ void controler_save_statistics(int8_t day)
 
 	root = config_root_setting(&(cfg_ref));
 	group = config_setting_get_member(root, CFG_GROUP_STATISTICS);
+
+	if(config_setting_remove(group, CFG_STATISTICS_DAY_PRE) == CONFIG_TRUE)
+	{
+		settings = config_setting_add(group, CFG_STATISTICS_DAY_PRE, CONFIG_TYPE_INT);
+		config_setting_set_int(settings, machine_statistic_get_day_pre(statistics_ref));
+
+		config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
+		c_log_add_record_with_cmd(log_ref, "Uložen index dne pro statistiku: %d", machine_statistic_get_day_pre(statistics_ref));
+	}
+	else
+	{
+		c_log_add_record_with_cmd(log_ref,"Nelze uložit index dne pro statistiku: %s", config_error_text(&(cfg_ref)));
+	}
+
+	if(config_setting_remove(group, CFG_STATISTICS_TOTAL_FEEDED_SHEETS) == CONFIG_TRUE)
+	{
+		settings = config_setting_add(group, CFG_STATISTICS_TOTAL_FEEDED_SHEETS, CONFIG_TYPE_INT);
+		config_setting_set_int(settings, machine_statistic_get_total_feeded_sheets(statistics_ref));
+
+		config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
+		c_log_add_record_with_cmd(log_ref, "Statistika všech naložených archů uložena: %d arch(ů)", machine_statistic_get_total_feeded_sheets(statistics_ref));
+	}
+	else
+	{
+		c_log_add_record_with_cmd(log_ref,"Nelze uložit hodnoty statistiky všech naložených archů: %s", config_error_text(&(cfg_ref)));
+	}
+
+	if(config_setting_remove(group, CFG_STATISTICS_TOTAL_STACKED_SHEETS) == CONFIG_TRUE)
+	{
+		settings = config_setting_add(group, CFG_STATISTICS_TOTAL_STACKED_SHEETS, CONFIG_TYPE_INT);
+		config_setting_set_int(settings, machine_statistic_get_total_stacked_sheets(statistics_ref));
+
+		config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
+		c_log_add_record_with_cmd(log_ref, "Statistika všech naložených archů uložena: %d arch(ů)", machine_statistic_get_total_stacked_sheets(statistics_ref));
+	}
+	else
+	{
+		c_log_add_record_with_cmd(log_ref,"Nelze uložit hodnoty statistiky všech vyložených archů: %s", config_error_text(&(cfg_ref)));
+	}
+
+	if(config_setting_remove(group, CFG_STATISTICS_TOTAL_REJECTED_SHEETS) == CONFIG_TRUE)
+	{
+		settings = config_setting_add(group, CFG_STATISTICS_TOTAL_REJECTED_SHEETS, CONFIG_TYPE_INT);
+		config_setting_set_int(settings, machine_statistic_get_total_rejected_sheets(statistics_ref));
+
+		config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
+		c_log_add_record_with_cmd(log_ref, "Statistika všech vyhozených archů uložena: %d arch(ů)", machine_statistic_get_total_rejected_sheets(statistics_ref));
+	}
+	else
+	{
+		c_log_add_record_with_cmd(log_ref,"Nelze uložit hodnoty statistiky všech vyhozených archů: %s", config_error_text(&(cfg_ref)));
+	}
+
+
+	if(config_setting_remove(group, CFG_STATISTICS_ERROR_RATE) == CONFIG_TRUE)
+	{
+		settings = config_setting_add(group, CFG_STATISTICS_ERROR_RATE, CONFIG_TYPE_FLOAT);
+		config_setting_set_float(settings, machine_statistic_get_total_error_rate(statistics_ref));
+
+		config_write_file(&(cfg_ref), CONFIGURATION_FILE_PATH);
+		c_log_add_record_with_cmd(log_ref, "Statistika celkové chybovosti uložena: %f%", machine_statistic_get_total_error_rate(statistics_ref));
+	}
+	else
+	{
+		c_log_add_record_with_cmd(log_ref,"Nelze uložit hodnoty statistiky celkové chybovosti: %s", config_error_text(&(cfg_ref)));
+	}
+
 
 	if(day == 0)
 		sub_group = config_setting_get_member(group, CFG_GROUP_STATISTICS_SUN);
@@ -3084,7 +3177,9 @@ void controler_machine_state_print_main()
 	{
 		error_code = MACHINE_ERR_PRINT_MAIN_FREEZE;
 		machine_state = MACHINE_STATE_PAUSE;
-		c_log_add_record_with_cmd(log_ref, "Došlo k překročení času na naložení kolkového archu -> status nakladače %d, index naloženého archu: %d", feeder_status, feeded_sheet_counter_in_job);
+		c_log_add_record_with_cmd(log_ref, 
+					"Došlo k překročení času na naložení kolkového archu -> krok: %d, status nakladače %d, index naloženého archu: %d", 
+					feed_sheet, feeder_status, feeded_sheet_counter_in_job);
 		machine_pause_req = true;
 	}
 
@@ -3146,7 +3241,7 @@ void controler_machine_state_print_companion()
 		error_code = MACHINE_ERR_PRINT_COMPANION_FREEZE;
 		machine_state = MACHINE_STATE_PAUSE;
 
-		c_log_add_record_with_cmd(log_ref, "Došlo k překročení času na naložení prokladového archu");
+		c_log_add_record_with_cmd(log_ref, "Došlo k překročení času na naložení prokladového archu, krok: %d", feed_sheet);
 		machine_pause_req = true;
 	}
 
@@ -4177,14 +4272,18 @@ void controler_safety_system_in()
 	controler_tab_insert_runtime();
 	controler_tab_insert_control();
 
+	
+	/* check day for statistics counting, if the day is changed, current day is cleared */
+	machine_statistic_check_day(statistics_ref);
+
 	/* safety protection of input states */
-	if(io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_6_LNA_E_stop) == 0)
+	if((io_card_get_input(io_card_ref, IO_CARD_A2, A2_IN_6_LNA_E_stop) == 0) && (machine_state != MACHINE_STATE_PAUSE))
 	{
 		controler_set_machine_error(MACHINE_ERR_E_STOP);
 	}
 	else
 	{
-		if(error_code == MACHINE_ERR_E_STOP)
+		if((error_code == MACHINE_ERR_E_STOP) && (machine_state == MACHINE_STATE_ERROR))
 		{
 			error_code = MACHINE_ERR_NO_ERROR;
 			machine_cancel_req = false;
@@ -4441,30 +4540,39 @@ void controler_safety_system_out()
 */
 void controler_machine_mode_control()
 {
-	int cur_machine_mode = io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) + 2*io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1);
-
-	if(cur_machine_mode != machine_mode)
+	if(machine_state == MACHINE_STATE_WAIT)
 	{
-		if(cur_machine_mode == machine_mode_pre)
+		int cur_machine_mode = io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0) + 2*io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1);
+	
+		if(cur_machine_mode != machine_mode)
 		{
-			/* machine mode changed from gui interface, need change output values */
-			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, machine_mode%2);
-			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, (machine_mode/2)%2);	
+			if(cur_machine_mode == machine_mode_pre)
+			{
+				/* machine mode changed from gui interface, need change output values */
+				io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, machine_mode%2);
+				io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, (machine_mode/2)%2);	
+			}
+			else
+			{
+				/* machine mode changed from gremser machine, need adapt internal state */
+				machine_mode = cur_machine_mode;
+			}	
 		}
 		else
 		{
-			/* machine mode changed from gremser machine, need adapt internal state */
-			machine_mode = cur_machine_mode;
-		}	
+			/* reflection input state to output */
+			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0));
+			io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1));
+		}
+
+		machine_mode_pre = cur_machine_mode;
 	}
 	else
 	{
-		/* reflection input state to output */
-		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_0_MBR0));
-		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, io_card_get_input(io_card_ref, IO_CARD_A1, A1_IN_1_MBR1));
+		/* machine mode changed from gui interface, need change output values */
+		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_0_BM0, machine_mode%2);
+		io_card_set_output(io_card_ref, IO_CARD_A1, A1_OUT_1_BM1, (machine_mode/2)%2);	
 	}
-
-	machine_mode_pre = cur_machine_mode;
 }
 
 
@@ -5064,7 +5172,10 @@ void * controler_gis_runtime_state_reading(void * param)
 	if(print_controler_status != NULL)
 		c_string_set_string(print_controler_status, "Unknown");
 
-	controler_iij_disconnect();
+
+	com_tcp_disconnect(iij_tcp_ref);
+	c_log_add_record_with_cmd(log_ref, "Spojení s GISem ukončeno.");
+	//controler_iij_disconnect();
 	
 	return NULL;
 }
@@ -5345,8 +5456,34 @@ uint8_t controler_load_config()
 		return 25;
 
 
-
 	settings = config_lookup(&(cfg_ref), CFG_GROUP_STATISTICS);
+
+	if(config_setting_lookup_int(settings, CFG_STATISTICS_DAY_PRE, &setting_val_int) == CONFIG_TRUE)
+		machine_statistic_set_day_pre(statistics_ref, setting_val_int);
+	else
+		return 25;
+
+	if(config_setting_lookup_int(settings, CFG_STATISTICS_TOTAL_FEEDED_SHEETS, &setting_val_int) == CONFIG_TRUE)
+		machine_statistic_set_total_feeded_sheets(statistics_ref, setting_val_int);
+	else
+		return 25;
+
+	if(config_setting_lookup_int(settings, CFG_STATISTICS_TOTAL_STACKED_SHEETS, &setting_val_int) == CONFIG_TRUE)
+		machine_statistic_set_total_stacked_sheets(statistics_ref, setting_val_int);
+	else
+		return 25;
+
+	if(config_setting_lookup_int(settings, CFG_STATISTICS_TOTAL_REJECTED_SHEETS, &setting_val_int) == CONFIG_TRUE)
+		machine_statistic_set_total_rejected_sheets(statistics_ref, setting_val_int);
+	else
+		return 25;
+
+	if(config_setting_lookup_float(settings, CFG_STATISTICS_ERROR_RATE, &setting_val_float) == CONFIG_TRUE)
+		machine_statistic_set_total_error_rate(statistics_ref, setting_val_float);
+	else
+		return 25;
+
+
 	config_setting_t * sub_settings = NULL;
 
 	for(int day_index = 0; day_index < 7; day_index++)
@@ -5650,6 +5787,23 @@ void controler_default_config()
 	com_tcp_set_ip_addr(iij_connection, DEFAULT_IP_ADDRESS_GIS);
 	settings = config_setting_add(network, CFG_NETWORK_IIJ_PC_IP_ADDRESS, CONFIG_TYPE_STRING);
 	config_setting_set_string(settings, DEFAULT_IP_ADDRESS_GIS);
+
+
+	/* save default settings for total statistics */
+	settings = config_setting_add(statistics, CFG_STATISTICS_DAY_PRE, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 0);
+
+	settings = config_setting_add(statistics, CFG_STATISTICS_TOTAL_FEEDED_SHEETS, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 0);
+
+	settings = config_setting_add(statistics, CFG_STATISTICS_TOTAL_STACKED_SHEETS, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 0);
+
+	settings = config_setting_add(statistics, CFG_STATISTICS_TOTAL_REJECTED_SHEETS, CONFIG_TYPE_INT);
+	config_setting_set_int(settings, 0);
+
+	settings = config_setting_add(statistics, CFG_STATISTICS_ERROR_RATE, CONFIG_TYPE_FLOAT);
+	config_setting_set_int(settings, 0);
 
 
 	/* save default settings for statistics on sunday */

@@ -46,6 +46,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->set_btn_io_vision = "Zobrazení IO";
     cz_lang->set_btn_back = "Zpět na controlní panel";
     cz_lang->set_btn_back_to_settngs = "Zpět";
+    cz_lang->clear_counter_lbl = "Nulovat vykladač";
 
 
     cz_lang->statistics_mon = "STATISTIKA TISKU PONDĚLÍ";
@@ -108,6 +109,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->err_print_finalizing_freeze = "Nesoulad naložených a vyložených archů!";
     cz_lang->err_stacker_full = "Plný vykladač";
     cz_lang->err_reject_bin_full = "Plná výhybka";
+    cz_lang->err_tape_missing = "Chybí páska v nastřelovacím mechanismu!";
     cz_lang->err_unknown_error = "Neznámá chyba!";
 
     cz_lang->set_lan_label = "Jazyk rozhraní:";
@@ -237,6 +239,7 @@ void lang_init_english(lang * en_lang)
     en_lang->set_btn_io_vision = "IO vision";
     en_lang->set_btn_back = "Back to control page";
     en_lang->set_btn_back_to_settngs = "Back";
+    en_lang->clear_counter_lbl = "Null stacker";
 
 
     en_lang->statistics_mon = "PRINT STATISTICS MONDAY";
@@ -300,6 +303,7 @@ void lang_init_english(lang * en_lang)
     en_lang->err_print_finalizing_freeze = "Mismatch of feeded and stacked sheets!";
     en_lang->err_stacker_full = "Stacker full!";
     en_lang->err_reject_bin_full = "Reject bin full!";
+    en_lang->err_tape_missing = "Tape missing in tab insert mechanism!";
     en_lang->err_unknown_error = "Unknown error!";
 
     en_lang->set_lan_label = "Interface language:";

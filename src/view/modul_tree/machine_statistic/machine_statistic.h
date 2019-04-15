@@ -18,6 +18,12 @@ typedef struct _machine_statistic_ machine_statistic;
 
 
 machine_statistic * machine_statistic_new();
+
+
+void machine_statistic_set_day_pre(machine_statistic * this, int day_pre);
+int machine_statistic_get_day_pre(machine_statistic * this);
+void machine_statistic_check_day(machine_statistic * this);
+
 void machine_statistic_increment_feeded_sheets(machine_statistic * this);
 void machine_statistic_increment_stacked_sheets(machine_statistic * this);
 void machine_statistic_increment_rejected_sheets(machine_statistic * this);
@@ -36,6 +42,12 @@ double machine_statistic_get_total_error_rate(machine_statistic * this);
 uint64_t machine_statistic_get_total_feeded_sheets(machine_statistic * this);
 uint64_t machine_statistic_get_total_stacked_sheets(machine_statistic * this);
 uint64_t machine_statistic_get_total_rejected_sheets(machine_statistic * this);
+
+
+void machine_statistic_set_total_error_rate(machine_statistic * this, double error_rate);
+void machine_statistic_set_total_feeded_sheets(machine_statistic * this, uint64_t feeded_sheets);
+void machine_statistic_set_total_stacked_sheets(machine_statistic * this, uint64_t stacked_sheets);
+void machine_statistic_set_total_rejected_sheets(machine_statistic * this, uint64_t rejected_sheets);
 
 void machine_statistic_clear_day(machine_statistic * this, int8_t day);
 
