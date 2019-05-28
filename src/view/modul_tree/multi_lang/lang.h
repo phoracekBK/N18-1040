@@ -104,6 +104,7 @@ struct _lang_
 	const char * err_stacker_full;
 	const char * err_reject_bin_full;
 	const char * err_tape_missing;
+	const char * err_machine_mode_adaptation_timeout;
 	const char * err_unknown_error;
 
 	const char * set_lan_label;

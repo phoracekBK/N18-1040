@@ -106,8 +106,27 @@
 
 #define MACHINE_STATE_FAKE_COMPANION 22
 
+#define MACHINE_STATE_LOAD_NEXT_JOB_FILE 23
 
+#define MACHINE_STATE_SEND_RESPONSE_TO_IA 24
 
+#define MACHINE_STATE_COPY_COMPANION_PDF 25
+
+#define MACHINE_STATE_DELETE_STAMP_PDF 26
+
+#define MACHINE_STATE_MERGE_COMPANION_PDF_FILES 27
+
+#define MACHINE_STATE_PREPARE_FOR_PRINT_COMPANION_PDF 28
+
+#define MACHINE_STATE_PRINT_COMPANION_PDF 29
+
+#define MACHINE_STATE_FINISH_PRINT_COMPANION_PDF 30
+
+#define MACHINE_STATE_SEND_COMPANION_DATA 31
+
+#define MACHINE_STATE_COMPANION_PRINT_CONTROL 32
+
+#define MACHINE_STATE_COMPANION_GENERATION_DELAY 33
 
 
 
@@ -158,6 +177,7 @@
 #define MACHINE_ERR_STACKER_FULL 35
 #define MACHINE_ERR_PAPER_JAM_CONVAYOR 36
 #define MACHINE_ERR_TAPE_MISSING 37
+#define MACHINE_ERR_MACHINE_MODE_ADAPTATION 38
 #define MACHINE_ERR_UNKNOWN_ERROR 255
 
 
@@ -341,6 +361,7 @@ int controler_get_rejected_sheet_in_job();
 char * controler_get_gis_status();
 
 uint8_t controler_print_start(const char * job_name);
+uint8_t controler_print_all_companion(const char * job_name);
 uint8_t controler_print_pause();
 uint8_t controler_print_continue();
 uint8_t controler_print_cancel();

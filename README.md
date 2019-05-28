@@ -1,18 +1,27 @@
 
 
 **TODO**
+* data s proklady do stroje a vytisknout proklady (implementováno, netestováno)
+
+
+
 * přidat datovou strukturu pro uložení do konfigurate
 * umožnit přerušení a obnovení tisku po vypnutí programu
 * ošetřit aby se job korektně ukončil a soubory se vymazaly z hotfolderu
 * implementovat kontrolu chyby při nastřelování oddělovacího proužku(implementováno, netestováno)
 
-* vytvořit dokumentaci zdrojových kódů
-* (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
 
 
 
 **DONE**
-* nastavit aby se v daný den počítadla nulovala (přidány celková počítadla, je nutné je ukládat do souboru) (implementováno, netestováno)
+
+* nastavit ventilátor pro separaci archů
+* vytvořit v jádru funkcionalitu, která vygeneruje pdf soubory s proklady a nakopíruje je do samostatného adresáře
+* sloučit pdf soubory s proklady do jednoho (instalovat program)
+* (ošetřit že gremser vrací správně nastavené bity pro režim (MRB0 a MRB1) napojení do databáze omronu v gremser stroji)
+* přidat tlačítko vytisknout proklady
+* kvůli místu je nutné předělat tlačítka na ovládací obrazovce - sloučit start, pauza a pokračovat do jednoho tlačítka
+* nastavit aby se v daný den počítadla nulovala (přidány celková počítadla, je nutné je ukládat do souboru)
 * přidat tlačítko na nulování vyložených archů pro spomalení tisku
 * upravit nastavování pracovního režimu stroje, aby jej bylo možné nastavovat pouze ze stavu kdy se čeká na spuštění tisku
 * vypnout kontrolu estop při pauze, aby bylo možné korektně pozastavit tisk i při vypnutém stroji

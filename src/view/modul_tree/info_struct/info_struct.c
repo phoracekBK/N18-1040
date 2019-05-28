@@ -79,11 +79,37 @@ int job_info_get_job_sheet_number(job_info * this, int job_index)
 		if(job != NULL)
 			return array_list_size(job);
 		else
-
-		return -1;
+			return -1;
 	}
 
 	return -2;
+}
+
+
+int job_info_get_sheet_index_at_csv_position(job_info * this, int job_index, int csv_index_position)
+{
+	int sheet_index = -1;
+
+	if(job_index < array_list_size(this->job_list))
+	{
+		array_list * job = array_list_get(this->job_list, job_index);
+
+		printf("počet jobu: %d\n", array_list_size(this->job_list));
+
+		if((job != NULL) && (csv_index_position < array_list_size(job)))
+		{
+			info_struct * sheet_info = array_list_get(job, csv_index_position);
+			printf("počet archů v jobu: %d\n", array_list_size(job));
+
+			if(sheet_info->sheet_order != NULL)
+			{
+				printf("surova data pro index archu: %s\n", sheet_info->sheet_order);
+				sheet_index = atoi(sheet_info->sheet_order);
+			}
+		}
+	}
+	
+	return sheet_index;
 }
 
 

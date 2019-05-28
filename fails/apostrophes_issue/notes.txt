@@ -1,0 +1,6 @@
+v csv s koncovkou input.csv jsou data pro kamerovou kontrolu generované z quadientu, v csv s koncovkou camera.csv jsou data generované z kamery
+důležité je že quadient generuje apostrofy pouze u číselných hodnot přetených na kolcích nikoli index archu nebo zaky V nebo podobně viz. ukázka porovnání
+Navrhnul bych Johnovi aby dodal do programu zaškrtávací tlačítko (checkbox) pro generování apostrofů v šablonách pro kontrolu, každé kontrolovné pole by mělo možnost generovat apostrofy, to je podle mě nejjednodušší způsob jak dát apostrofy přesně tam kde mají být
+Tak co mame ted delat
+jen si zkopíruji data pro Johna a můžete pokračovat, mazání apostrofů je opět zapnuté
+

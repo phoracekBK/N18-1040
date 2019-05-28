@@ -94,6 +94,7 @@ void util_delete_file(char* path, char * name)
 	{
 		char file_addr[255];
 		sprintf(file_addr, "%s/%s", path, name);				
+		printf("delete: %s", file_addr);
 		remove(file_addr);
 	}
 }

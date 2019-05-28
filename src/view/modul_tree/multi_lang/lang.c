@@ -110,6 +110,7 @@ void lang_init_czech(lang * cz_lang)
     cz_lang->err_stacker_full = "Plný vykladač";
     cz_lang->err_reject_bin_full = "Plná výhybka";
     cz_lang->err_tape_missing = "Chybí páska v nastřelovacím mechanismu!";
+    cz_lang->err_machine_mode_adaptation_timeout = "Dopravník nenastavil požadovaný režim tisku!";
     cz_lang->err_unknown_error = "Neznámá chyba!";
 
     cz_lang->set_lan_label = "Jazyk rozhraní:";
@@ -304,6 +305,7 @@ void lang_init_english(lang * en_lang)
     en_lang->err_stacker_full = "Stacker full!";
     en_lang->err_reject_bin_full = "Reject bin full!";
     en_lang->err_tape_missing = "Tape missing in tab insert mechanism!";
+    en_lang->err_machine_mode_adaptation_timeout = "Conveyor dont set up required printing mode!";
     en_lang->err_unknown_error = "Unknown error!";
 
     en_lang->set_lan_label = "Interface language:";

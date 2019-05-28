@@ -45,8 +45,7 @@ enum _gui_job_report_list_item_
 enum _gui_control_btn_
 {
 	GC_BTN_PRINT = 0,
-	GC_BTN_PAUSE,
-	GC_BTN_CONTINUE,
+	GC_BTN_PRINT_COMPANION,
 	GC_BTN_CANCEL,
 	GC_BTN_PRINT_ONE,
 	GC_BTN_ERROR_RESET,
@@ -391,6 +390,7 @@ void gui_control_page_btn_print_req(gui_control_page * this);
 void gui_control_page_btn_feed_sheet_callback(GtkWidget * widget, gpointer param);
 void gui_control_page_btn_fake_companion_sheet(GtkWidget * widget, gpointer param);
 void gui_control_page_btn_print_callback(GtkButton *button, gpointer param);
+void gui_control_page_btn_print_all_companion_callback(GtkButton * button, gpointer param);
 void gui_control_page_btn_cancel_callback(GtkButton *button, gpointer param);
 void gui_control_page_btn_reset_callback(GtkButton *button, gpointer param);
 void gui_control_page_btn_continue_callback(GtkButton *button, gpointer param);
@@ -402,6 +402,8 @@ void gui_control_page_manual_sheet_feed(GtkWidget * widget, gpointer param);
 void gui_control_page_go_to_csv_manage_page(GtkWidget * widget, gpointer param);
 void gui_control_page_print_one_callback(GtkWidget * widget, gpointer param);
 void gui_control_page_null_counters(GtkWidget * widget, gpointer param);
+bool gui_control_page_pause_enable();
+void gui_control_page_set_print_button_label(gui_control_page * this);
 
 gui_settings_page * gui_settings_page_new(gui_base * gui_base_ref);
 void gui_settings_page_language(gui_settings_page * this, lang * multi_lang);
@@ -619,17 +621,17 @@ gboolean gui_cyclic_interupt(gpointer param)
 				(controler_machine_status_val() == MACHINE_STATE_WAIT)) && 
 				controler_get_manual_mode_state() == false);
 
-	bool pause_en = (controler_machine_status_val() != MACHINE_STATE_WAIT) && (controler_machine_status_val() != MACHINE_STATE_NEXT) && 
-						(controler_machine_status_val() != MACHINE_STATE_ERROR) && (controler_machine_status_val() != MACHINE_STATE_PAUSE) && 
-						(controler_machine_status_val() != MACHINE_STATE_READY_TO_START) && (controler_machine_status_val() != MACHINE_STATE_WAIT_FOR_CONFIRMATION &&
-						controler_get_manual_mode_state() == false);
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT_COMPANION]), 
+					(controler_machine_status_val() == MACHINE_STATE_WAIT) && 
+					(controler_get_job_queue_size() > 0));
 
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PAUSE]), pause_en);
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_CONTINUE]), controler_machine_status_val() == MACHINE_STATE_PAUSE && 
-						(controler_get_manual_mode_state() == false));
-	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), (controler_machine_status_val() == MACHINE_STATE_WAIT) && (controler_get_job_queue_size() > 0) && 
-						(controler_get_manual_mode_state() == false));
+	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT]), ((controler_machine_status_val() == MACHINE_STATE_WAIT) && 
+						(controler_get_job_queue_size() > 0) && 
+						(controler_get_manual_mode_state() == false)) || 
+						((controler_machine_status_val()!= MACHINE_STATE_WAIT) &&  gui_control_page_pause_enable() == true) || 
+						controler_machine_status_val() == MACHINE_STATE_PAUSE);
 
+	gui_control_page_set_print_button_label(this->control_page);
 
 	gtk_widget_set_sensitive(GTK_WIDGET(this->control_page->btn[GC_BTN_PRINT_ONE]),
 					((controler_machine_status_val() == MACHINE_STATE_WAIT) && (controler_get_job_queue_size() > 0)) ||
@@ -693,7 +695,6 @@ gboolean gui_cyclic_interupt(gpointer param)
 	{
 		c_string_set_string(this->info_label, (char *) multi_lang->info_label_fix_feeder_issue);
 	}
-
 	else if((controler_machine_status_val() == MACHINE_STATE_READY_TO_START) && 
 		((controler_get_stacker_status() != MACHINE_SN_STACKER_READY_TO_STACK) || (controler_get_feeder_status() != MACHINE_FN_READY_TO_FEED)))
 		c_string_set_string(this->info_label,(char*) multi_lang->info_label_feeder_stacker_not_prepared);
@@ -711,6 +712,10 @@ gboolean gui_cyclic_interupt(gpointer param)
 	else if(controler_machine_status_val() == MACHINE_STATE_FAKE_COMPANION)
 	{
 		c_string_set_string(this->info_label, (char *) multi_lang->info_label_companion_fake_instruction);
+	}
+	else if(controler_machine_status_val() >= MACHINE_STATE_LOAD_NEXT_JOB_FILE)
+	{
+		c_string_set_string(this->info_label, "Pracuji na generování prokladových archů...");
 	}
 	else
 	{
@@ -765,13 +770,9 @@ gboolean gui_status_bar_draw(GtkWidget * widget, cairo_t *cr, gpointer param)
 	if(c_string_len(this->error_string) > 0)
 	{
 		if(this->gui_base_ref->blink == true)
-		{
 	        	cairo_set_source_rgb(cr, 1, 0, 0);
-		}
 		else
-		{
 	       	 	cairo_set_source_rgb(cr, bg[0], bg[1], bg[2]);
-		}
 
        		cairo_rectangle(cr, 0, 0, this->gui_base_ref->work_area_geometry.width, this->gui_base_ref->work_area_geometry.height/12);
  	        cairo_fill(cr);
@@ -873,29 +874,20 @@ gboolean gui_on_draw_event(GtkWidget * widget, cairo_t *cr, gpointer param)
 	gui * this = (gui*) param;
 
 	cairo_set_source_rgb(cr, fg[0], fg[1], fg[2]);
-        cairo_rectangle(cr, 0, 0, this->gui_base_ref->work_area_geometry.width, this->gui_base_ref->work_area_geometry.height/12);
+        cairo_rectangle(cr, 0, 0, 
+			this->gui_base_ref->work_area_geometry.width, 
+			this->gui_base_ref->work_area_geometry.height/12);
         cairo_fill(cr);
 
         cairo_set_source_rgb(cr, bg[0], bg[1], bg[2]);
-        cairo_rectangle(cr, 0, this->gui_base_ref->work_area_geometry.height/12, this->gui_base_ref->work_area_geometry.width, this->gui_base_ref->work_area_geometry.height/12);
+        cairo_rectangle(cr, 0, this->gui_base_ref->work_area_geometry.height/12, 
+			this->gui_base_ref->work_area_geometry.width, 
+			this->gui_base_ref->work_area_geometry.height/12);
         cairo_fill(cr);
-
-	cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-
-/*
-	cairo_set_line_width(cr, 3);
-	cairo_move_to(cr,  this->gui_base_ref->work_area_geometry.width/16*3, this->gui_base_ref->work_area_geometry.height/24*5+50);
-	cairo_line_to(cr,  this->gui_base_ref->work_area_geometry.width/16*3, this->gui_base_ref->work_area_geometry.height-50);
-	cairo_stroke(cr);
-*/
 
 	return FALSE;
 }
 
-/**
-** @ingroup Gui
-** In this function are called all signal connection for graphic interface
-*/
 void gui_signals(gui * this)
 {
 	/* main window signals */
@@ -964,19 +956,16 @@ void gui_signals(gui * this)
 				G_CALLBACK(gui_control_page_btn_print_callback), 
 				this->control_page);
 
+	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_PRINT_COMPANION]),
+				"clicked", 
+				G_CALLBACK(gui_control_page_btn_print_all_companion_callback), 
+				this->control_page);
+
 	g_signal_connect(G_OBJECT(this->control_page->null_counters),
 				"clicked", 
 				G_CALLBACK(gui_control_page_null_counters), 
 				NULL);
 
-	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_PAUSE]), 
-				"clicked", 
-				G_CALLBACK(gui_control_page_btn_pause_callback), 
-				this->control_page);
-	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_CONTINUE]), 
-				"clicked", 
-				G_CALLBACK(gui_control_page_btn_continue_callback), 
-				this->control_page);
 	g_signal_connect(G_OBJECT(this->control_page->btn[GC_BTN_CANCEL]), 
 				"clicked", 
 				G_CALLBACK(gui_control_page_btn_cancel_callback), 
@@ -1388,16 +1377,12 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	gtk_fixed_put(GTK_FIXED(this->page), this->xbf_pulse, width/4*3+(width/4-350)/2, (5*height/24)+(height/8)+510);
 	gtk_fixed_put(GTK_FIXED(this->page), this->img_machine, 50, height/4*3-50);
 
-
-
 	for(int i = 0; i < GC_BTN_N; i++)
 	{
 		if(i == GC_BTN_PRINT)
 			this->btn[i] = gtk_button_new_with_label ("Start");
-		else if(i == GC_BTN_PAUSE)
-			this->btn[i] = gtk_button_new_with_label ("Pauza");
-		else if(i == GC_BTN_CONTINUE)
-			this->btn[i] = gtk_button_new_with_label ("Pokračovat");
+		else if(i == GC_BTN_PRINT_COMPANION)
+			this->btn[i] = gtk_button_new_with_label ("Jen proklady");
 		else if(i == GC_BTN_CANCEL)
 			this->btn[i] = gtk_button_new();
 		else if(i == GC_BTN_PRINT_ONE)
@@ -1414,6 +1399,16 @@ gui_control_page * gui_control_page_new(gui_base * gui_base_ref)
 	}
 
 	return this;
+}
+
+void gui_control_page_set_print_button_label(gui_control_page * this)
+{
+	if(controler_machine_status_val() == MACHINE_STATE_WAIT)
+		gtk_button_set_label(GTK_BUTTON(this->btn[GC_BTN_PRINT]), "Start");
+	else if(controler_machine_status_val() == MACHINE_STATE_PAUSE)
+		gtk_button_set_label(GTK_BUTTON(this->btn[GC_BTN_PRINT]), "Pokračovat");
+	else
+		gtk_button_set_label(GTK_BUTTON(this->btn[GC_BTN_PRINT]), "Pauza");
 }
 
 
@@ -1849,23 +1844,8 @@ void gui_control_page_btn_go_to_settings_callback(GtkButton *button, gpointer pa
 	gtk_stack_set_visible_child_name (GTK_STACK(this->page_stack), "settings_page");
 }
 
-void gui_control_page_btn_pause_callback(GtkButton *button, gpointer param)
-{
-	/* set pause */
-	if(controler_machine_status_val() != MACHINE_STATE_ERROR)
-		controler_print_pause();
-}
-
-void gui_control_page_btn_continue_callback(GtkButton *button, gpointer param)
-{
-	if(controler_machine_status_val() == MACHINE_STATE_PAUSE)
-		controler_print_continue();
-}
-
-
 void gui_control_page_btn_print_req(gui_control_page * this)
 {
-	/* start new print */
 	GtkTreeSelection * selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (this->job_list));
 	GtkTreeIter iter;
        	GtkTreeModel *model;
@@ -1884,6 +1864,27 @@ void gui_control_page_btn_print_req(gui_control_page * this)
 	}
 }
 
+void gui_control_page_btn_print_all_companion_callback(GtkButton * button, gpointer param)
+{
+	gui_control_page * this = (gui_control_page*) param;
+	GtkTreeSelection * selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (this->job_list));
+	GtkTreeIter iter;
+       	GtkTreeModel *model;
+   	gchar *job_name;
+
+       	if (gtk_tree_selection_get_selected (selection, &model, &iter))
+       	{
+       	        gtk_tree_model_get (model, &iter, JOB_Q_NAME, &job_name, -1);
+		controler_print_all_companion((const char*) job_name);
+
+       	        g_free(job_name);
+       	}
+	else
+	{
+		controler_print_all_companion(NULL);
+	}
+}
+
 void gui_control_page_btn_print_callback(GtkButton *button, gpointer param)
 {
 	gui_control_page * this = (gui_control_page*) param;
@@ -1892,6 +1893,23 @@ void gui_control_page_btn_print_callback(GtkButton *button, gpointer param)
 	{
 		gui_control_page_btn_print_req(this);
 	}
+	else if(controler_machine_status_val() == MACHINE_STATE_PAUSE)
+	{
+		controler_print_continue();
+	}
+	else
+	{
+		if(gui_control_page_pause_enable() == true)
+			controler_print_pause();
+	}
+}
+
+bool gui_control_page_pause_enable()
+{
+	return ((controler_machine_status_val() != MACHINE_STATE_ERROR) && 
+		(controler_machine_status_val() != MACHINE_STATE_READY_TO_START) && 
+		(controler_machine_status_val() != MACHINE_STATE_WAIT_FOR_CONFIRMATION &&
+		controler_get_manual_mode_state() == false));
 }
 
 void gui_control_page_delete_columns(GtkWidget * list)

@@ -16,10 +16,6 @@ int32_t hot_get_order(char* str, int offset, int len);
 void hot_bkcore_csv_info(q_job * job, char * address);
 
 
-
-
-
-
 array_list * hot_read_dir_content(c_string * q_hotfolder_main_path)
 {
 	if(q_hotfolder_main_path != NULL)
