@@ -1,0 +1,241 @@
+22.11.19 - 07:49:42 # Inicializace jádra...
+22.11.19 - 07:49:42 # Načítám konfigurační soubor: ./sys_cfg
+22.11.19 - 07:49:42 # Konfigurace načtena
+22.11.19 - 07:49:42 # Vlákno pro sledování připojení k počítači PCI vytvořeno.
+22.11.19 - 07:49:42 # Vlákno pro sledování připojení k počítači IIJ vytvořeno.
+22.11.19 - 07:49:42 # Vlákno pro sledování připojení k počítači Qudient vytvořeno.
+22.11.19 - 07:49:42 # Systém GIS úspěšně připojen.
+22.11.19 - 07:49:42 # IO karty úspěšně připojeny.
+22.11.19 - 07:49:42 # Vlákno obsluhy stroje vytvořeno.
+22.11.19 - 07:49:42 # Jádro inicializováno. Doba trvání inicializace: 1ms
+22.11.19 - 07:49:42 # 8 - Dokončování procesu tisku.
+22.11.19 - 07:49:42 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:49:42 # Statistika všech naložených archů uložena: 1115557 arch(ů)
+22.11.19 - 07:49:42 # Statistika všech naložených archů uložena: 1005823 arch(ů)
+22.11.19 - 07:49:42 # Statistika všech vyhozených archů uložena: 109662 arch(ů)
+22.11.19 - 07:49:42 # Statistika celkové chybovosti uložena: 9,830246
+22.11.19 - 07:49:42 # Statistika naložených archů uložena: 525 arch(ů)
+22.11.19 - 07:49:42 # Statistika vyložených archů uložena: 465 arch(ů)
+22.11.19 - 07:49:42 # Statistika vyhozených archů uložena: 60 arch(ů)
+22.11.19 - 07:49:42 # Statistika chybovosti uložena: 11,428571
+22.11.19 - 07:49:42 # 0 - Čekání na spuštění jobu
+22.11.19 - 07:49:42 # Nastaven režim Gremser stroje: Tisk s inspekcí
+22.11.19 - 07:50:58 # Uložení prázdného zpětnovazebního csv na vyčištění hotfolderu na adresu: /media/stc/q_hot/data_in_feedback/橅JV
+22.11.19 - 07:50:58 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53508_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53508_0001_k_pdf.pdf
+22.11.19 - 07:50:58 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53508_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53508_0001_k_bkcore.csv
+22.11.19 - 07:50:58 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53508_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53508_0001_k_camera.csv
+22.11.19 - 07:55:34 # Spuštěn tisk jobu stc-53508.
+22.11.19 - 07:55:34 # 1 - Příprava dat pro tisk
+22.11.19 - 07:55:36 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:55:36 # 3 - Stroj je v chybovém stavu!: Nelze odeslat pdf soubor do GISu!
+22.11.19 - 07:55:46 # Reset chybového stavu.
+22.11.19 - 07:55:46 # 13 - Přerušení procesu tisku.
+22.11.19 - 07:55:46 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-53508_0001_k_camera.csv
+22.11.19 - 07:55:46 # Uložení prázdného zpětnovazebního csv pro ukončení jobu, na adresu: /media/stc/q_hot/data_in_feedback/stc-53508_0001_e_bkcore.csv
+22.11.19 - 07:55:46 # 6 - Čištění hotfolderu na konci tisku.
+22.11.19 - 07:55:46 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-53508_0001_k_camera.csv
+22.11.19 - 07:55:46 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53508_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53508_0001_k_pdf.pdf
+22.11.19 - 07:55:46 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53508_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53508_0001_k_bkcore.csv
+22.11.19 - 07:55:46 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53508_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53508_0001_k_camera.csv
+22.11.19 - 07:55:46 # 8 - Dokončování procesu tisku.
+22.11.19 - 07:55:46 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:55:46 # Statistika všech naložených archů uložena: 1115557 arch(ů)
+22.11.19 - 07:55:46 # Statistika všech naložených archů uložena: 1005823 arch(ů)
+22.11.19 - 07:55:46 # Statistika všech vyhozených archů uložena: 109662 arch(ů)
+22.11.19 - 07:55:46 # Statistika celkové chybovosti uložena: 9,830246
+22.11.19 - 07:55:46 # Statistika naložených archů uložena: 525 arch(ů)
+22.11.19 - 07:55:46 # Statistika vyložených archů uložena: 465 arch(ů)
+22.11.19 - 07:55:46 # Statistika vyhozených archů uložena: 60 arch(ů)
+22.11.19 - 07:55:46 # Statistika chybovosti uložena: 11,428571
+22.11.19 - 07:55:46 # Uložení reportového csv na adresu: /home/stc/host-bk/job_info_csv/V19198_14.csv
+22.11.19 - 07:55:46 # 0 - Čekání na spuštění jobu
+22.11.19 - 07:57:51 # Spuštěn tisk jobu stc-53200.
+22.11.19 - 07:57:51 # 1 - Příprava dat pro tisk
+22.11.19 - 07:57:53 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:57:53 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-53200_0001_k_pdf.pdf
+22.11.19 - 07:57:53 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0001_k_camera.csv -> /media/stc/pci_hot/Input/stc-53200_0001_k_camera.csv
+22.11.19 - 07:57:53 # Načten bkcore csv soubor s 25 archy
+22.11.19 - 07:57:53 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 07:58:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:37 # naložené archy: 0 | pozice v csv souboru: 0 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:37 # 2 - Tisk
+22.11.19 - 07:58:38 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:38 # naložené archy: 0 | pozice v csv souboru: 1 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:38 # 2 - Tisk
+22.11.19 - 07:58:38 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:38 # naložené archy: 1 | pozice v csv souboru: 2 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:38 # 2 - Tisk
+22.11.19 - 07:58:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:39 # naložené archy: 2 | pozice v csv souboru: 3 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:39 # 2 - Tisk
+22.11.19 - 07:58:40 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:40 # naložené archy: 3 | pozice v csv souboru: 4 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:40 # 2 - Tisk
+22.11.19 - 07:58:40 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:40 # naložené archy: 4 | pozice v csv souboru: 5 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:40 # 2 - Tisk
+22.11.19 - 07:58:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:41 # naložené archy: 5 | pozice v csv souboru: 6 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:41 # 2 - Tisk
+22.11.19 - 07:58:42 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:42 # naložené archy: 6 | pozice v csv souboru: 7 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:58:42 # 2 - Tisk
+22.11.19 - 07:58:42 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:42 # naložené archy: 7 | pozice v csv souboru: 8 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:58:42 # 2 - Tisk
+22.11.19 - 07:58:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:43 # naložené archy: 8 | pozice v csv souboru: 9 | vyložené archy: 2 | vyhozené archy: 0
+22.11.19 - 07:58:43 # 2 - Tisk
+22.11.19 - 07:58:44 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:44 # naložené archy: 9 | pozice v csv souboru: 10 | vyložené archy: 3 | vyhozené archy: 0
+22.11.19 - 07:58:44 # 2 - Tisk
+22.11.19 - 07:58:44 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:44 # naložené archy: 10 | pozice v csv souboru: 11 | vyložené archy: 4 | vyhozené archy: 0
+22.11.19 - 07:58:44 # 2 - Tisk
+22.11.19 - 07:58:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:45 # naložené archy: 11 | pozice v csv souboru: 12 | vyložené archy: 5 | vyhozené archy: 0
+22.11.19 - 07:58:45 # 2 - Tisk
+22.11.19 - 07:58:46 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:46 # naložené archy: 12 | pozice v csv souboru: 13 | vyložené archy: 6 | vyhozené archy: 1
+22.11.19 - 07:58:46 # 2 - Tisk
+22.11.19 - 07:58:46 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:46 # naložené archy: 13 | pozice v csv souboru: 14 | vyložené archy: 6 | vyhozené archy: 1
+22.11.19 - 07:58:46 # 2 - Tisk
+22.11.19 - 07:58:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:47 # naložené archy: 14 | pozice v csv souboru: 15 | vyložené archy: 7 | vyhozené archy: 1
+22.11.19 - 07:58:47 # 2 - Tisk
+22.11.19 - 07:58:48 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:48 # naložené archy: 15 | pozice v csv souboru: 16 | vyložené archy: 8 | vyhozené archy: 1
+22.11.19 - 07:58:48 # 2 - Tisk
+22.11.19 - 07:58:48 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:48 # naložené archy: 16 | pozice v csv souboru: 17 | vyložené archy: 9 | vyhozené archy: 1
+22.11.19 - 07:58:48 # 2 - Tisk
+22.11.19 - 07:58:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:49 # naložené archy: 17 | pozice v csv souboru: 18 | vyložené archy: 10 | vyhozené archy: 1
+22.11.19 - 07:58:49 # 2 - Tisk
+22.11.19 - 07:58:50 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:50 # naložené archy: 18 | pozice v csv souboru: 19 | vyložené archy: 11 | vyhozené archy: 2
+22.11.19 - 07:58:50 # 2 - Tisk
+22.11.19 - 07:58:50 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:50 # naložené archy: 19 | pozice v csv souboru: 20 | vyložené archy: 11 | vyhozené archy: 3
+22.11.19 - 07:58:50 # 2 - Tisk
+22.11.19 - 07:58:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:51 # naložené archy: 20 | pozice v csv souboru: 21 | vyložené archy: 11 | vyhozené archy: 3
+22.11.19 - 07:58:51 # 2 - Tisk
+22.11.19 - 07:58:52 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:52 # naložené archy: 21 | pozice v csv souboru: 22 | vyložené archy: 12 | vyhozené archy: 3
+22.11.19 - 07:58:52 # 2 - Tisk
+22.11.19 - 07:58:52 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:52 # naložené archy: 22 | pozice v csv souboru: 23 | vyložené archy: 13 | vyhozené archy: 3
+22.11.19 - 07:58:52 # 2 - Tisk
+22.11.19 - 07:58:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:53 # naložené archy: 23 | pozice v csv souboru: 24 | vyložené archy: 14 | vyhozené archy: 3
+22.11.19 - 07:58:53 # 2 - Tisk
+22.11.19 - 07:58:54 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:58:54 # 15 - Čekání na vyložení archů
+22.11.19 - 07:58:59 # 4 - Generování csv pro Quadient.
+22.11.19 - 07:59:02 # Analýza csv souboru z Quadientu  a kamerového systému, počet vadných archů: 3
+22.11.19 - 07:59:02 # Uložení zpětnovazebního csv na adresu: /media/stc/q_hot/data_in_feedback/stc-53200_0001_k_bkcore.csv
+22.11.19 - 07:59:02 # 5 - Čištění hotfolderů.
+22.11.19 - 07:59:02 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-53200_0001_k_camera.csv
+22.11.19 - 07:59:02 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53200_0001_k_pdf.pdf
+22.11.19 - 07:59:02 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0001_k_bkcore.csv
+22.11.19 - 07:59:02 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0001_k_camera.csv
+22.11.19 - 07:59:02 # 9 - Dokončování tiskového jobu
+22.11.19 - 07:59:02 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:59:02 # Statistika všech naložených archů uložena: 1115582 arch(ů)
+22.11.19 - 07:59:02 # Statistika všech naložených archů uložena: 1005845 arch(ů)
+22.11.19 - 07:59:02 # Statistika všech vyhozených archů uložena: 109665 arch(ů)
+22.11.19 - 07:59:02 # Statistika celkové chybovosti uložena: 9,830295
+22.11.19 - 07:59:02 # Statistika naložených archů uložena: 550 arch(ů)
+22.11.19 - 07:59:02 # Statistika vyložených archů uložena: 487 arch(ů)
+22.11.19 - 07:59:02 # Statistika vyhozených archů uložena: 63 arch(ů)
+22.11.19 - 07:59:02 # Statistika chybovosti uložena: 11,454545
+22.11.19 - 07:59:02 # 7 - Čekání na další soubory jobu.
+22.11.19 - 07:59:11 # 1 - Příprava dat pro tisk
+22.11.19 - 07:59:13 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:59:13 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0002_k_pdf.pdf -> /media/stc/gis_hot/stc-53200_0002_k_pdf.pdf
+22.11.19 - 07:59:13 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0002_k_camera.csv -> /media/stc/pci_hot/Input/stc-53200_0002_k_camera.csv
+22.11.19 - 07:59:13 # Načten bkcore csv soubor s 3 archy
+22.11.19 - 07:59:13 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 07:59:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:59:24 # naložené archy: 25 | pozice v csv souboru: 0 | vyložené archy: 22 | vyhozené archy: 3
+22.11.19 - 07:59:24 # 2 - Tisk
+22.11.19 - 07:59:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:59:24 # naložené archy: 25 | pozice v csv souboru: 1 | vyložené archy: 22 | vyhozené archy: 3
+22.11.19 - 07:59:24 # 2 - Tisk
+22.11.19 - 07:59:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:59:25 # naložené archy: 26 | pozice v csv souboru: 2 | vyložené archy: 22 | vyhozené archy: 3
+22.11.19 - 07:59:25 # 2 - Tisk
+22.11.19 - 07:59:26 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:59:26 # 15 - Čekání na vyložení archů
+22.11.19 - 07:59:31 # 4 - Generování csv pro Quadient.
+22.11.19 - 07:59:34 # Analýza csv souboru z Quadientu  a kamerového systému, počet vadných archů: 0
+22.11.19 - 07:59:34 # Uložení zpětnovazebního csv na adresu: /media/stc/q_hot/data_in_feedback/stc-53200_0002_k_bkcore.csv
+22.11.19 - 07:59:34 # 5 - Čištění hotfolderů.
+22.11.19 - 07:59:34 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-53200_0002_k_camera.csv
+22.11.19 - 07:59:34 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0002_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53200_0002_k_pdf.pdf
+22.11.19 - 07:59:34 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0002_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0002_k_bkcore.csv
+22.11.19 - 07:59:34 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0002_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0002_k_camera.csv
+22.11.19 - 07:59:34 # 9 - Dokončování tiskového jobu
+22.11.19 - 07:59:34 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:59:34 # Statistika všech naložených archů uložena: 1115585 arch(ů)
+22.11.19 - 07:59:34 # Statistika všech naložených archů uložena: 1005848 arch(ů)
+22.11.19 - 07:59:34 # Statistika všech vyhozených archů uložena: 109665 arch(ů)
+22.11.19 - 07:59:34 # Statistika celkové chybovosti uložena: 9,830268
+22.11.19 - 07:59:34 # Statistika naložených archů uložena: 553 arch(ů)
+22.11.19 - 07:59:34 # Statistika vyložených archů uložena: 490 arch(ů)
+22.11.19 - 07:59:34 # Statistika vyhozených archů uložena: 63 arch(ů)
+22.11.19 - 07:59:34 # Statistika chybovosti uložena: 11,392405
+22.11.19 - 07:59:34 # 7 - Čekání na další soubory jobu.
+22.11.19 - 07:59:36 # 1 - Příprava dat pro tisk
+22.11.19 - 07:59:38 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:59:38 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0003_p_pdf.pdf -> /media/stc/gis_hot/stc-53200_0003_p_pdf.pdf
+22.11.19 - 07:59:38 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0003_p_camera.csv -> /media/stc/pci_hot/Input/stc-53200_0003_p_camera.csv
+22.11.19 - 07:59:38 # Načten bkcore csv soubor s 1 archy
+22.11.19 - 07:59:38 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 07:59:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:59:49 # naložené archy: 28 | pozice v csv souboru: 0 | vyložené archy: 25 | vyhozené archy: 3
+22.11.19 - 07:59:49 # 12 - Tisk prokladového archu.
+22.11.19 - 08:00:02 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 08:00:02 # 15 - Čekání na vyložení archů
+22.11.19 - 08:00:07 # 4 - Generování csv pro Quadient.
+22.11.19 - 08:00:10 # Analýza csv souboru z Quadientu  a kamerového systému, počet vadných archů: 0
+22.11.19 - 08:00:10 # Uložení zpětnovazebního csv na adresu: /media/stc/q_hot/data_in_feedback/stc-53200_0003_p_bkcore.csv
+22.11.19 - 08:00:10 # 5 - Čištění hotfolderů.
+22.11.19 - 08:00:10 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-53200_0003_p_camera.csv
+22.11.19 - 08:00:10 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0003_p_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53200_0003_p_pdf.pdf
+22.11.19 - 08:00:10 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0003_p_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0003_p_bkcore.csv
+22.11.19 - 08:00:10 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0003_p_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0003_p_camera.csv
+22.11.19 - 08:00:10 # 9 - Dokončování tiskového jobu
+22.11.19 - 08:00:10 # Uložen index dne pro statistiku: 43791
+22.11.19 - 08:00:10 # Statistika všech naložených archů uložena: 1115586 arch(ů)
+22.11.19 - 08:00:10 # Statistika všech naložených archů uložena: 1005849 arch(ů)
+22.11.19 - 08:00:10 # Statistika všech vyhozených archů uložena: 109665 arch(ů)
+22.11.19 - 08:00:10 # Statistika celkové chybovosti uložena: 9,830260
+22.11.19 - 08:00:10 # Statistika naložených archů uložena: 554 arch(ů)
+22.11.19 - 08:00:10 # Statistika vyložených archů uložena: 491 arch(ů)
+22.11.19 - 08:00:10 # Statistika vyhozených archů uložena: 63 arch(ů)
+22.11.19 - 08:00:10 # Statistika chybovosti uložena: 11,371841
+22.11.19 - 08:00:10 # 7 - Čekání na další soubory jobu.
+22.11.19 - 08:00:13 # Tisk jobu stc-53200 pozastaven.
+22.11.19 - 08:00:25 # 1 - Příprava dat pro tisk
+22.11.19 - 08:00:27 # Načten obsah bkcore csv souboru.
+22.11.19 - 08:00:28 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0004_k_pdf.pdf -> /media/stc/gis_hot/stc-53200_0004_k_pdf.pdf
+22.11.19 - 08:00:28 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0004_k_camera.csv -> /media/stc/pci_hot/Input/stc-53200_0004_k_camera.csv
+22.11.19 - 08:00:28 # Načten bkcore csv soubor s 500 archy
+22.11.19 - 08:00:28 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 08:00:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 08:00:39 # 10 - Tisk pozastaven.
+22.11.19 - 08:15:47 # 3 - Stroj je v chybovém stavu!: Počítač IIJ neodpovídá!
+22.11.19 - 08:26:14 # Uložen index dne pro statistiku: 43791
+22.11.19 - 08:26:14 # Statistika všech naložených archů uložena: 1115586 arch(ů)
+22.11.19 - 08:26:14 # Statistika všech naložených archů uložena: 1005849 arch(ů)
+22.11.19 - 08:26:14 # Statistika všech vyhozených archů uložena: 109665 arch(ů)
+22.11.19 - 08:26:14 # Statistika celkové chybovosti uložena: 9,830260
+22.11.19 - 08:26:14 # Statistika naložených archů uložena: 554 arch(ů)
+22.11.19 - 08:26:14 # Statistika vyložených archů uložena: 491 arch(ů)
+22.11.19 - 08:26:14 # Statistika vyhozených archů uložena: 63 arch(ů)
+22.11.19 - 08:26:14 # Statistika chybovosti uložena: 11,371841
+22.11.19 - 08:26:14 # Spojení s GISem ukončeno.
+22.11.19 - 08:26:15 # Jádro úspěšně ukončeno.

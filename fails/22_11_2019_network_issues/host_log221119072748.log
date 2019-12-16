@@ -1,0 +1,1182 @@
+22.11.19 - 07:27:48 # Inicializace jádra...
+22.11.19 - 07:27:48 # Načítám konfigurační soubor: ./sys_cfg
+22.11.19 - 07:27:48 # Konfigurace načtena
+22.11.19 - 07:27:48 # Vlákno pro sledování připojení k počítači PCI vytvořeno.
+22.11.19 - 07:27:48 # Vlákno pro sledování připojení k počítači IIJ vytvořeno.
+22.11.19 - 07:27:48 # Vlákno pro sledování připojení k počítači Qudient vytvořeno.
+22.11.19 - 07:27:48 # Systém GIS úspěšně připojen.
+22.11.19 - 07:27:48 # IO karty úspěšně připojeny.
+22.11.19 - 07:27:48 # Vlákno obsluhy stroje vytvořeno.
+22.11.19 - 07:27:48 # Jádro inicializováno. Doba trvání inicializace: 1ms
+22.11.19 - 07:27:48 # 8 - Dokončování procesu tisku.
+22.11.19 - 07:27:48 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:27:48 # Statistika všech naložených archů uložena: 1115196 arch(ů)
+22.11.19 - 07:27:48 # Statistika všech naložených archů uložena: 1005497 arch(ů)
+22.11.19 - 07:27:48 # Statistika všech vyhozených archů uložena: 109627 arch(ů)
+22.11.19 - 07:27:48 # Statistika celkové chybovosti uložena: 9,830290
+22.11.19 - 07:27:48 # Statistika naložených archů uložena: 164 arch(ů)
+22.11.19 - 07:27:48 # Statistika vyložených archů uložena: 139 arch(ů)
+22.11.19 - 07:27:48 # Statistika vyhozených archů uložena: 25 arch(ů)
+22.11.19 - 07:27:48 # Statistika chybovosti uložena: 15,243902
+22.11.19 - 07:27:48 # 0 - Čekání na spuštění jobu
+22.11.19 - 07:27:48 # Nastaven režim Gremser stroje: Tisk s inspekcí
+22.11.19 - 07:28:24 # Spuštěn tisk jobu stc-53200.
+22.11.19 - 07:28:24 # 1 - Příprava dat pro tisk
+22.11.19 - 07:28:26 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:28:26 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-53200_0001_k_pdf.pdf
+22.11.19 - 07:28:27 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0001_k_camera.csv -> /media/stc/pci_hot/Input/stc-53200_0001_k_camera.csv
+22.11.19 - 07:28:27 # Načten bkcore csv soubor s 361 archy
+22.11.19 - 07:28:27 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 07:28:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:39 # naložené archy: 0 | pozice v csv souboru: 0 | vyložené archy: 0 | vyhozené archy: 0
+22.11.19 - 07:28:39 # 2 - Tisk
+22.11.19 - 07:28:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:39 # 10 - Tisk pozastaven.
+22.11.19 - 07:28:45 # Obnovení jobu: stc-53200
+22.11.19 - 07:28:45 # 18 - Čekání na spuštění stroje
+22.11.19 - 07:28:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:45 # naložené archy: 1 | pozice v csv souboru: 1 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:45 # 2 - Tisk
+22.11.19 - 07:28:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:45 # naložené archy: 1 | pozice v csv souboru: 2 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:45 # 2 - Tisk
+22.11.19 - 07:28:46 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:46 # naložené archy: 2 | pozice v csv souboru: 3 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:46 # 2 - Tisk
+22.11.19 - 07:28:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:47 # naložené archy: 3 | pozice v csv souboru: 4 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:47 # 2 - Tisk
+22.11.19 - 07:28:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:47 # naložené archy: 4 | pozice v csv souboru: 5 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:47 # 2 - Tisk
+22.11.19 - 07:28:48 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:48 # naložené archy: 5 | pozice v csv souboru: 6 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:48 # 2 - Tisk
+22.11.19 - 07:28:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:49 # naložené archy: 6 | pozice v csv souboru: 7 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:49 # 2 - Tisk
+22.11.19 - 07:28:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:49 # naložené archy: 7 | pozice v csv souboru: 8 | vyložené archy: 1 | vyhozené archy: 0
+22.11.19 - 07:28:49 # 2 - Tisk
+22.11.19 - 07:28:50 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:50 # naložené archy: 8 | pozice v csv souboru: 9 | vyložené archy: 2 | vyhozené archy: 1
+22.11.19 - 07:28:50 # 2 - Tisk
+22.11.19 - 07:28:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:51 # naložené archy: 9 | pozice v csv souboru: 10 | vyložené archy: 2 | vyhozené archy: 1
+22.11.19 - 07:28:51 # 2 - Tisk
+22.11.19 - 07:28:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:51 # naložené archy: 10 | pozice v csv souboru: 11 | vyložené archy: 3 | vyhozené archy: 1
+22.11.19 - 07:28:51 # 2 - Tisk
+22.11.19 - 07:28:52 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:52 # naložené archy: 11 | pozice v csv souboru: 12 | vyložené archy: 4 | vyhozené archy: 1
+22.11.19 - 07:28:52 # 2 - Tisk
+22.11.19 - 07:28:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:53 # naložené archy: 12 | pozice v csv souboru: 13 | vyložené archy: 5 | vyhozené archy: 1
+22.11.19 - 07:28:53 # 2 - Tisk
+22.11.19 - 07:28:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:53 # naložené archy: 13 | pozice v csv souboru: 14 | vyložené archy: 6 | vyhozené archy: 1
+22.11.19 - 07:28:53 # 2 - Tisk
+22.11.19 - 07:28:54 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:54 # naložené archy: 14 | pozice v csv souboru: 15 | vyložené archy: 7 | vyhozené archy: 1
+22.11.19 - 07:28:54 # 2 - Tisk
+22.11.19 - 07:28:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:55 # naložené archy: 15 | pozice v csv souboru: 16 | vyložené archy: 8 | vyhozené archy: 1
+22.11.19 - 07:28:55 # 2 - Tisk
+22.11.19 - 07:28:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:55 # naložené archy: 16 | pozice v csv souboru: 17 | vyložené archy: 9 | vyhozené archy: 1
+22.11.19 - 07:28:55 # 2 - Tisk
+22.11.19 - 07:28:56 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:56 # naložené archy: 17 | pozice v csv souboru: 18 | vyložené archy: 10 | vyhozené archy: 1
+22.11.19 - 07:28:56 # 2 - Tisk
+22.11.19 - 07:28:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:57 # naložené archy: 18 | pozice v csv souboru: 19 | vyložené archy: 11 | vyhozené archy: 1
+22.11.19 - 07:28:57 # 2 - Tisk
+22.11.19 - 07:28:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:57 # naložené archy: 19 | pozice v csv souboru: 20 | vyložené archy: 12 | vyhozené archy: 1
+22.11.19 - 07:28:57 # 2 - Tisk
+22.11.19 - 07:28:58 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:58 # naložené archy: 20 | pozice v csv souboru: 21 | vyložené archy: 13 | vyhozené archy: 1
+22.11.19 - 07:28:58 # 2 - Tisk
+22.11.19 - 07:28:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:59 # naložené archy: 21 | pozice v csv souboru: 22 | vyložené archy: 14 | vyhozené archy: 1
+22.11.19 - 07:28:59 # 2 - Tisk
+22.11.19 - 07:28:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:28:59 # naložené archy: 22 | pozice v csv souboru: 23 | vyložené archy: 15 | vyhozené archy: 1
+22.11.19 - 07:28:59 # 2 - Tisk
+22.11.19 - 07:29:00 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:00 # naložené archy: 23 | pozice v csv souboru: 24 | vyložené archy: 16 | vyhozené archy: 1
+22.11.19 - 07:29:00 # 2 - Tisk
+22.11.19 - 07:29:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:01 # naložené archy: 24 | pozice v csv souboru: 25 | vyložené archy: 17 | vyhozené archy: 1
+22.11.19 - 07:29:01 # 2 - Tisk
+22.11.19 - 07:29:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:01 # naložené archy: 25 | pozice v csv souboru: 26 | vyložené archy: 18 | vyhozené archy: 1
+22.11.19 - 07:29:01 # 2 - Tisk
+22.11.19 - 07:29:02 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:02 # naložené archy: 26 | pozice v csv souboru: 27 | vyložené archy: 19 | vyhozené archy: 2
+22.11.19 - 07:29:02 # 2 - Tisk
+22.11.19 - 07:29:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:03 # naložené archy: 27 | pozice v csv souboru: 28 | vyložené archy: 19 | vyhozené archy: 2
+22.11.19 - 07:29:03 # 2 - Tisk
+22.11.19 - 07:29:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:03 # naložené archy: 28 | pozice v csv souboru: 29 | vyložené archy: 20 | vyhozené archy: 2
+22.11.19 - 07:29:03 # 2 - Tisk
+22.11.19 - 07:29:04 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:04 # naložené archy: 29 | pozice v csv souboru: 30 | vyložené archy: 21 | vyhozené archy: 2
+22.11.19 - 07:29:04 # 2 - Tisk
+22.11.19 - 07:29:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:05 # naložené archy: 30 | pozice v csv souboru: 31 | vyložené archy: 22 | vyhozené archy: 2
+22.11.19 - 07:29:05 # 2 - Tisk
+22.11.19 - 07:29:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:05 # naložené archy: 31 | pozice v csv souboru: 32 | vyložené archy: 23 | vyhozené archy: 2
+22.11.19 - 07:29:05 # 2 - Tisk
+22.11.19 - 07:29:06 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:06 # naložené archy: 32 | pozice v csv souboru: 33 | vyložené archy: 24 | vyhozené archy: 2
+22.11.19 - 07:29:06 # 2 - Tisk
+22.11.19 - 07:29:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:07 # naložené archy: 33 | pozice v csv souboru: 34 | vyložené archy: 25 | vyhozené archy: 2
+22.11.19 - 07:29:07 # 2 - Tisk
+22.11.19 - 07:29:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:07 # naložené archy: 34 | pozice v csv souboru: 35 | vyložené archy: 26 | vyhozené archy: 2
+22.11.19 - 07:29:07 # 2 - Tisk
+22.11.19 - 07:29:08 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:08 # naložené archy: 35 | pozice v csv souboru: 36 | vyložené archy: 27 | vyhozené archy: 2
+22.11.19 - 07:29:08 # 2 - Tisk
+22.11.19 - 07:29:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:09 # naložené archy: 36 | pozice v csv souboru: 37 | vyložené archy: 28 | vyhozené archy: 2
+22.11.19 - 07:29:09 # 2 - Tisk
+22.11.19 - 07:29:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:09 # naložené archy: 37 | pozice v csv souboru: 38 | vyložené archy: 29 | vyhozené archy: 2
+22.11.19 - 07:29:09 # 2 - Tisk
+22.11.19 - 07:29:10 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:10 # naložené archy: 38 | pozice v csv souboru: 39 | vyložené archy: 30 | vyhozené archy: 2
+22.11.19 - 07:29:10 # 2 - Tisk
+22.11.19 - 07:29:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:11 # naložené archy: 39 | pozice v csv souboru: 40 | vyložené archy: 31 | vyhozené archy: 2
+22.11.19 - 07:29:11 # 2 - Tisk
+22.11.19 - 07:29:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:11 # naložené archy: 40 | pozice v csv souboru: 41 | vyložené archy: 32 | vyhozené archy: 2
+22.11.19 - 07:29:11 # 2 - Tisk
+22.11.19 - 07:29:12 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:12 # naložené archy: 41 | pozice v csv souboru: 42 | vyložené archy: 33 | vyhozené archy: 2
+22.11.19 - 07:29:12 # 2 - Tisk
+22.11.19 - 07:29:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:13 # naložené archy: 42 | pozice v csv souboru: 43 | vyložené archy: 34 | vyhozené archy: 2
+22.11.19 - 07:29:13 # 2 - Tisk
+22.11.19 - 07:29:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:13 # naložené archy: 43 | pozice v csv souboru: 44 | vyložené archy: 35 | vyhozené archy: 2
+22.11.19 - 07:29:13 # 2 - Tisk
+22.11.19 - 07:29:14 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:14 # naložené archy: 44 | pozice v csv souboru: 45 | vyložené archy: 36 | vyhozené archy: 2
+22.11.19 - 07:29:14 # 2 - Tisk
+22.11.19 - 07:29:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:15 # naložené archy: 45 | pozice v csv souboru: 46 | vyložené archy: 37 | vyhozené archy: 2
+22.11.19 - 07:29:15 # 2 - Tisk
+22.11.19 - 07:29:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:15 # naložené archy: 46 | pozice v csv souboru: 47 | vyložené archy: 38 | vyhozené archy: 2
+22.11.19 - 07:29:15 # 2 - Tisk
+22.11.19 - 07:29:16 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:16 # naložené archy: 47 | pozice v csv souboru: 48 | vyložené archy: 39 | vyhozené archy: 2
+22.11.19 - 07:29:16 # 2 - Tisk
+22.11.19 - 07:29:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:17 # naložené archy: 48 | pozice v csv souboru: 49 | vyložené archy: 40 | vyhozené archy: 2
+22.11.19 - 07:29:17 # 2 - Tisk
+22.11.19 - 07:29:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:17 # naložené archy: 49 | pozice v csv souboru: 50 | vyložené archy: 41 | vyhozené archy: 2
+22.11.19 - 07:29:17 # 2 - Tisk
+22.11.19 - 07:29:18 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:18 # naložené archy: 50 | pozice v csv souboru: 51 | vyložené archy: 42 | vyhozené archy: 2
+22.11.19 - 07:29:18 # 2 - Tisk
+22.11.19 - 07:29:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:19 # naložené archy: 51 | pozice v csv souboru: 52 | vyložené archy: 43 | vyhozené archy: 2
+22.11.19 - 07:29:19 # 2 - Tisk
+22.11.19 - 07:29:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:19 # naložené archy: 52 | pozice v csv souboru: 53 | vyložené archy: 44 | vyhozené archy: 2
+22.11.19 - 07:29:19 # 2 - Tisk
+22.11.19 - 07:29:20 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:20 # naložené archy: 53 | pozice v csv souboru: 54 | vyložené archy: 45 | vyhozené archy: 2
+22.11.19 - 07:29:20 # 2 - Tisk
+22.11.19 - 07:29:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:21 # naložené archy: 54 | pozice v csv souboru: 55 | vyložené archy: 46 | vyhozené archy: 2
+22.11.19 - 07:29:21 # 2 - Tisk
+22.11.19 - 07:29:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:21 # naložené archy: 55 | pozice v csv souboru: 56 | vyložené archy: 47 | vyhozené archy: 2
+22.11.19 - 07:29:21 # 2 - Tisk
+22.11.19 - 07:29:22 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:22 # naložené archy: 56 | pozice v csv souboru: 57 | vyložené archy: 48 | vyhozené archy: 2
+22.11.19 - 07:29:22 # 2 - Tisk
+22.11.19 - 07:29:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:23 # naložené archy: 57 | pozice v csv souboru: 58 | vyložené archy: 49 | vyhozené archy: 2
+22.11.19 - 07:29:23 # 2 - Tisk
+22.11.19 - 07:29:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:23 # naložené archy: 58 | pozice v csv souboru: 59 | vyložené archy: 50 | vyhozené archy: 3
+22.11.19 - 07:29:23 # 2 - Tisk
+22.11.19 - 07:29:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:24 # naložené archy: 59 | pozice v csv souboru: 60 | vyložené archy: 50 | vyhozené archy: 3
+22.11.19 - 07:29:24 # 2 - Tisk
+22.11.19 - 07:29:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:25 # naložené archy: 60 | pozice v csv souboru: 61 | vyložené archy: 51 | vyhozené archy: 3
+22.11.19 - 07:29:25 # 2 - Tisk
+22.11.19 - 07:29:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:25 # naložené archy: 61 | pozice v csv souboru: 62 | vyložené archy: 52 | vyhozené archy: 3
+22.11.19 - 07:29:25 # 2 - Tisk
+22.11.19 - 07:29:26 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:26 # naložené archy: 62 | pozice v csv souboru: 63 | vyložené archy: 53 | vyhozené archy: 3
+22.11.19 - 07:29:26 # 2 - Tisk
+22.11.19 - 07:29:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:27 # naložené archy: 63 | pozice v csv souboru: 64 | vyložené archy: 54 | vyhozené archy: 3
+22.11.19 - 07:29:27 # 2 - Tisk
+22.11.19 - 07:29:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:27 # naložené archy: 64 | pozice v csv souboru: 65 | vyložené archy: 55 | vyhozené archy: 3
+22.11.19 - 07:29:27 # 2 - Tisk
+22.11.19 - 07:29:28 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:28 # naložené archy: 65 | pozice v csv souboru: 66 | vyložené archy: 56 | vyhozené archy: 3
+22.11.19 - 07:29:28 # 2 - Tisk
+22.11.19 - 07:29:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:29 # naložené archy: 66 | pozice v csv souboru: 67 | vyložené archy: 57 | vyhozené archy: 3
+22.11.19 - 07:29:29 # 2 - Tisk
+22.11.19 - 07:29:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:29 # naložené archy: 67 | pozice v csv souboru: 68 | vyložené archy: 58 | vyhozené archy: 3
+22.11.19 - 07:29:29 # 2 - Tisk
+22.11.19 - 07:29:30 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:30 # naložené archy: 68 | pozice v csv souboru: 69 | vyložené archy: 59 | vyhozené archy: 3
+22.11.19 - 07:29:30 # 2 - Tisk
+22.11.19 - 07:29:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:31 # naložené archy: 69 | pozice v csv souboru: 70 | vyložené archy: 60 | vyhozené archy: 3
+22.11.19 - 07:29:31 # 2 - Tisk
+22.11.19 - 07:29:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:31 # naložené archy: 70 | pozice v csv souboru: 71 | vyložené archy: 61 | vyhozené archy: 3
+22.11.19 - 07:29:31 # 2 - Tisk
+22.11.19 - 07:29:32 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:32 # naložené archy: 71 | pozice v csv souboru: 72 | vyložené archy: 62 | vyhozené archy: 3
+22.11.19 - 07:29:32 # 2 - Tisk
+22.11.19 - 07:29:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:33 # naložené archy: 72 | pozice v csv souboru: 73 | vyložené archy: 63 | vyhozené archy: 3
+22.11.19 - 07:29:33 # 2 - Tisk
+22.11.19 - 07:29:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:33 # naložené archy: 73 | pozice v csv souboru: 74 | vyložené archy: 64 | vyhozené archy: 3
+22.11.19 - 07:29:33 # 2 - Tisk
+22.11.19 - 07:29:34 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:34 # naložené archy: 74 | pozice v csv souboru: 75 | vyložené archy: 65 | vyhozené archy: 3
+22.11.19 - 07:29:34 # 2 - Tisk
+22.11.19 - 07:29:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:35 # naložené archy: 75 | pozice v csv souboru: 76 | vyložené archy: 66 | vyhozené archy: 3
+22.11.19 - 07:29:35 # 2 - Tisk
+22.11.19 - 07:29:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:35 # naložené archy: 76 | pozice v csv souboru: 77 | vyložené archy: 67 | vyhozené archy: 3
+22.11.19 - 07:29:35 # 2 - Tisk
+22.11.19 - 07:29:36 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:36 # naložené archy: 77 | pozice v csv souboru: 78 | vyložené archy: 68 | vyhozené archy: 3
+22.11.19 - 07:29:36 # 2 - Tisk
+22.11.19 - 07:29:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:37 # naložené archy: 78 | pozice v csv souboru: 79 | vyložené archy: 69 | vyhozené archy: 3
+22.11.19 - 07:29:37 # 2 - Tisk
+22.11.19 - 07:29:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:37 # naložené archy: 79 | pozice v csv souboru: 80 | vyložené archy: 70 | vyhozené archy: 3
+22.11.19 - 07:29:37 # 2 - Tisk
+22.11.19 - 07:29:38 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:38 # naložené archy: 80 | pozice v csv souboru: 81 | vyložené archy: 71 | vyhozené archy: 3
+22.11.19 - 07:29:38 # 2 - Tisk
+22.11.19 - 07:29:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:39 # naložené archy: 81 | pozice v csv souboru: 82 | vyložené archy: 72 | vyhozené archy: 3
+22.11.19 - 07:29:39 # 2 - Tisk
+22.11.19 - 07:29:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:39 # naložené archy: 82 | pozice v csv souboru: 83 | vyložené archy: 73 | vyhozené archy: 4
+22.11.19 - 07:29:39 # 2 - Tisk
+22.11.19 - 07:29:40 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:40 # naložené archy: 83 | pozice v csv souboru: 84 | vyložené archy: 73 | vyhozené archy: 4
+22.11.19 - 07:29:40 # 2 - Tisk
+22.11.19 - 07:29:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:41 # naložené archy: 84 | pozice v csv souboru: 85 | vyložené archy: 74 | vyhozené archy: 4
+22.11.19 - 07:29:41 # 2 - Tisk
+22.11.19 - 07:29:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:41 # naložené archy: 85 | pozice v csv souboru: 86 | vyložené archy: 75 | vyhozené archy: 4
+22.11.19 - 07:29:41 # 2 - Tisk
+22.11.19 - 07:29:42 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:42 # naložené archy: 86 | pozice v csv souboru: 87 | vyložené archy: 76 | vyhozené archy: 4
+22.11.19 - 07:29:42 # 2 - Tisk
+22.11.19 - 07:29:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:43 # naložené archy: 87 | pozice v csv souboru: 88 | vyložené archy: 77 | vyhozené archy: 4
+22.11.19 - 07:29:43 # 2 - Tisk
+22.11.19 - 07:29:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:43 # naložené archy: 88 | pozice v csv souboru: 89 | vyložené archy: 78 | vyhozené archy: 4
+22.11.19 - 07:29:43 # 2 - Tisk
+22.11.19 - 07:29:44 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:44 # naložené archy: 89 | pozice v csv souboru: 90 | vyložené archy: 79 | vyhozené archy: 4
+22.11.19 - 07:29:44 # 2 - Tisk
+22.11.19 - 07:29:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:45 # naložené archy: 90 | pozice v csv souboru: 91 | vyložené archy: 80 | vyhozené archy: 4
+22.11.19 - 07:29:45 # 2 - Tisk
+22.11.19 - 07:29:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:45 # naložené archy: 91 | pozice v csv souboru: 92 | vyložené archy: 81 | vyhozené archy: 4
+22.11.19 - 07:29:45 # 2 - Tisk
+22.11.19 - 07:29:46 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:46 # naložené archy: 92 | pozice v csv souboru: 93 | vyložené archy: 82 | vyhozené archy: 5
+22.11.19 - 07:29:46 # 2 - Tisk
+22.11.19 - 07:29:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:47 # naložené archy: 93 | pozice v csv souboru: 94 | vyložené archy: 82 | vyhozené archy: 6
+22.11.19 - 07:29:47 # 2 - Tisk
+22.11.19 - 07:29:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:47 # naložené archy: 94 | pozice v csv souboru: 95 | vyložené archy: 82 | vyhozené archy: 6
+22.11.19 - 07:29:47 # 2 - Tisk
+22.11.19 - 07:29:48 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:48 # naložené archy: 95 | pozice v csv souboru: 96 | vyložené archy: 83 | vyhozené archy: 6
+22.11.19 - 07:29:48 # 2 - Tisk
+22.11.19 - 07:29:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:49 # naložené archy: 96 | pozice v csv souboru: 97 | vyložené archy: 84 | vyhozené archy: 7
+22.11.19 - 07:29:49 # 2 - Tisk
+22.11.19 - 07:29:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:49 # naložené archy: 97 | pozice v csv souboru: 98 | vyložené archy: 84 | vyhozené archy: 7
+22.11.19 - 07:29:49 # 2 - Tisk
+22.11.19 - 07:29:50 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:50 # naložené archy: 98 | pozice v csv souboru: 99 | vyložené archy: 85 | vyhozené archy: 7
+22.11.19 - 07:29:50 # 2 - Tisk
+22.11.19 - 07:29:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:51 # naložené archy: 99 | pozice v csv souboru: 100 | vyložené archy: 86 | vyhozené archy: 7
+22.11.19 - 07:29:51 # 2 - Tisk
+22.11.19 - 07:29:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:51 # naložené archy: 100 | pozice v csv souboru: 101 | vyložené archy: 87 | vyhozené archy: 7
+22.11.19 - 07:29:51 # 2 - Tisk
+22.11.19 - 07:29:52 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:52 # naložené archy: 101 | pozice v csv souboru: 102 | vyložené archy: 88 | vyhozené archy: 7
+22.11.19 - 07:29:52 # 2 - Tisk
+22.11.19 - 07:29:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:53 # naložené archy: 102 | pozice v csv souboru: 103 | vyložené archy: 89 | vyhozené archy: 7
+22.11.19 - 07:29:53 # 2 - Tisk
+22.11.19 - 07:29:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:53 # naložené archy: 103 | pozice v csv souboru: 104 | vyložené archy: 90 | vyhozené archy: 7
+22.11.19 - 07:29:53 # 2 - Tisk
+22.11.19 - 07:29:54 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:54 # naložené archy: 104 | pozice v csv souboru: 105 | vyložené archy: 91 | vyhozené archy: 8
+22.11.19 - 07:29:54 # 2 - Tisk
+22.11.19 - 07:29:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:55 # naložené archy: 105 | pozice v csv souboru: 106 | vyložené archy: 91 | vyhozené archy: 8
+22.11.19 - 07:29:55 # 2 - Tisk
+22.11.19 - 07:29:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:55 # naložené archy: 106 | pozice v csv souboru: 107 | vyložené archy: 92 | vyhozené archy: 8
+22.11.19 - 07:29:55 # 2 - Tisk
+22.11.19 - 07:29:56 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:56 # naložené archy: 107 | pozice v csv souboru: 108 | vyložené archy: 93 | vyhozené archy: 8
+22.11.19 - 07:29:56 # 2 - Tisk
+22.11.19 - 07:29:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:57 # naložené archy: 108 | pozice v csv souboru: 109 | vyložené archy: 94 | vyhozené archy: 8
+22.11.19 - 07:29:57 # 2 - Tisk
+22.11.19 - 07:29:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:57 # naložené archy: 109 | pozice v csv souboru: 110 | vyložené archy: 95 | vyhozené archy: 8
+22.11.19 - 07:29:57 # 2 - Tisk
+22.11.19 - 07:29:58 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:58 # naložené archy: 110 | pozice v csv souboru: 111 | vyložené archy: 96 | vyhozené archy: 8
+22.11.19 - 07:29:58 # 2 - Tisk
+22.11.19 - 07:29:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:59 # naložené archy: 111 | pozice v csv souboru: 112 | vyložené archy: 97 | vyhozené archy: 8
+22.11.19 - 07:29:59 # 2 - Tisk
+22.11.19 - 07:29:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:29:59 # naložené archy: 112 | pozice v csv souboru: 113 | vyložené archy: 98 | vyhozené archy: 8
+22.11.19 - 07:29:59 # 2 - Tisk
+22.11.19 - 07:30:00 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:00 # naložené archy: 113 | pozice v csv souboru: 114 | vyložené archy: 99 | vyhozené archy: 8
+22.11.19 - 07:30:00 # 2 - Tisk
+22.11.19 - 07:30:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:01 # naložené archy: 114 | pozice v csv souboru: 115 | vyložené archy: 100 | vyhozené archy: 8
+22.11.19 - 07:30:01 # 2 - Tisk
+22.11.19 - 07:30:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:01 # naložené archy: 115 | pozice v csv souboru: 116 | vyložené archy: 101 | vyhozené archy: 8
+22.11.19 - 07:30:01 # 2 - Tisk
+22.11.19 - 07:30:02 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:02 # naložené archy: 116 | pozice v csv souboru: 117 | vyložené archy: 102 | vyhozené archy: 8
+22.11.19 - 07:30:02 # 2 - Tisk
+22.11.19 - 07:30:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:03 # naložené archy: 117 | pozice v csv souboru: 118 | vyložené archy: 103 | vyhozené archy: 8
+22.11.19 - 07:30:03 # 2 - Tisk
+22.11.19 - 07:30:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:03 # naložené archy: 118 | pozice v csv souboru: 119 | vyložené archy: 104 | vyhozené archy: 8
+22.11.19 - 07:30:03 # 2 - Tisk
+22.11.19 - 07:30:04 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:04 # naložené archy: 119 | pozice v csv souboru: 120 | vyložené archy: 105 | vyhozené archy: 8
+22.11.19 - 07:30:04 # 2 - Tisk
+22.11.19 - 07:30:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:05 # naložené archy: 120 | pozice v csv souboru: 121 | vyložené archy: 106 | vyhozené archy: 8
+22.11.19 - 07:30:05 # 2 - Tisk
+22.11.19 - 07:30:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:05 # naložené archy: 121 | pozice v csv souboru: 122 | vyložené archy: 107 | vyhozené archy: 8
+22.11.19 - 07:30:05 # 2 - Tisk
+22.11.19 - 07:30:06 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:06 # naložené archy: 122 | pozice v csv souboru: 123 | vyložené archy: 108 | vyhozené archy: 8
+22.11.19 - 07:30:06 # 2 - Tisk
+22.11.19 - 07:30:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:07 # naložené archy: 123 | pozice v csv souboru: 124 | vyložené archy: 109 | vyhozené archy: 9
+22.11.19 - 07:30:07 # 2 - Tisk
+22.11.19 - 07:30:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:07 # naložené archy: 124 | pozice v csv souboru: 125 | vyložené archy: 109 | vyhozené archy: 9
+22.11.19 - 07:30:07 # 2 - Tisk
+22.11.19 - 07:30:08 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:08 # naložené archy: 125 | pozice v csv souboru: 126 | vyložené archy: 110 | vyhozené archy: 9
+22.11.19 - 07:30:08 # 2 - Tisk
+22.11.19 - 07:30:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:09 # naložené archy: 126 | pozice v csv souboru: 127 | vyložené archy: 111 | vyhozené archy: 9
+22.11.19 - 07:30:09 # 2 - Tisk
+22.11.19 - 07:30:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:09 # naložené archy: 127 | pozice v csv souboru: 128 | vyložené archy: 112 | vyhozené archy: 9
+22.11.19 - 07:30:09 # 2 - Tisk
+22.11.19 - 07:30:10 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:10 # naložené archy: 128 | pozice v csv souboru: 129 | vyložené archy: 113 | vyhozené archy: 9
+22.11.19 - 07:30:10 # 2 - Tisk
+22.11.19 - 07:30:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:11 # naložené archy: 129 | pozice v csv souboru: 130 | vyložené archy: 114 | vyhozené archy: 10
+22.11.19 - 07:30:11 # 2 - Tisk
+22.11.19 - 07:30:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:11 # naložené archy: 130 | pozice v csv souboru: 131 | vyložené archy: 114 | vyhozené archy: 10
+22.11.19 - 07:30:11 # 2 - Tisk
+22.11.19 - 07:30:12 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:12 # naložené archy: 131 | pozice v csv souboru: 132 | vyložené archy: 115 | vyhozené archy: 10
+22.11.19 - 07:30:12 # 2 - Tisk
+22.11.19 - 07:30:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:13 # naložené archy: 132 | pozice v csv souboru: 133 | vyložené archy: 116 | vyhozené archy: 10
+22.11.19 - 07:30:13 # 2 - Tisk
+22.11.19 - 07:30:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:13 # naložené archy: 133 | pozice v csv souboru: 134 | vyložené archy: 117 | vyhozené archy: 10
+22.11.19 - 07:30:13 # 2 - Tisk
+22.11.19 - 07:30:14 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:14 # naložené archy: 134 | pozice v csv souboru: 135 | vyložené archy: 118 | vyhozené archy: 10
+22.11.19 - 07:30:14 # 2 - Tisk
+22.11.19 - 07:30:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:15 # naložené archy: 135 | pozice v csv souboru: 136 | vyložené archy: 119 | vyhozené archy: 10
+22.11.19 - 07:30:15 # 2 - Tisk
+22.11.19 - 07:30:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:15 # naložené archy: 136 | pozice v csv souboru: 137 | vyložené archy: 120 | vyhozené archy: 10
+22.11.19 - 07:30:15 # 2 - Tisk
+22.11.19 - 07:30:16 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:16 # naložené archy: 137 | pozice v csv souboru: 138 | vyložené archy: 121 | vyhozené archy: 10
+22.11.19 - 07:30:16 # 2 - Tisk
+22.11.19 - 07:30:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:17 # naložené archy: 138 | pozice v csv souboru: 139 | vyložené archy: 122 | vyhozené archy: 10
+22.11.19 - 07:30:17 # 2 - Tisk
+22.11.19 - 07:30:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:17 # naložené archy: 139 | pozice v csv souboru: 140 | vyložené archy: 123 | vyhozené archy: 10
+22.11.19 - 07:30:17 # 2 - Tisk
+22.11.19 - 07:30:18 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:18 # naložené archy: 140 | pozice v csv souboru: 141 | vyložené archy: 124 | vyhozené archy: 10
+22.11.19 - 07:30:18 # 2 - Tisk
+22.11.19 - 07:30:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:19 # naložené archy: 141 | pozice v csv souboru: 142 | vyložené archy: 125 | vyhozené archy: 10
+22.11.19 - 07:30:19 # 2 - Tisk
+22.11.19 - 07:30:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:19 # naložené archy: 142 | pozice v csv souboru: 143 | vyložené archy: 126 | vyhozené archy: 10
+22.11.19 - 07:30:19 # 2 - Tisk
+22.11.19 - 07:30:20 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:20 # naložené archy: 143 | pozice v csv souboru: 144 | vyložené archy: 127 | vyhozené archy: 10
+22.11.19 - 07:30:20 # 2 - Tisk
+22.11.19 - 07:30:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:21 # naložené archy: 144 | pozice v csv souboru: 145 | vyložené archy: 128 | vyhozené archy: 10
+22.11.19 - 07:30:21 # 2 - Tisk
+22.11.19 - 07:30:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:21 # naložené archy: 145 | pozice v csv souboru: 146 | vyložené archy: 129 | vyhozené archy: 10
+22.11.19 - 07:30:21 # 2 - Tisk
+22.11.19 - 07:30:22 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:22 # naložené archy: 146 | pozice v csv souboru: 147 | vyložené archy: 130 | vyhozené archy: 11
+22.11.19 - 07:30:22 # 2 - Tisk
+22.11.19 - 07:30:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:23 # naložené archy: 147 | pozice v csv souboru: 148 | vyložené archy: 130 | vyhozené archy: 11
+22.11.19 - 07:30:23 # 2 - Tisk
+22.11.19 - 07:30:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:23 # naložené archy: 148 | pozice v csv souboru: 149 | vyložené archy: 131 | vyhozené archy: 11
+22.11.19 - 07:30:23 # 2 - Tisk
+22.11.19 - 07:30:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:24 # naložené archy: 149 | pozice v csv souboru: 150 | vyložené archy: 132 | vyhozené archy: 11
+22.11.19 - 07:30:24 # 2 - Tisk
+22.11.19 - 07:30:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:25 # naložené archy: 150 | pozice v csv souboru: 151 | vyložené archy: 133 | vyhozené archy: 11
+22.11.19 - 07:30:25 # 2 - Tisk
+22.11.19 - 07:30:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:25 # naložené archy: 151 | pozice v csv souboru: 152 | vyložené archy: 134 | vyhozené archy: 11
+22.11.19 - 07:30:25 # 2 - Tisk
+22.11.19 - 07:30:26 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:26 # naložené archy: 152 | pozice v csv souboru: 153 | vyložené archy: 135 | vyhozené archy: 11
+22.11.19 - 07:30:26 # 2 - Tisk
+22.11.19 - 07:30:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:27 # naložené archy: 153 | pozice v csv souboru: 154 | vyložené archy: 136 | vyhozené archy: 12
+22.11.19 - 07:30:27 # 2 - Tisk
+22.11.19 - 07:30:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:27 # naložené archy: 154 | pozice v csv souboru: 155 | vyložené archy: 136 | vyhozené archy: 12
+22.11.19 - 07:30:27 # 2 - Tisk
+22.11.19 - 07:30:28 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:28 # naložené archy: 155 | pozice v csv souboru: 156 | vyložené archy: 137 | vyhozené archy: 12
+22.11.19 - 07:30:28 # 2 - Tisk
+22.11.19 - 07:30:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:29 # naložené archy: 156 | pozice v csv souboru: 157 | vyložené archy: 138 | vyhozené archy: 12
+22.11.19 - 07:30:29 # 2 - Tisk
+22.11.19 - 07:30:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:29 # naložené archy: 157 | pozice v csv souboru: 158 | vyložené archy: 139 | vyhozené archy: 12
+22.11.19 - 07:30:29 # 2 - Tisk
+22.11.19 - 07:30:30 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:30 # naložené archy: 158 | pozice v csv souboru: 159 | vyložené archy: 140 | vyhozené archy: 12
+22.11.19 - 07:30:30 # 2 - Tisk
+22.11.19 - 07:30:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:31 # naložené archy: 159 | pozice v csv souboru: 160 | vyložené archy: 141 | vyhozené archy: 12
+22.11.19 - 07:30:31 # 2 - Tisk
+22.11.19 - 07:30:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:31 # naložené archy: 160 | pozice v csv souboru: 161 | vyložené archy: 142 | vyhozené archy: 12
+22.11.19 - 07:30:31 # 2 - Tisk
+22.11.19 - 07:30:32 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:32 # naložené archy: 161 | pozice v csv souboru: 162 | vyložené archy: 143 | vyhozené archy: 12
+22.11.19 - 07:30:32 # 2 - Tisk
+22.11.19 - 07:30:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:33 # naložené archy: 162 | pozice v csv souboru: 163 | vyložené archy: 144 | vyhozené archy: 12
+22.11.19 - 07:30:33 # 2 - Tisk
+22.11.19 - 07:30:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:33 # naložené archy: 163 | pozice v csv souboru: 164 | vyložené archy: 145 | vyhozené archy: 12
+22.11.19 - 07:30:33 # 2 - Tisk
+22.11.19 - 07:30:34 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:34 # naložené archy: 164 | pozice v csv souboru: 165 | vyložené archy: 146 | vyhozené archy: 12
+22.11.19 - 07:30:34 # 2 - Tisk
+22.11.19 - 07:30:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:35 # naložené archy: 165 | pozice v csv souboru: 166 | vyložené archy: 147 | vyhozené archy: 13
+22.11.19 - 07:30:35 # 2 - Tisk
+22.11.19 - 07:30:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:35 # naložené archy: 166 | pozice v csv souboru: 167 | vyložené archy: 147 | vyhozené archy: 13
+22.11.19 - 07:30:35 # 2 - Tisk
+22.11.19 - 07:30:36 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:36 # naložené archy: 167 | pozice v csv souboru: 168 | vyložené archy: 148 | vyhozené archy: 13
+22.11.19 - 07:30:36 # 2 - Tisk
+22.11.19 - 07:30:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:37 # naložené archy: 168 | pozice v csv souboru: 169 | vyložené archy: 149 | vyhozené archy: 13
+22.11.19 - 07:30:37 # 2 - Tisk
+22.11.19 - 07:30:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:37 # naložené archy: 169 | pozice v csv souboru: 170 | vyložené archy: 150 | vyhozené archy: 13
+22.11.19 - 07:30:37 # 2 - Tisk
+22.11.19 - 07:30:38 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:38 # naložené archy: 170 | pozice v csv souboru: 171 | vyložené archy: 151 | vyhozené archy: 13
+22.11.19 - 07:30:38 # 2 - Tisk
+22.11.19 - 07:30:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:39 # naložené archy: 171 | pozice v csv souboru: 172 | vyložené archy: 152 | vyhozené archy: 13
+22.11.19 - 07:30:39 # 2 - Tisk
+22.11.19 - 07:30:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:39 # naložené archy: 172 | pozice v csv souboru: 173 | vyložené archy: 153 | vyhozené archy: 13
+22.11.19 - 07:30:39 # 2 - Tisk
+22.11.19 - 07:30:40 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:40 # naložené archy: 173 | pozice v csv souboru: 174 | vyložené archy: 154 | vyhozené archy: 13
+22.11.19 - 07:30:40 # 2 - Tisk
+22.11.19 - 07:30:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:41 # naložené archy: 174 | pozice v csv souboru: 175 | vyložené archy: 155 | vyhozené archy: 13
+22.11.19 - 07:30:41 # 2 - Tisk
+22.11.19 - 07:30:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:41 # naložené archy: 175 | pozice v csv souboru: 176 | vyložené archy: 156 | vyhozené archy: 13
+22.11.19 - 07:30:41 # 2 - Tisk
+22.11.19 - 07:30:42 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:42 # naložené archy: 176 | pozice v csv souboru: 177 | vyložené archy: 157 | vyhozené archy: 13
+22.11.19 - 07:30:42 # 2 - Tisk
+22.11.19 - 07:30:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:43 # naložené archy: 177 | pozice v csv souboru: 178 | vyložené archy: 158 | vyhozené archy: 13
+22.11.19 - 07:30:43 # 2 - Tisk
+22.11.19 - 07:30:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:43 # naložené archy: 178 | pozice v csv souboru: 179 | vyložené archy: 159 | vyhozené archy: 13
+22.11.19 - 07:30:43 # 2 - Tisk
+22.11.19 - 07:30:44 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:44 # naložené archy: 179 | pozice v csv souboru: 180 | vyložené archy: 160 | vyhozené archy: 13
+22.11.19 - 07:30:44 # 2 - Tisk
+22.11.19 - 07:30:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:45 # naložené archy: 180 | pozice v csv souboru: 181 | vyložené archy: 161 | vyhozené archy: 13
+22.11.19 - 07:30:45 # 2 - Tisk
+22.11.19 - 07:30:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:45 # naložené archy: 181 | pozice v csv souboru: 182 | vyložené archy: 162 | vyhozené archy: 13
+22.11.19 - 07:30:45 # 2 - Tisk
+22.11.19 - 07:30:46 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:46 # naložené archy: 182 | pozice v csv souboru: 183 | vyložené archy: 163 | vyhozené archy: 13
+22.11.19 - 07:30:46 # 2 - Tisk
+22.11.19 - 07:30:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:47 # naložené archy: 183 | pozice v csv souboru: 184 | vyložené archy: 164 | vyhozené archy: 13
+22.11.19 - 07:30:47 # 2 - Tisk
+22.11.19 - 07:30:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:47 # naložené archy: 184 | pozice v csv souboru: 185 | vyložené archy: 165 | vyhozené archy: 13
+22.11.19 - 07:30:47 # 2 - Tisk
+22.11.19 - 07:30:48 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:48 # naložené archy: 185 | pozice v csv souboru: 186 | vyložené archy: 166 | vyhozené archy: 13
+22.11.19 - 07:30:48 # 2 - Tisk
+22.11.19 - 07:30:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:49 # naložené archy: 186 | pozice v csv souboru: 187 | vyložené archy: 167 | vyhozené archy: 13
+22.11.19 - 07:30:49 # 2 - Tisk
+22.11.19 - 07:30:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:49 # naložené archy: 187 | pozice v csv souboru: 188 | vyložené archy: 168 | vyhozené archy: 14
+22.11.19 - 07:30:49 # 2 - Tisk
+22.11.19 - 07:30:50 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:50 # naložené archy: 188 | pozice v csv souboru: 189 | vyložené archy: 168 | vyhozené archy: 14
+22.11.19 - 07:30:50 # 2 - Tisk
+22.11.19 - 07:30:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:51 # naložené archy: 189 | pozice v csv souboru: 190 | vyložené archy: 169 | vyhozené archy: 14
+22.11.19 - 07:30:51 # 2 - Tisk
+22.11.19 - 07:30:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:51 # naložené archy: 190 | pozice v csv souboru: 191 | vyložené archy: 170 | vyhozené archy: 14
+22.11.19 - 07:30:51 # 2 - Tisk
+22.11.19 - 07:30:52 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:52 # naložené archy: 191 | pozice v csv souboru: 192 | vyložené archy: 171 | vyhozené archy: 14
+22.11.19 - 07:30:52 # 2 - Tisk
+22.11.19 - 07:30:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:53 # naložené archy: 192 | pozice v csv souboru: 193 | vyložené archy: 172 | vyhozené archy: 14
+22.11.19 - 07:30:53 # 2 - Tisk
+22.11.19 - 07:30:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:53 # naložené archy: 193 | pozice v csv souboru: 194 | vyložené archy: 173 | vyhozené archy: 14
+22.11.19 - 07:30:53 # 2 - Tisk
+22.11.19 - 07:30:54 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:54 # naložené archy: 194 | pozice v csv souboru: 195 | vyložené archy: 174 | vyhozené archy: 14
+22.11.19 - 07:30:54 # 2 - Tisk
+22.11.19 - 07:30:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:55 # naložené archy: 195 | pozice v csv souboru: 196 | vyložené archy: 175 | vyhozené archy: 15
+22.11.19 - 07:30:55 # 2 - Tisk
+22.11.19 - 07:30:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:55 # naložené archy: 196 | pozice v csv souboru: 197 | vyložené archy: 175 | vyhozené archy: 15
+22.11.19 - 07:30:55 # 2 - Tisk
+22.11.19 - 07:30:56 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:56 # naložené archy: 197 | pozice v csv souboru: 198 | vyložené archy: 176 | vyhozené archy: 15
+22.11.19 - 07:30:56 # 2 - Tisk
+22.11.19 - 07:30:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:57 # naložené archy: 198 | pozice v csv souboru: 199 | vyložené archy: 177 | vyhozené archy: 15
+22.11.19 - 07:30:57 # 2 - Tisk
+22.11.19 - 07:30:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:57 # naložené archy: 199 | pozice v csv souboru: 200 | vyložené archy: 178 | vyhozené archy: 15
+22.11.19 - 07:30:57 # 2 - Tisk
+22.11.19 - 07:30:58 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:58 # naložené archy: 200 | pozice v csv souboru: 201 | vyložené archy: 179 | vyhozené archy: 15
+22.11.19 - 07:30:58 # 2 - Tisk
+22.11.19 - 07:30:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:59 # naložené archy: 201 | pozice v csv souboru: 202 | vyložené archy: 180 | vyhozené archy: 15
+22.11.19 - 07:30:59 # 2 - Tisk
+22.11.19 - 07:30:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:30:59 # naložené archy: 202 | pozice v csv souboru: 203 | vyložené archy: 181 | vyhozené archy: 15
+22.11.19 - 07:30:59 # 2 - Tisk
+22.11.19 - 07:31:00 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:00 # naložené archy: 203 | pozice v csv souboru: 204 | vyložené archy: 182 | vyhozené archy: 15
+22.11.19 - 07:31:00 # 2 - Tisk
+22.11.19 - 07:31:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:01 # naložené archy: 204 | pozice v csv souboru: 205 | vyložené archy: 183 | vyhozené archy: 15
+22.11.19 - 07:31:01 # 2 - Tisk
+22.11.19 - 07:31:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:01 # naložené archy: 205 | pozice v csv souboru: 206 | vyložené archy: 184 | vyhozené archy: 15
+22.11.19 - 07:31:01 # 2 - Tisk
+22.11.19 - 07:31:02 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:02 # naložené archy: 206 | pozice v csv souboru: 207 | vyložené archy: 185 | vyhozené archy: 15
+22.11.19 - 07:31:02 # 2 - Tisk
+22.11.19 - 07:31:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:03 # naložené archy: 207 | pozice v csv souboru: 208 | vyložené archy: 186 | vyhozené archy: 15
+22.11.19 - 07:31:03 # 2 - Tisk
+22.11.19 - 07:31:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:03 # naložené archy: 208 | pozice v csv souboru: 209 | vyložené archy: 187 | vyhozené archy: 15
+22.11.19 - 07:31:03 # 2 - Tisk
+22.11.19 - 07:31:04 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:04 # naložené archy: 209 | pozice v csv souboru: 210 | vyložené archy: 188 | vyhozené archy: 15
+22.11.19 - 07:31:04 # 2 - Tisk
+22.11.19 - 07:31:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:05 # naložené archy: 210 | pozice v csv souboru: 211 | vyložené archy: 189 | vyhozené archy: 15
+22.11.19 - 07:31:05 # 2 - Tisk
+22.11.19 - 07:31:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:05 # naložené archy: 211 | pozice v csv souboru: 212 | vyložené archy: 190 | vyhozené archy: 15
+22.11.19 - 07:31:05 # 2 - Tisk
+22.11.19 - 07:31:06 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:06 # naložené archy: 212 | pozice v csv souboru: 213 | vyložené archy: 191 | vyhozené archy: 15
+22.11.19 - 07:31:06 # 2 - Tisk
+22.11.19 - 07:31:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:07 # naložené archy: 213 | pozice v csv souboru: 214 | vyložené archy: 192 | vyhozené archy: 15
+22.11.19 - 07:31:07 # 2 - Tisk
+22.11.19 - 07:31:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:07 # naložené archy: 214 | pozice v csv souboru: 215 | vyložené archy: 193 | vyhozené archy: 15
+22.11.19 - 07:31:07 # 2 - Tisk
+22.11.19 - 07:31:08 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:08 # naložené archy: 215 | pozice v csv souboru: 216 | vyložené archy: 194 | vyhozené archy: 16
+22.11.19 - 07:31:08 # 2 - Tisk
+22.11.19 - 07:31:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:09 # naložené archy: 216 | pozice v csv souboru: 217 | vyložené archy: 194 | vyhozené archy: 16
+22.11.19 - 07:31:09 # 2 - Tisk
+22.11.19 - 07:31:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:09 # naložené archy: 217 | pozice v csv souboru: 218 | vyložené archy: 195 | vyhozené archy: 16
+22.11.19 - 07:31:09 # 2 - Tisk
+22.11.19 - 07:31:10 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:10 # naložené archy: 218 | pozice v csv souboru: 219 | vyložené archy: 196 | vyhozené archy: 16
+22.11.19 - 07:31:10 # 2 - Tisk
+22.11.19 - 07:31:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:11 # naložené archy: 219 | pozice v csv souboru: 220 | vyložené archy: 197 | vyhozené archy: 16
+22.11.19 - 07:31:11 # 2 - Tisk
+22.11.19 - 07:31:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:11 # naložené archy: 220 | pozice v csv souboru: 221 | vyložené archy: 198 | vyhozené archy: 16
+22.11.19 - 07:31:11 # 2 - Tisk
+22.11.19 - 07:31:12 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:12 # naložené archy: 221 | pozice v csv souboru: 222 | vyložené archy: 199 | vyhozené archy: 16
+22.11.19 - 07:31:12 # 2 - Tisk
+22.11.19 - 07:31:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:13 # naložené archy: 222 | pozice v csv souboru: 223 | vyložené archy: 200 | vyhozené archy: 17
+22.11.19 - 07:31:13 # 2 - Tisk
+22.11.19 - 07:31:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:13 # naložené archy: 223 | pozice v csv souboru: 224 | vyložené archy: 200 | vyhozené archy: 17
+22.11.19 - 07:31:13 # 2 - Tisk
+22.11.19 - 07:31:14 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:14 # naložené archy: 224 | pozice v csv souboru: 225 | vyložené archy: 201 | vyhozené archy: 17
+22.11.19 - 07:31:14 # 2 - Tisk
+22.11.19 - 07:31:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:15 # naložené archy: 225 | pozice v csv souboru: 226 | vyložené archy: 202 | vyhozené archy: 17
+22.11.19 - 07:31:15 # 2 - Tisk
+22.11.19 - 07:31:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:15 # naložené archy: 226 | pozice v csv souboru: 227 | vyložené archy: 203 | vyhozené archy: 17
+22.11.19 - 07:31:15 # 2 - Tisk
+22.11.19 - 07:31:16 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:16 # naložené archy: 227 | pozice v csv souboru: 228 | vyložené archy: 204 | vyhozené archy: 17
+22.11.19 - 07:31:16 # 2 - Tisk
+22.11.19 - 07:31:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:17 # naložené archy: 228 | pozice v csv souboru: 229 | vyložené archy: 205 | vyhozené archy: 17
+22.11.19 - 07:31:17 # 2 - Tisk
+22.11.19 - 07:31:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:17 # naložené archy: 229 | pozice v csv souboru: 230 | vyložené archy: 206 | vyhozené archy: 17
+22.11.19 - 07:31:17 # 2 - Tisk
+22.11.19 - 07:31:18 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:18 # naložené archy: 230 | pozice v csv souboru: 231 | vyložené archy: 207 | vyhozené archy: 17
+22.11.19 - 07:31:18 # 2 - Tisk
+22.11.19 - 07:31:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:19 # naložené archy: 231 | pozice v csv souboru: 232 | vyložené archy: 208 | vyhozené archy: 17
+22.11.19 - 07:31:19 # 2 - Tisk
+22.11.19 - 07:31:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:19 # naložené archy: 232 | pozice v csv souboru: 233 | vyložené archy: 209 | vyhozené archy: 17
+22.11.19 - 07:31:19 # 2 - Tisk
+22.11.19 - 07:31:20 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:20 # naložené archy: 233 | pozice v csv souboru: 234 | vyložené archy: 210 | vyhozené archy: 17
+22.11.19 - 07:31:20 # 2 - Tisk
+22.11.19 - 07:31:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:21 # naložené archy: 234 | pozice v csv souboru: 235 | vyložené archy: 211 | vyhozené archy: 17
+22.11.19 - 07:31:21 # 2 - Tisk
+22.11.19 - 07:31:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:21 # naložené archy: 235 | pozice v csv souboru: 236 | vyložené archy: 212 | vyhozené archy: 18
+22.11.19 - 07:31:21 # 2 - Tisk
+22.11.19 - 07:31:22 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:22 # naložené archy: 236 | pozice v csv souboru: 237 | vyložené archy: 212 | vyhozené archy: 18
+22.11.19 - 07:31:22 # 2 - Tisk
+22.11.19 - 07:31:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:23 # naložené archy: 237 | pozice v csv souboru: 238 | vyložené archy: 213 | vyhozené archy: 18
+22.11.19 - 07:31:23 # 2 - Tisk
+22.11.19 - 07:31:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:23 # naložené archy: 238 | pozice v csv souboru: 239 | vyložené archy: 214 | vyhozené archy: 18
+22.11.19 - 07:31:23 # 2 - Tisk
+22.11.19 - 07:31:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:24 # naložené archy: 239 | pozice v csv souboru: 240 | vyložené archy: 215 | vyhozené archy: 18
+22.11.19 - 07:31:24 # 2 - Tisk
+22.11.19 - 07:31:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:25 # naložené archy: 240 | pozice v csv souboru: 241 | vyložené archy: 216 | vyhozené archy: 18
+22.11.19 - 07:31:25 # 2 - Tisk
+22.11.19 - 07:31:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:25 # naložené archy: 241 | pozice v csv souboru: 242 | vyložené archy: 217 | vyhozené archy: 18
+22.11.19 - 07:31:25 # 2 - Tisk
+22.11.19 - 07:31:26 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:26 # naložené archy: 242 | pozice v csv souboru: 243 | vyložené archy: 218 | vyhozené archy: 18
+22.11.19 - 07:31:26 # 2 - Tisk
+22.11.19 - 07:31:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:27 # naložené archy: 243 | pozice v csv souboru: 244 | vyložené archy: 219 | vyhozené archy: 18
+22.11.19 - 07:31:27 # 2 - Tisk
+22.11.19 - 07:31:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:27 # naložené archy: 244 | pozice v csv souboru: 245 | vyložené archy: 220 | vyhozené archy: 18
+22.11.19 - 07:31:27 # 2 - Tisk
+22.11.19 - 07:31:28 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:28 # naložené archy: 245 | pozice v csv souboru: 246 | vyložené archy: 221 | vyhozené archy: 18
+22.11.19 - 07:31:28 # 2 - Tisk
+22.11.19 - 07:31:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:29 # naložené archy: 246 | pozice v csv souboru: 247 | vyložené archy: 222 | vyhozené archy: 18
+22.11.19 - 07:31:29 # 2 - Tisk
+22.11.19 - 07:31:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:29 # naložené archy: 247 | pozice v csv souboru: 248 | vyložené archy: 223 | vyhozené archy: 18
+22.11.19 - 07:31:29 # 2 - Tisk
+22.11.19 - 07:31:30 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:30 # naložené archy: 248 | pozice v csv souboru: 249 | vyložené archy: 224 | vyhozené archy: 18
+22.11.19 - 07:31:30 # 2 - Tisk
+22.11.19 - 07:31:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:31 # naložené archy: 249 | pozice v csv souboru: 250 | vyložené archy: 225 | vyhozené archy: 18
+22.11.19 - 07:31:31 # 2 - Tisk
+22.11.19 - 07:31:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:31 # naložené archy: 250 | pozice v csv souboru: 251 | vyložené archy: 226 | vyhozené archy: 18
+22.11.19 - 07:31:31 # 2 - Tisk
+22.11.19 - 07:31:32 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:32 # naložené archy: 251 | pozice v csv souboru: 252 | vyložené archy: 227 | vyhozené archy: 18
+22.11.19 - 07:31:32 # 2 - Tisk
+22.11.19 - 07:31:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:33 # naložené archy: 252 | pozice v csv souboru: 253 | vyložené archy: 228 | vyhozené archy: 19
+22.11.19 - 07:31:33 # 2 - Tisk
+22.11.19 - 07:31:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:33 # naložené archy: 253 | pozice v csv souboru: 254 | vyložené archy: 228 | vyhozené archy: 19
+22.11.19 - 07:31:33 # 2 - Tisk
+22.11.19 - 07:31:34 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:34 # naložené archy: 254 | pozice v csv souboru: 255 | vyložené archy: 229 | vyhozené archy: 19
+22.11.19 - 07:31:34 # 2 - Tisk
+22.11.19 - 07:31:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:35 # naložené archy: 255 | pozice v csv souboru: 256 | vyložené archy: 230 | vyhozené archy: 19
+22.11.19 - 07:31:35 # 2 - Tisk
+22.11.19 - 07:31:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:35 # naložené archy: 256 | pozice v csv souboru: 257 | vyložené archy: 231 | vyhozené archy: 19
+22.11.19 - 07:31:35 # 2 - Tisk
+22.11.19 - 07:31:36 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:36 # naložené archy: 257 | pozice v csv souboru: 258 | vyložené archy: 232 | vyhozené archy: 20
+22.11.19 - 07:31:36 # 2 - Tisk
+22.11.19 - 07:31:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:37 # naložené archy: 258 | pozice v csv souboru: 259 | vyložené archy: 232 | vyhozené archy: 20
+22.11.19 - 07:31:37 # 2 - Tisk
+22.11.19 - 07:31:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:37 # naložené archy: 259 | pozice v csv souboru: 260 | vyložené archy: 233 | vyhozené archy: 20
+22.11.19 - 07:31:37 # 2 - Tisk
+22.11.19 - 07:31:38 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:38 # naložené archy: 260 | pozice v csv souboru: 261 | vyložené archy: 234 | vyhozené archy: 20
+22.11.19 - 07:31:38 # 2 - Tisk
+22.11.19 - 07:31:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:39 # naložené archy: 261 | pozice v csv souboru: 262 | vyložené archy: 235 | vyhozené archy: 20
+22.11.19 - 07:31:39 # 2 - Tisk
+22.11.19 - 07:31:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:39 # naložené archy: 262 | pozice v csv souboru: 263 | vyložené archy: 236 | vyhozené archy: 20
+22.11.19 - 07:31:39 # 2 - Tisk
+22.11.19 - 07:31:40 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:40 # naložené archy: 263 | pozice v csv souboru: 264 | vyložené archy: 237 | vyhozené archy: 20
+22.11.19 - 07:31:40 # 2 - Tisk
+22.11.19 - 07:31:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:41 # naložené archy: 264 | pozice v csv souboru: 265 | vyložené archy: 238 | vyhozené archy: 20
+22.11.19 - 07:31:41 # 2 - Tisk
+22.11.19 - 07:31:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:41 # naložené archy: 265 | pozice v csv souboru: 266 | vyložené archy: 239 | vyhozené archy: 20
+22.11.19 - 07:31:41 # 2 - Tisk
+22.11.19 - 07:31:42 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:42 # naložené archy: 266 | pozice v csv souboru: 267 | vyložené archy: 240 | vyhozené archy: 20
+22.11.19 - 07:31:42 # 2 - Tisk
+22.11.19 - 07:31:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:43 # naložené archy: 267 | pozice v csv souboru: 268 | vyložené archy: 241 | vyhozené archy: 20
+22.11.19 - 07:31:43 # 2 - Tisk
+22.11.19 - 07:31:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:43 # naložené archy: 268 | pozice v csv souboru: 269 | vyložené archy: 242 | vyhozené archy: 21
+22.11.19 - 07:31:43 # 2 - Tisk
+22.11.19 - 07:31:44 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:44 # naložené archy: 269 | pozice v csv souboru: 270 | vyložené archy: 242 | vyhozené archy: 21
+22.11.19 - 07:31:44 # 2 - Tisk
+22.11.19 - 07:31:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:45 # naložené archy: 270 | pozice v csv souboru: 271 | vyložené archy: 243 | vyhozené archy: 21
+22.11.19 - 07:31:45 # 2 - Tisk
+22.11.19 - 07:31:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:45 # naložené archy: 271 | pozice v csv souboru: 272 | vyložené archy: 244 | vyhozené archy: 21
+22.11.19 - 07:31:45 # 2 - Tisk
+22.11.19 - 07:31:46 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:46 # naložené archy: 272 | pozice v csv souboru: 273 | vyložené archy: 245 | vyhozené archy: 21
+22.11.19 - 07:31:46 # 2 - Tisk
+22.11.19 - 07:31:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:47 # naložené archy: 273 | pozice v csv souboru: 274 | vyložené archy: 246 | vyhozené archy: 21
+22.11.19 - 07:31:47 # 2 - Tisk
+22.11.19 - 07:31:47 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:47 # naložené archy: 274 | pozice v csv souboru: 275 | vyložené archy: 247 | vyhozené archy: 21
+22.11.19 - 07:31:47 # 2 - Tisk
+22.11.19 - 07:31:48 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:48 # naložené archy: 275 | pozice v csv souboru: 276 | vyložené archy: 248 | vyhozené archy: 21
+22.11.19 - 07:31:48 # 2 - Tisk
+22.11.19 - 07:31:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:49 # naložené archy: 276 | pozice v csv souboru: 277 | vyložené archy: 249 | vyhozené archy: 21
+22.11.19 - 07:31:49 # 2 - Tisk
+22.11.19 - 07:31:49 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:49 # naložené archy: 277 | pozice v csv souboru: 278 | vyložené archy: 250 | vyhozené archy: 21
+22.11.19 - 07:31:49 # 2 - Tisk
+22.11.19 - 07:31:50 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:50 # naložené archy: 278 | pozice v csv souboru: 279 | vyložené archy: 251 | vyhozené archy: 21
+22.11.19 - 07:31:50 # 2 - Tisk
+22.11.19 - 07:31:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:51 # naložené archy: 279 | pozice v csv souboru: 280 | vyložené archy: 252 | vyhozené archy: 21
+22.11.19 - 07:31:51 # 2 - Tisk
+22.11.19 - 07:31:51 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:51 # naložené archy: 280 | pozice v csv souboru: 281 | vyložené archy: 253 | vyhozené archy: 21
+22.11.19 - 07:31:51 # 2 - Tisk
+22.11.19 - 07:31:52 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:52 # naložené archy: 281 | pozice v csv souboru: 282 | vyložené archy: 254 | vyhozené archy: 21
+22.11.19 - 07:31:52 # 2 - Tisk
+22.11.19 - 07:31:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:53 # naložené archy: 282 | pozice v csv souboru: 283 | vyložené archy: 255 | vyhozené archy: 21
+22.11.19 - 07:31:53 # 2 - Tisk
+22.11.19 - 07:31:53 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:53 # naložené archy: 283 | pozice v csv souboru: 284 | vyložené archy: 256 | vyhozené archy: 21
+22.11.19 - 07:31:53 # 2 - Tisk
+22.11.19 - 07:31:54 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:54 # naložené archy: 284 | pozice v csv souboru: 285 | vyložené archy: 257 | vyhozené archy: 22
+22.11.19 - 07:31:54 # 2 - Tisk
+22.11.19 - 07:31:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:55 # naložené archy: 285 | pozice v csv souboru: 286 | vyložené archy: 257 | vyhozené archy: 22
+22.11.19 - 07:31:55 # 2 - Tisk
+22.11.19 - 07:31:55 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:55 # naložené archy: 286 | pozice v csv souboru: 287 | vyložené archy: 258 | vyhozené archy: 22
+22.11.19 - 07:31:55 # 2 - Tisk
+22.11.19 - 07:31:56 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:56 # naložené archy: 287 | pozice v csv souboru: 288 | vyložené archy: 259 | vyhozené archy: 22
+22.11.19 - 07:31:56 # 2 - Tisk
+22.11.19 - 07:31:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:57 # naložené archy: 288 | pozice v csv souboru: 289 | vyložené archy: 260 | vyhozené archy: 22
+22.11.19 - 07:31:57 # 2 - Tisk
+22.11.19 - 07:31:57 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:57 # naložené archy: 289 | pozice v csv souboru: 290 | vyložené archy: 261 | vyhozené archy: 23
+22.11.19 - 07:31:57 # 2 - Tisk
+22.11.19 - 07:31:58 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:58 # naložené archy: 290 | pozice v csv souboru: 291 | vyložené archy: 261 | vyhozené archy: 23
+22.11.19 - 07:31:58 # 2 - Tisk
+22.11.19 - 07:31:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:59 # naložené archy: 291 | pozice v csv souboru: 292 | vyložené archy: 262 | vyhozené archy: 23
+22.11.19 - 07:31:59 # 2 - Tisk
+22.11.19 - 07:31:59 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:31:59 # naložené archy: 292 | pozice v csv souboru: 293 | vyložené archy: 263 | vyhozené archy: 23
+22.11.19 - 07:31:59 # 2 - Tisk
+22.11.19 - 07:32:00 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:00 # naložené archy: 293 | pozice v csv souboru: 294 | vyložené archy: 264 | vyhozené archy: 23
+22.11.19 - 07:32:00 # 2 - Tisk
+22.11.19 - 07:32:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:01 # naložené archy: 294 | pozice v csv souboru: 295 | vyložené archy: 265 | vyhozené archy: 24
+22.11.19 - 07:32:01 # 2 - Tisk
+22.11.19 - 07:32:01 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:01 # naložené archy: 295 | pozice v csv souboru: 296 | vyložené archy: 265 | vyhozené archy: 24
+22.11.19 - 07:32:01 # 2 - Tisk
+22.11.19 - 07:32:02 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:02 # naložené archy: 296 | pozice v csv souboru: 297 | vyložené archy: 266 | vyhozené archy: 24
+22.11.19 - 07:32:02 # 2 - Tisk
+22.11.19 - 07:32:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:03 # naložené archy: 297 | pozice v csv souboru: 298 | vyložené archy: 267 | vyhozené archy: 24
+22.11.19 - 07:32:03 # 2 - Tisk
+22.11.19 - 07:32:03 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:03 # naložené archy: 298 | pozice v csv souboru: 299 | vyložené archy: 268 | vyhozené archy: 24
+22.11.19 - 07:32:03 # 2 - Tisk
+22.11.19 - 07:32:04 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:04 # naložené archy: 299 | pozice v csv souboru: 300 | vyložené archy: 269 | vyhozené archy: 24
+22.11.19 - 07:32:04 # 2 - Tisk
+22.11.19 - 07:32:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:05 # naložené archy: 300 | pozice v csv souboru: 301 | vyložené archy: 270 | vyhozené archy: 25
+22.11.19 - 07:32:05 # 2 - Tisk
+22.11.19 - 07:32:05 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:05 # naložené archy: 301 | pozice v csv souboru: 302 | vyložené archy: 270 | vyhozené archy: 25
+22.11.19 - 07:32:05 # 2 - Tisk
+22.11.19 - 07:32:06 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:06 # naložené archy: 302 | pozice v csv souboru: 303 | vyložené archy: 271 | vyhozené archy: 25
+22.11.19 - 07:32:06 # 2 - Tisk
+22.11.19 - 07:32:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:07 # naložené archy: 303 | pozice v csv souboru: 304 | vyložené archy: 272 | vyhozené archy: 25
+22.11.19 - 07:32:07 # 2 - Tisk
+22.11.19 - 07:32:07 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:07 # naložené archy: 304 | pozice v csv souboru: 305 | vyložené archy: 273 | vyhozené archy: 25
+22.11.19 - 07:32:07 # 2 - Tisk
+22.11.19 - 07:32:08 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:08 # naložené archy: 305 | pozice v csv souboru: 306 | vyložené archy: 274 | vyhozené archy: 25
+22.11.19 - 07:32:08 # 2 - Tisk
+22.11.19 - 07:32:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:09 # naložené archy: 306 | pozice v csv souboru: 307 | vyložené archy: 275 | vyhozené archy: 25
+22.11.19 - 07:32:09 # 2 - Tisk
+22.11.19 - 07:32:09 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:09 # naložené archy: 307 | pozice v csv souboru: 308 | vyložené archy: 276 | vyhozené archy: 25
+22.11.19 - 07:32:09 # 2 - Tisk
+22.11.19 - 07:32:10 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:10 # naložené archy: 308 | pozice v csv souboru: 309 | vyložené archy: 277 | vyhozené archy: 25
+22.11.19 - 07:32:10 # 2 - Tisk
+22.11.19 - 07:32:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:11 # naložené archy: 309 | pozice v csv souboru: 310 | vyložené archy: 278 | vyhozené archy: 25
+22.11.19 - 07:32:11 # 2 - Tisk
+22.11.19 - 07:32:11 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:11 # naložené archy: 310 | pozice v csv souboru: 311 | vyložené archy: 279 | vyhozené archy: 26
+22.11.19 - 07:32:11 # 2 - Tisk
+22.11.19 - 07:32:12 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:12 # naložené archy: 311 | pozice v csv souboru: 312 | vyložené archy: 279 | vyhozené archy: 26
+22.11.19 - 07:32:12 # 2 - Tisk
+22.11.19 - 07:32:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:13 # naložené archy: 312 | pozice v csv souboru: 313 | vyložené archy: 280 | vyhozené archy: 27
+22.11.19 - 07:32:13 # 2 - Tisk
+22.11.19 - 07:32:13 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:13 # naložené archy: 313 | pozice v csv souboru: 314 | vyložené archy: 280 | vyhozené archy: 27
+22.11.19 - 07:32:13 # 2 - Tisk
+22.11.19 - 07:32:14 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:14 # naložené archy: 314 | pozice v csv souboru: 315 | vyložené archy: 281 | vyhozené archy: 27
+22.11.19 - 07:32:14 # 2 - Tisk
+22.11.19 - 07:32:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:15 # naložené archy: 315 | pozice v csv souboru: 316 | vyložené archy: 282 | vyhozené archy: 27
+22.11.19 - 07:32:15 # 2 - Tisk
+22.11.19 - 07:32:15 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:15 # naložené archy: 316 | pozice v csv souboru: 317 | vyložené archy: 283 | vyhozené archy: 27
+22.11.19 - 07:32:15 # 2 - Tisk
+22.11.19 - 07:32:16 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:16 # naložené archy: 317 | pozice v csv souboru: 318 | vyložené archy: 284 | vyhozené archy: 27
+22.11.19 - 07:32:16 # 2 - Tisk
+22.11.19 - 07:32:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:17 # naložené archy: 318 | pozice v csv souboru: 319 | vyložené archy: 285 | vyhozené archy: 27
+22.11.19 - 07:32:17 # 2 - Tisk
+22.11.19 - 07:32:17 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:17 # naložené archy: 319 | pozice v csv souboru: 320 | vyložené archy: 286 | vyhozené archy: 27
+22.11.19 - 07:32:17 # 2 - Tisk
+22.11.19 - 07:32:18 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:18 # naložené archy: 320 | pozice v csv souboru: 321 | vyložené archy: 287 | vyhozené archy: 27
+22.11.19 - 07:32:18 # 2 - Tisk
+22.11.19 - 07:32:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:19 # naložené archy: 321 | pozice v csv souboru: 322 | vyložené archy: 288 | vyhozené archy: 27
+22.11.19 - 07:32:19 # 2 - Tisk
+22.11.19 - 07:32:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:19 # naložené archy: 322 | pozice v csv souboru: 323 | vyložené archy: 289 | vyhozené archy: 28
+22.11.19 - 07:32:19 # 2 - Tisk
+22.11.19 - 07:32:20 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:20 # naložené archy: 323 | pozice v csv souboru: 324 | vyložené archy: 289 | vyhozené archy: 28
+22.11.19 - 07:32:20 # 2 - Tisk
+22.11.19 - 07:32:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:21 # naložené archy: 324 | pozice v csv souboru: 325 | vyložené archy: 290 | vyhozené archy: 28
+22.11.19 - 07:32:21 # 2 - Tisk
+22.11.19 - 07:32:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:21 # naložené archy: 325 | pozice v csv souboru: 326 | vyložené archy: 291 | vyhozené archy: 28
+22.11.19 - 07:32:21 # 2 - Tisk
+22.11.19 - 07:32:22 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:22 # naložené archy: 326 | pozice v csv souboru: 327 | vyložené archy: 292 | vyhozené archy: 28
+22.11.19 - 07:32:22 # 2 - Tisk
+22.11.19 - 07:32:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:23 # naložené archy: 327 | pozice v csv souboru: 328 | vyložené archy: 293 | vyhozené archy: 28
+22.11.19 - 07:32:23 # 2 - Tisk
+22.11.19 - 07:32:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:23 # naložené archy: 328 | pozice v csv souboru: 329 | vyložené archy: 294 | vyhozené archy: 28
+22.11.19 - 07:32:23 # 2 - Tisk
+22.11.19 - 07:32:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:24 # naložené archy: 329 | pozice v csv souboru: 330 | vyložené archy: 295 | vyhozené archy: 28
+22.11.19 - 07:32:24 # 2 - Tisk
+22.11.19 - 07:32:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:25 # naložené archy: 330 | pozice v csv souboru: 331 | vyložené archy: 296 | vyhozené archy: 28
+22.11.19 - 07:32:25 # 2 - Tisk
+22.11.19 - 07:32:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:25 # naložené archy: 331 | pozice v csv souboru: 332 | vyložené archy: 297 | vyhozené archy: 28
+22.11.19 - 07:32:25 # 2 - Tisk
+22.11.19 - 07:32:26 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:26 # naložené archy: 332 | pozice v csv souboru: 333 | vyložené archy: 298 | vyhozené archy: 28
+22.11.19 - 07:32:26 # 2 - Tisk
+22.11.19 - 07:32:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:27 # naložené archy: 333 | pozice v csv souboru: 334 | vyložené archy: 299 | vyhozené archy: 29
+22.11.19 - 07:32:27 # 2 - Tisk
+22.11.19 - 07:32:27 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:27 # naložené archy: 334 | pozice v csv souboru: 335 | vyložené archy: 299 | vyhozené archy: 30
+22.11.19 - 07:32:27 # 2 - Tisk
+22.11.19 - 07:32:28 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:28 # naložené archy: 335 | pozice v csv souboru: 336 | vyložené archy: 299 | vyhozené archy: 31
+22.11.19 - 07:32:28 # 2 - Tisk
+22.11.19 - 07:32:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:29 # naložené archy: 336 | pozice v csv souboru: 337 | vyložené archy: 299 | vyhozené archy: 31
+22.11.19 - 07:32:29 # 2 - Tisk
+22.11.19 - 07:32:29 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:29 # naložené archy: 337 | pozice v csv souboru: 338 | vyložené archy: 300 | vyhozené archy: 31
+22.11.19 - 07:32:29 # 2 - Tisk
+22.11.19 - 07:32:30 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:30 # naložené archy: 338 | pozice v csv souboru: 339 | vyložené archy: 301 | vyhozené archy: 31
+22.11.19 - 07:32:30 # 2 - Tisk
+22.11.19 - 07:32:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:31 # naložené archy: 339 | pozice v csv souboru: 340 | vyložené archy: 302 | vyhozené archy: 31
+22.11.19 - 07:32:31 # 2 - Tisk
+22.11.19 - 07:32:31 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:31 # naložené archy: 340 | pozice v csv souboru: 341 | vyložené archy: 303 | vyhozené archy: 31
+22.11.19 - 07:32:31 # 2 - Tisk
+22.11.19 - 07:32:32 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:32 # naložené archy: 341 | pozice v csv souboru: 342 | vyložené archy: 304 | vyhozené archy: 31
+22.11.19 - 07:32:32 # 2 - Tisk
+22.11.19 - 07:32:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:33 # naložené archy: 342 | pozice v csv souboru: 343 | vyložené archy: 305 | vyhozené archy: 31
+22.11.19 - 07:32:33 # 2 - Tisk
+22.11.19 - 07:32:33 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:33 # naložené archy: 343 | pozice v csv souboru: 344 | vyložené archy: 306 | vyhozené archy: 31
+22.11.19 - 07:32:33 # 2 - Tisk
+22.11.19 - 07:32:34 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:34 # naložené archy: 344 | pozice v csv souboru: 345 | vyložené archy: 307 | vyhozené archy: 32
+22.11.19 - 07:32:34 # 2 - Tisk
+22.11.19 - 07:32:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:35 # naložené archy: 345 | pozice v csv souboru: 346 | vyložené archy: 307 | vyhozené archy: 32
+22.11.19 - 07:32:35 # 2 - Tisk
+22.11.19 - 07:32:35 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:35 # naložené archy: 346 | pozice v csv souboru: 347 | vyložené archy: 308 | vyhozené archy: 32
+22.11.19 - 07:32:35 # 2 - Tisk
+22.11.19 - 07:32:36 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:36 # naložené archy: 347 | pozice v csv souboru: 348 | vyložené archy: 309 | vyhozené archy: 32
+22.11.19 - 07:32:36 # 2 - Tisk
+22.11.19 - 07:32:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:37 # naložené archy: 348 | pozice v csv souboru: 349 | vyložené archy: 310 | vyhozené archy: 32
+22.11.19 - 07:32:37 # 2 - Tisk
+22.11.19 - 07:32:37 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:37 # naložené archy: 349 | pozice v csv souboru: 350 | vyložené archy: 311 | vyhozené archy: 32
+22.11.19 - 07:32:37 # 2 - Tisk
+22.11.19 - 07:32:38 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:38 # naložené archy: 350 | pozice v csv souboru: 351 | vyložené archy: 312 | vyhozené archy: 33
+22.11.19 - 07:32:38 # 2 - Tisk
+22.11.19 - 07:32:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:39 # naložené archy: 351 | pozice v csv souboru: 352 | vyložené archy: 312 | vyhozené archy: 33
+22.11.19 - 07:32:39 # 2 - Tisk
+22.11.19 - 07:32:39 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:39 # naložené archy: 352 | pozice v csv souboru: 353 | vyložené archy: 313 | vyhozené archy: 33
+22.11.19 - 07:32:39 # 2 - Tisk
+22.11.19 - 07:32:40 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:40 # naložené archy: 353 | pozice v csv souboru: 354 | vyložené archy: 314 | vyhozené archy: 34
+22.11.19 - 07:32:40 # 2 - Tisk
+22.11.19 - 07:32:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:41 # naložené archy: 354 | pozice v csv souboru: 355 | vyložené archy: 314 | vyhozené archy: 35
+22.11.19 - 07:32:41 # 2 - Tisk
+22.11.19 - 07:32:41 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:41 # naložené archy: 355 | pozice v csv souboru: 356 | vyložené archy: 314 | vyhozené archy: 35
+22.11.19 - 07:32:41 # 2 - Tisk
+22.11.19 - 07:32:42 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:42 # naložené archy: 356 | pozice v csv souboru: 357 | vyložené archy: 315 | vyhozené archy: 35
+22.11.19 - 07:32:42 # 2 - Tisk
+22.11.19 - 07:32:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:43 # naložené archy: 357 | pozice v csv souboru: 358 | vyložené archy: 316 | vyhozené archy: 35
+22.11.19 - 07:32:43 # 2 - Tisk
+22.11.19 - 07:32:43 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:43 # naložené archy: 358 | pozice v csv souboru: 359 | vyložené archy: 317 | vyhozené archy: 35
+22.11.19 - 07:32:43 # 2 - Tisk
+22.11.19 - 07:32:44 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:44 # naložené archy: 359 | pozice v csv souboru: 360 | vyložené archy: 318 | vyhozené archy: 35
+22.11.19 - 07:32:44 # 2 - Tisk
+22.11.19 - 07:32:45 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:32:45 # 15 - Čekání na vyložení archů
+22.11.19 - 07:32:50 # 4 - Generování csv pro Quadient.
+22.11.19 - 07:32:53 # Analýza csv souboru z Quadientu  a kamerového systému, počet vadných archů: 35
+22.11.19 - 07:32:53 # Uložení zpětnovazebního csv na adresu: /media/stc/q_hot/data_in_feedback/stc-53200_0001_k_bkcore.csv
+22.11.19 - 07:32:53 # 5 - Čištění hotfolderů.
+22.11.19 - 07:32:53 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-53200_0001_k_camera.csv
+22.11.19 - 07:32:53 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53200_0001_k_pdf.pdf
+22.11.19 - 07:32:53 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0001_k_bkcore.csv
+22.11.19 - 07:32:54 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0001_k_camera.csv
+22.11.19 - 07:32:54 # 9 - Dokončování tiskového jobu
+22.11.19 - 07:32:54 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:32:54 # Statistika všech naložených archů uložena: 1115557 arch(ů)
+22.11.19 - 07:32:54 # Statistika všech naložených archů uložena: 1005823 arch(ů)
+22.11.19 - 07:32:54 # Statistika všech vyhozených archů uložena: 109662 arch(ů)
+22.11.19 - 07:32:54 # Statistika celkové chybovosti uložena: 9,830246
+22.11.19 - 07:32:54 # Statistika naložených archů uložena: 525 arch(ů)
+22.11.19 - 07:32:54 # Statistika vyložených archů uložena: 465 arch(ů)
+22.11.19 - 07:32:54 # Statistika vyhozených archů uložena: 60 arch(ů)
+22.11.19 - 07:32:54 # Statistika chybovosti uložena: 11,428571
+22.11.19 - 07:32:54 # 7 - Čekání na další soubory jobu.
+22.11.19 - 07:33:05 # 1 - Příprava dat pro tisk
+22.11.19 - 07:33:07 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:33:07 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0002_k_pdf.pdf -> /media/stc/gis_hot/stc-53200_0002_k_pdf.pdf
+22.11.19 - 07:33:07 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53200_0002_k_camera.csv -> /media/stc/pci_hot/Input/stc-53200_0002_k_camera.csv
+22.11.19 - 07:33:07 # Načten bkcore csv soubor s 35 archy
+22.11.19 - 07:33:07 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 07:33:18 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:18 # naložené archy: 361 | pozice v csv souboru: 0 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:18 # 2 - Tisk
+22.11.19 - 07:33:19 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:19 # naložené archy: 361 | pozice v csv souboru: 1 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:19 # 2 - Tisk
+22.11.19 - 07:33:20 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:20 # naložené archy: 362 | pozice v csv souboru: 2 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:20 # 2 - Tisk
+22.11.19 - 07:33:20 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:20 # naložené archy: 363 | pozice v csv souboru: 3 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:20 # 2 - Tisk
+22.11.19 - 07:33:21 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:21 # naložené archy: 364 | pozice v csv souboru: 4 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:21 # 2 - Tisk
+22.11.19 - 07:33:22 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:22 # naložené archy: 365 | pozice v csv souboru: 5 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:22 # 2 - Tisk
+22.11.19 - 07:33:22 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:22 # naložené archy: 366 | pozice v csv souboru: 6 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:22 # 2 - Tisk
+22.11.19 - 07:33:23 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:23 # naložené archy: 367 | pozice v csv souboru: 7 | vyložené archy: 326 | vyhozené archy: 35
+22.11.19 - 07:33:23 # 2 - Tisk
+22.11.19 - 07:33:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:24 # naložené archy: 368 | pozice v csv souboru: 8 | vyložené archy: 327 | vyhozené archy: 35
+22.11.19 - 07:33:24 # 2 - Tisk
+22.11.19 - 07:33:24 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:24 # naložené archy: 369 | pozice v csv souboru: 9 | vyložené archy: 328 | vyhozené archy: 35
+22.11.19 - 07:33:24 # 2 - Tisk
+22.11.19 - 07:33:25 # 11 - Čtění řádku datového csv souboru.
+22.11.19 - 07:33:25 # naložené archy: 370 | pozice v csv souboru: 10 | vyložené archy: 329 | vyhozené archy: 35
+22.11.19 - 07:33:25 # 2 - Tisk
+22.11.19 - 07:33:25 # 3 - Stroj je v chybovém stavu!: Počítač Quadient neodpovídá!
+22.11.19 - 07:34:32 # Reset chybového stavu.
+22.11.19 - 07:34:32 # 13 - Přerušení procesu tisku.
+22.11.19 - 07:34:38 # Reset chybového stavu.
+22.11.19 - 07:34:39 # Požadavek na ukončení jobu stc-53200.
+22.11.19 - 07:34:54 # Požadavek na ukončení jobu stc-53200.

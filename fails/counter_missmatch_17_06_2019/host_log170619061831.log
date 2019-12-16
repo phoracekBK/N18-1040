@@ -1,0 +1,57 @@
+17.06.19 - 06:18:31 # Inicializace jádra...
+17.06.19 - 06:18:31 # Načítám konfigurační soubor: ./sys_cfg
+17.06.19 - 06:18:31 # Konfigurace načtena
+17.06.19 - 06:18:31 # Vlákno pro sledování připojení k počítači PCI vytvořeno.
+17.06.19 - 06:18:31 # Vlákno pro sledování připojení k počítači IIJ vytvořeno.
+17.06.19 - 06:18:31 # Vlákno pro sledování připojení k počítači Qudient vytvořeno.
+17.06.19 - 06:18:31 # Systém GIS úspěšně připojen.
+17.06.19 - 06:18:31 # IO karty úspěšně připojeny.
+17.06.19 - 06:18:31 # Vlákno obsluhy stroje vytvořeno.
+17.06.19 - 06:18:31 # Jádro inicializováno. Doba trvání inicializace: 1ms
+17.06.19 - 06:18:31 # 8 - Dokončování procesu tisku.
+17.06.19 - 06:18:31 # Uložen index dne pro statistiku: 43634
+17.06.19 - 06:18:31 # Statistika všech naložených archů uložena: 455737 arch(ů)
+17.06.19 - 06:18:31 # Statistika všech naložených archů uložena: 413463 arch(ů)
+17.06.19 - 06:18:31 # Statistika všech vyhozených archů uložena: 42096 arch(ů)
+17.06.19 - 06:18:31 # Statistika celkové chybovosti uložena: 9,236906
+17.06.19 - 06:18:31 # Statistika naložených archů uložena: 0 arch(ů)
+17.06.19 - 06:18:31 # Statistika vyložených archů uložena: 0 arch(ů)
+17.06.19 - 06:18:31 # Statistika vyhozených archů uložena: 0 arch(ů)
+17.06.19 - 06:18:31 # Statistika chybovosti uložena: 0,000000
+17.06.19 - 06:18:31 # 0 - Čekání na spuštění jobu
+17.06.19 - 06:18:31 # Nastaven režim Gremser stroje: Tisk s inspekcí
+17.06.19 - 06:18:40 # Uložení prázdného zpětnovazebního csv na vyčištění hotfolderu na adresu: /media/stc/q_hot/data_in_feedback/p��N�U
+17.06.19 - 06:18:40 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-33843_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-33843_0001_k_pdf.pdf
+17.06.19 - 06:18:40 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-33843_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-33843_0001_k_bkcore.csv
+17.06.19 - 06:18:40 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-33843_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-33843_0001_k_camera.csv
+17.06.19 - 06:19:41 # Spuštěn tisk jobu stc-33875.
+17.06.19 - 06:19:41 # 1 - Příprava dat pro tisk
+17.06.19 - 06:19:43 # Načten obsah bkcore csv souboru.
+17.06.19 - 06:19:43 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-33875_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-33875_0001_k_pdf.pdf
+17.06.19 - 06:19:43 # 3 - Stroj je v chybovém stavu!: Nelze odeslat pdf soubor do GISu!
+17.06.19 - 06:20:15 # Reset chybového stavu.
+17.06.19 - 06:20:15 # 13 - Přerušení procesu tisku.
+17.06.19 - 06:20:15 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-33875_0001_k_camera.csv
+17.06.19 - 06:20:15 # Uložení prázdného zpětnovazebního csv pro ukončení jobu, na adresu: /media/stc/q_hot/data_in_feedback/stc-33875_0001_e_bkcore.csv
+17.06.19 - 06:20:15 # 6 - Čištění hotfolderu na konci tisku.
+17.06.19 - 06:20:15 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-33875_0001_k_camera.csv
+17.06.19 - 06:20:15 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-33875_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-33875_0001_k_pdf.pdf
+17.06.19 - 06:20:15 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-33875_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-33875_0001_k_bkcore.csv
+17.06.19 - 06:20:15 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-33875_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-33875_0001_k_camera.csv
+17.06.19 - 06:20:15 # 8 - Dokončování procesu tisku.
+17.06.19 - 06:20:15 # Uložen index dne pro statistiku: 43634
+17.06.19 - 06:20:15 # Statistika všech naložených archů uložena: 455737 arch(ů)
+17.06.19 - 06:20:15 # Statistika všech naložených archů uložena: 413463 arch(ů)
+17.06.19 - 06:20:15 # Statistika všech vyhozených archů uložena: 42096 arch(ů)
+17.06.19 - 06:20:15 # Statistika celkové chybovosti uložena: 9,236906
+17.06.19 - 06:20:15 # Statistika naložených archů uložena: 0 arch(ů)
+17.06.19 - 06:20:15 # Statistika vyložených archů uložena: 0 arch(ů)
+17.06.19 - 06:20:15 # Statistika vyhozených archů uložena: 0 arch(ů)
+17.06.19 - 06:20:15 # Statistika chybovosti uložena: 0,000000
+17.06.19 - 06:20:15 # Uložení reportového csv na adresu: /home/stc/host-bk/job_info_csv/V19097_5.csv
+17.06.19 - 06:20:15 # 0 - Čekání na spuštění jobu
+17.06.19 - 06:20:46 # Spuštěn tisk jobu stc-33889.
+17.06.19 - 06:20:46 # 1 - Příprava dat pro tisk
+17.06.19 - 06:20:48 # Načten obsah bkcore csv souboru.
+17.06.19 - 06:20:48 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-33889_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-33889_0001_k_pdf.pdf
+17.06.19 - 06:20:48 # 3 - Stroj je v chybovém stavu!: Nelze odeslat pdf soubor do GISu!

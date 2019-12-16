@@ -1,0 +1,61 @@
+22.11.19 - 07:38:40 # Inicializace jádra...
+22.11.19 - 07:38:40 # Načítám konfigurační soubor: ./sys_cfg
+22.11.19 - 07:38:40 # Konfigurace načtena
+22.11.19 - 07:38:40 # Vlákno pro sledování připojení k počítači PCI vytvořeno.
+22.11.19 - 07:38:40 # Vlákno pro sledování připojení k počítači IIJ vytvořeno.
+22.11.19 - 07:38:40 # Vlákno pro sledování připojení k počítači Qudient vytvořeno.
+22.11.19 - 07:38:40 # Systém GIS úspěšně připojen.
+22.11.19 - 07:38:40 # IO karty úspěšně připojeny.
+22.11.19 - 07:38:40 # Vlákno obsluhy stroje vytvořeno.
+22.11.19 - 07:38:40 # Jádro inicializováno. Doba trvání inicializace: 618ms
+22.11.19 - 07:38:40 # 8 - Dokončování procesu tisku.
+22.11.19 - 07:38:40 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:38:40 # Nastaven režim Gremser stroje: Tisk s inspekcí
+22.11.19 - 07:38:40 # Statistika všech naložených archů uložena: 1115557 arch(ů)
+22.11.19 - 07:38:41 # Statistika všech naložených archů uložena: 1005823 arch(ů)
+22.11.19 - 07:38:41 # Statistika všech vyhozených archů uložena: 109662 arch(ů)
+22.11.19 - 07:38:41 # Statistika celkové chybovosti uložena: 9,830246
+22.11.19 - 07:38:41 # Statistika naložených archů uložena: 525 arch(ů)
+22.11.19 - 07:38:41 # Statistika vyložených archů uložena: 465 arch(ů)
+22.11.19 - 07:38:41 # Statistika vyhozených archů uložena: 60 arch(ů)
+22.11.19 - 07:38:41 # Statistika chybovosti uložena: 11,428571
+22.11.19 - 07:38:41 # 0 - Čekání na spuštění jobu
+22.11.19 - 07:38:55 # Pokus o spuštění tisku zkončil chybou: 6 - Nesoulad pořadových indexů jobů!
+22.11.19 - 07:38:55 # 3 - Stroj je v chybovém stavu!: Nesoulad pořadových indexů jobů!
+22.11.19 - 07:38:59 # Reset chybového stavu.
+22.11.19 - 07:38:59 # 13 - Přerušení procesu tisku.
+22.11.19 - 07:38:59 # 6 - Čištění hotfolderu na konci tisku.
+22.11.19 - 07:38:59 # 8 - Dokončování procesu tisku.
+22.11.19 - 07:38:59 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:38:59 # Statistika všech naložených archů uložena: 1115557 arch(ů)
+22.11.19 - 07:38:59 # Statistika všech naložených archů uložena: 1005823 arch(ů)
+22.11.19 - 07:38:59 # Statistika všech vyhozených archů uložena: 109662 arch(ů)
+22.11.19 - 07:38:59 # Statistika celkové chybovosti uložena: 9,830246
+22.11.19 - 07:38:59 # Statistika naložených archů uložena: 525 arch(ů)
+22.11.19 - 07:38:59 # Statistika vyložených archů uložena: 465 arch(ů)
+22.11.19 - 07:38:59 # Statistika vyhozených archů uložena: 60 arch(ů)
+22.11.19 - 07:38:59 # Statistika chybovosti uložena: 11,428571
+22.11.19 - 07:38:59 # 0 - Čekání na spuštění jobu
+22.11.19 - 07:39:15 # Uložení prázdného zpětnovazebního csv na vyčištění hotfolderu na adresu: /media/stc/q_hot/data_in_feedback/ ��|HV
+22.11.19 - 07:39:15 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0002_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-53200_0002_k_pdf.pdf
+22.11.19 - 07:39:15 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0002_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0002_k_bkcore.csv
+22.11.19 - 07:39:15 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-53200_0002_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-53200_0002_k_camera.csv
+22.11.19 - 07:39:34 # Spuštěn tisk jobu stc-53508.
+22.11.19 - 07:39:34 # 1 - Příprava dat pro tisk
+22.11.19 - 07:39:36 # Načten obsah bkcore csv souboru.
+22.11.19 - 07:39:36 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-53508_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-53508_0001_k_pdf.pdf
+22.11.19 - 07:39:36 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-53508_0001_k_camera.csv -> /media/stc/pci_hot/Input/stc-53508_0001_k_camera.csv
+22.11.19 - 07:39:36 # Načten bkcore csv soubor s 25 archy
+22.11.19 - 07:39:36 # 14 - Čekání na inicializaci stroje.
+22.11.19 - 07:39:39 # 3 - Stroj je v chybovém stavu!: Počítač Quadient neodpovídá!
+22.11.19 - 07:49:37 # Uložen index dne pro statistiku: 43791
+22.11.19 - 07:49:37 # Statistika všech naložených archů uložena: 1115557 arch(ů)
+22.11.19 - 07:49:37 # Statistika všech naložených archů uložena: 1005823 arch(ů)
+22.11.19 - 07:49:37 # Statistika všech vyhozených archů uložena: 109662 arch(ů)
+22.11.19 - 07:49:37 # Statistika celkové chybovosti uložena: 9,830246
+22.11.19 - 07:49:37 # Statistika naložených archů uložena: 525 arch(ů)
+22.11.19 - 07:49:37 # Statistika vyložených archů uložena: 465 arch(ů)
+22.11.19 - 07:49:37 # Statistika vyhozených archů uložena: 60 arch(ů)
+22.11.19 - 07:49:37 # Statistika chybovosti uložena: 11,428571
+22.11.19 - 07:49:37 # Spojení s GISem ukončeno.
+22.11.19 - 07:49:38 # Jádro úspěšně ukončeno.

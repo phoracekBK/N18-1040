@@ -6,9 +6,10 @@
 #include <pthread.h>
 #include <gio/gio.h>
 #include <gio/gnetworking.h>
+#include <aclib.h>
 
 #define MAX_CONN_NUM 5
-#define TTL 5
+#define TTL 15
 #define IO_BUFFER_SIZE 128
 
 struct _comm_interface_;
@@ -19,6 +20,7 @@ struct _comm_interface_
 {
         uint16_t tcp_port;
         GSocketService * net_service;
+		c_log * log_ref;
 };
 
 char * vs_gui_state_line_set_time_label()
@@ -34,9 +36,29 @@ char * vs_gui_state_line_set_time_label()
 	return time_str;
 }
 
-void response_server_thread(GSocket * socket)
+
+char * responder_get_connectivity_description(GNetworkConnectivity connectivity)
+{
+	switch(connectivity)
+	{
+		case G_NETWORK_CONNECTIVITY_LOCAL:
+			return "Network connectivity local";
+		case G_NETWORK_CONNECTIVITY_LIMITED:
+			return "Network connectivity limited";
+		case G_NETWORK_CONNECTIVITY_PORTAL:
+			return "Network connectivity portal";
+		case G_NETWORK_CONNECTIVITY_FULL:
+			return "Network connectivity full";
+		default:
+			return "Unknown value";
+	}
+
+}
+
+void response_server_thread(GSocket * socket, c_log * log_ref)
 {
 	char * time_str_con = vs_gui_state_line_set_time_label();
+	GNetworkMonitor * netMonitor = g_network_monitor_get_default ();
 
 	GSocketAddress * sockaddr = g_socket_get_remote_address(socket, NULL);
         GInetAddress * addr = g_inet_socket_address_get_address(G_INET_SOCKET_ADDRESS(sockaddr));
@@ -45,10 +67,11 @@ void response_server_thread(GSocket * socket)
 
         g_socket_set_timeout (socket, TTL);
         g_socket_set_blocking(socket, TRUE);
-	
-	printf("%s - client connected - %s\n", time_str_con, client_ip);
 
-	char* buffer = (char*) malloc(sizeof(char)*IO_BUFFER_SIZE);
+		c_log_add_record_with_cmd(log_ref, "%s - client connected - %s\n", time_str_con, client_ip);
+	
+
+		char* buffer = (char*) malloc(sizeof(char)*IO_BUFFER_SIZE);
         GError * soc_error = NULL;
         int size_in = 0;
 
@@ -63,13 +86,19 @@ void response_server_thread(GSocket * socket)
 			sprintf(buffer, "error");
 		}
 
-		g_socket_send(socket, buffer, strlen(buffer), NULL, &soc_error);	
+		g_socket_send(socket, buffer, strlen(buffer), NULL, &soc_error);
+
+		GNetworkConnectivity connectivity = g_network_monitor_get_connectivity (netMonitor);
+		c_log_add_record(log_ref, "%s - %s - %s", ((g_network_monitor_get_network_available (netMonitor) == TRUE) ? "Connected" : "Disconnected"), 
 	}
 
 
 	char * time_str_discon = vs_gui_state_line_set_time_label();
 
-	printf("%s - client disconnected - %s\n", time_str_discon, client_ip);	
+	GNetworkConnectivity connectivity = g_network_monitor_get_connectivity (netMonitor);
+	c_log_add_record_with_cmd(log_ref, "%s - %s: %s - client disconnected - %s", 
+					((g_network_monitor_get_network_available (netMonitor) == TRUE) ? "Network connected" : "Network disconnected"),
+					responder_get_connectivity_description(connectivity), time_str_discon, client_ip);	
 
 	free(buffer);
 	g_free(client_ip);
@@ -80,6 +109,8 @@ void response_server_thread(GSocket * socket)
 static comm_interface * comm_interface_new(int tcp_port)
 {
         comm_interface * this = (comm_interface*) malloc(sizeof(comm_interface));
+	
+		this->log_ref = c_log_new("./","networkMonitorLog", "Inicializace logu pro monitorovani site...");
 
         this->tcp_port = tcp_port;
 
@@ -97,10 +128,10 @@ static void comm_insterface_start(comm_interface * this)
 
 static gboolean incoming_callback (GSocketService *service, GSocketConnection *connection, GObject *source_object, gpointer param)
 {
-        g_print("Received Connection from client!\n");
+		c_log_add_record_with_cmd((c_log*) param, "Received Connection from client!");
 
-        GSocket * socket =  g_socket_connection_get_socket(connection);
-        response_server_thread(socket);
+        GSocket * socket = g_socket_connection_get_socket(connection);
+        response_server_thread(socket, param);
 
         return FALSE;
 }
@@ -138,7 +169,7 @@ int main(int argv, char ** argc)
 	gtk_init(&argv, &argc);
 
 	comm_interface * comm_interface_ref = comm_interface_new(tcp_port);
-	g_signal_connect(G_OBJECT(comm_interface_ref->net_service), "run",  G_CALLBACK (incoming_callback), NULL);
+	g_signal_connect(G_OBJECT(comm_interface_ref->net_service), "run",  G_CALLBACK (incoming_callback), comm_interface_ref->log_ref);
 
 	gtk_main();
 

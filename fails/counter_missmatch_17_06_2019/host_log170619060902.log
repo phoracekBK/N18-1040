@@ -1,0 +1,56 @@
+17.06.19 - 06:09:02 # Inicializace jádra...
+17.06.19 - 06:09:03 # Načítám konfigurační soubor: ./sys_cfg
+17.06.19 - 06:09:03 # Konfigurace načtena
+17.06.19 - 06:09:03 # Vlákno pro sledování připojení k počítači PCI vytvořeno.
+17.06.19 - 06:09:03 # Vlákno pro sledování připojení k počítači IIJ vytvořeno.
+17.06.19 - 06:09:03 # Vlákno pro sledování připojení k počítači Qudient vytvořeno.
+17.06.19 - 06:09:03 # Chyba připojení k systému GIS!
+17.06.19 - 06:09:03 # IO karty úspěšně připojeny.
+17.06.19 - 06:09:03 # Vlákno obsluhy stroje vytvořeno.
+17.06.19 - 06:09:03 # Jádro inicializováno. Doba trvání inicializace: 631ms
+17.06.19 - 06:09:03 # 3 - Stroj je v chybovém stavu!: Stroj hlásí E-stop!
+17.06.19 - 06:09:03 # Nastaven režim Gremser stroje: Tisk s inspekcí
+17.06.19 - 06:10:34 # 13 - Přerušení procesu tisku.
+17.06.19 - 06:10:34 # 6 - Čištění hotfolderu na konci tisku.
+17.06.19 - 06:10:34 # 8 - Dokončování procesu tisku.
+17.06.19 - 06:10:34 # Uložen index dne pro statistiku: 43634
+17.06.19 - 06:10:34 # Statistika všech naložených archů uložena: 455737 arch(ů)
+17.06.19 - 06:10:34 # Statistika všech naložených archů uložena: 413463 arch(ů)
+17.06.19 - 06:10:34 # Statistika všech vyhozených archů uložena: 42096 arch(ů)
+17.06.19 - 06:10:34 # Statistika celkové chybovosti uložena: 9,236906
+17.06.19 - 06:10:34 # Statistika naložených archů uložena: 0 arch(ů)
+17.06.19 - 06:10:34 # Statistika vyložených archů uložena: 0 arch(ů)
+17.06.19 - 06:10:34 # Statistika vyhozených archů uložena: 0 arch(ů)
+17.06.19 - 06:10:34 # Statistika chybovosti uložena: 0,000000
+17.06.19 - 06:10:34 # 0 - Čekání na spuštění jobu
+17.06.19 - 06:13:39 # Spojení s GISem ukončeno.
+17.06.19 - 06:13:39 # 3 - Stroj je v chybovém stavu!: Počítač GISu neodpovídá!
+17.06.19 - 06:13:40 # 13 - Přerušení procesu tisku.
+17.06.19 - 06:13:40 # 6 - Čištění hotfolderu na konci tisku.
+17.06.19 - 06:13:40 # 8 - Dokončování procesu tisku.
+17.06.19 - 06:13:40 # Uložen index dne pro statistiku: 43634
+17.06.19 - 06:13:40 # Statistika všech naložených archů uložena: 455737 arch(ů)
+17.06.19 - 06:13:40 # Statistika všech naložených archů uložena: 413463 arch(ů)
+17.06.19 - 06:13:40 # Statistika všech vyhozených archů uložena: 42096 arch(ů)
+17.06.19 - 06:13:40 # Statistika celkové chybovosti uložena: 9,236906
+17.06.19 - 06:13:40 # Statistika naložených archů uložena: 0 arch(ů)
+17.06.19 - 06:13:40 # Statistika vyložených archů uložena: 0 arch(ů)
+17.06.19 - 06:13:40 # Statistika vyhozených archů uložena: 0 arch(ů)
+17.06.19 - 06:13:40 # Statistika chybovosti uložena: 0,000000
+17.06.19 - 06:13:40 # 0 - Čekání na spuštění jobu
+17.06.19 - 06:17:53 # Spuštěn tisk jobu stc-33843.
+17.06.19 - 06:17:53 # 1 - Příprava dat pro tisk
+17.06.19 - 06:17:55 # Načten obsah bkcore csv souboru.
+17.06.19 - 06:17:55 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-33843_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-33843_0001_k_pdf.pdf
+17.06.19 - 06:17:55 # 3 - Stroj je v chybovém stavu!: Nelze odeslat pdf soubor do GISu!
+17.06.19 - 06:18:25 # Uložen index dne pro statistiku: 43634
+17.06.19 - 06:18:25 # Statistika všech naložených archů uložena: 455737 arch(ů)
+17.06.19 - 06:18:25 # Statistika všech naložených archů uložena: 413463 arch(ů)
+17.06.19 - 06:18:25 # Statistika všech vyhozených archů uložena: 42096 arch(ů)
+17.06.19 - 06:18:25 # Statistika celkové chybovosti uložena: 9,236906
+17.06.19 - 06:18:25 # Statistika naložených archů uložena: 0 arch(ů)
+17.06.19 - 06:18:25 # Statistika vyložených archů uložena: 0 arch(ů)
+17.06.19 - 06:18:25 # Statistika vyhozených archů uložena: 0 arch(ů)
+17.06.19 - 06:18:25 # Statistika chybovosti uložena: 0,000000
+17.06.19 - 06:18:25 # Spojení s GISem ukončeno.
+17.06.19 - 06:18:26 # Jádro úspěšně ukončeno.

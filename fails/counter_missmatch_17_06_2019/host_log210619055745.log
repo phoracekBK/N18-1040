@@ -1,0 +1,65 @@
+21.06.19 - 05:57:45 # Inicializace jádra...
+21.06.19 - 05:57:45 # Načítám konfigurační soubor: ./sys_cfg
+21.06.19 - 05:57:45 # Konfigurace načtena
+21.06.19 - 05:57:45 # Vlákno pro sledování připojení k počítači PCI vytvořeno.
+21.06.19 - 05:57:45 # Vlákno pro sledování připojení k počítači IIJ vytvořeno.
+21.06.19 - 05:57:45 # Vlákno pro sledování připojení k počítači Qudient vytvořeno.
+21.06.19 - 05:57:45 # Systém GIS úspěšně připojen.
+21.06.19 - 05:57:45 # IO karty úspěšně připojeny.
+21.06.19 - 05:57:45 # Vlákno obsluhy stroje vytvořeno.
+21.06.19 - 05:57:45 # Jádro inicializováno. Doba trvání inicializace: 1ms
+21.06.19 - 05:57:45 # 3 - Stroj je v chybovém stavu!: Stroj hlásí E-stop!
+21.06.19 - 05:57:45 # Nastaven režim Gremser stroje: Tisk s inspekcí
+21.06.19 - 05:58:17 # 13 - Přerušení procesu tisku.
+21.06.19 - 05:58:17 # 6 - Čištění hotfolderu na konci tisku.
+21.06.19 - 05:58:17 # 8 - Dokončování procesu tisku.
+21.06.19 - 05:58:17 # Uložen index dne pro statistiku: 43638
+21.06.19 - 05:58:17 # Statistika všech naložených archů uložena: 498160 arch(ů)
+21.06.19 - 05:58:17 # Statistika všech naložených archů uložena: 453160 arch(ů)
+21.06.19 - 05:58:17 # Statistika všech vyhozených archů uložena: 44825 arch(ů)
+21.06.19 - 05:58:17 # Statistika celkové chybovosti uložena: 8,998113
+21.06.19 - 05:58:17 # Statistika naložených archů uložena: 0 arch(ů)
+21.06.19 - 05:58:17 # Statistika vyložených archů uložena: 0 arch(ů)
+21.06.19 - 05:58:17 # Statistika vyhozených archů uložena: 0 arch(ů)
+21.06.19 - 05:58:17 # Statistika chybovosti uložena: 0,000000
+21.06.19 - 05:58:17 # 0 - Čekání na spuštění jobu
+21.06.19 - 06:00:25 # Spuštěn tisk jobu stc-34471.
+21.06.19 - 06:00:25 # 1 - Příprava dat pro tisk
+21.06.19 - 06:00:27 # Načten obsah bkcore csv souboru.
+21.06.19 - 06:00:27 # Kopírování  pdf souboru do gisu při spuštění jobu: /media/stc/q_hot/data_out/stc-34471_0001_k_pdf.pdf -> /media/stc/gis_hot/stc-34471_0001_k_pdf.pdf
+21.06.19 - 06:00:28 # Kopírování kamerového csv souboru do kameray při spuštění jobu: /media/stc/q_hot/data_out/stc-34471_0001_k_camera.csv -> /media/stc/pci_hot/Input/stc-34471_0001_k_camera.csv
+21.06.19 - 06:00:28 # Načten bkcore csv soubor s 500 archy
+21.06.19 - 06:00:28 # 14 - Čekání na inicializaci stroje.
+21.06.19 - 06:00:49 # Požadavek na ukončení jobu stc-34471.
+21.06.19 - 06:00:49 # 13 - Přerušení procesu tisku.
+21.06.19 - 06:00:49 # Analýza csv souboru z Quadientu  a kamerového systému, počet vadných archů: 447
+21.06.19 - 06:00:49 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-34471_0001_k_camera.csv
+21.06.19 - 06:00:49 # Uložení prázdného zpětnovazebního csv pro ukončení jobu, na adresu: /media/stc/q_hot/data_in_feedback/stc-34471_0001_e_bkcore.csv
+21.06.19 - 06:00:49 # 6 - Čištění hotfolderu na konci tisku.
+21.06.19 - 06:00:49 # Mazání výstupního kamerového csv souboru z kamerového hotfolderu: /media/stc/pci_hot/Output/stc-34471_0001_k_camera.csv
+21.06.19 - 06:00:49 # Přesun pdf souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-34471_0001_k_pdf.pdf -> /media/stc/q_hot/data_out/backup/stc-34471_0001_k_pdf.pdf
+21.06.19 - 06:00:49 # Přesun bkcore csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-34471_0001_k_bkcore.csv -> /media/stc/q_hot/data_out/backup/stc-34471_0001_k_bkcore.csv
+21.06.19 - 06:00:49 # Přesun kamerového csv souboru při čištění hotfolderu: /media/stc/q_hot/data_out/stc-34471_0001_k_camera.csv -> /media/stc/q_hot/data_out/backup/stc-34471_0001_k_camera.csv
+21.06.19 - 06:00:49 # 8 - Dokončování procesu tisku.
+21.06.19 - 06:00:49 # Uložen index dne pro statistiku: 43638
+21.06.19 - 06:00:49 # Statistika všech naložených archů uložena: 498160 arch(ů)
+21.06.19 - 06:00:49 # Statistika všech naložených archů uložena: 453160 arch(ů)
+21.06.19 - 06:00:49 # Statistika všech vyhozených archů uložena: 44825 arch(ů)
+21.06.19 - 06:00:49 # Statistika celkové chybovosti uložena: 8,998113
+21.06.19 - 06:00:49 # Statistika naložených archů uložena: 0 arch(ů)
+21.06.19 - 06:00:49 # Statistika vyložených archů uložena: 0 arch(ů)
+21.06.19 - 06:00:49 # Statistika vyhozených archů uložena: 0 arch(ů)
+21.06.19 - 06:00:49 # Statistika chybovosti uložena: 0,000000
+21.06.19 - 06:00:49 # Uložení reportového csv na adresu: /home/stc/host-bk/job_info_csv/V19100_2.csv
+21.06.19 - 06:00:49 # 0 - Čekání na spuštění jobu
+21.06.19 - 06:01:44 # Uložen index dne pro statistiku: 43638
+21.06.19 - 06:01:44 # Statistika všech naložených archů uložena: 498160 arch(ů)
+21.06.19 - 06:01:44 # Statistika všech naložených archů uložena: 453160 arch(ů)
+21.06.19 - 06:01:44 # Statistika všech vyhozených archů uložena: 44825 arch(ů)
+21.06.19 - 06:01:44 # Statistika celkové chybovosti uložena: 8,998113
+21.06.19 - 06:01:44 # Statistika naložených archů uložena: 0 arch(ů)
+21.06.19 - 06:01:44 # Statistika vyložených archů uložena: 0 arch(ů)
+21.06.19 - 06:01:44 # Statistika vyhozených archů uložena: 0 arch(ů)
+21.06.19 - 06:01:44 # Statistika chybovosti uložena: 0,000000
+21.06.19 - 06:01:44 # Spojení s GISem ukončeno.
+21.06.19 - 06:01:45 # Jádro úspěšně ukončeno.

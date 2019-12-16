@@ -120,19 +120,6 @@
 #define CFG_STATISTICS_ERROR_RATE "error_rate"
 #define CFG_STATISTICS_DAY_PRE "previous_day"
 
-
-struct _comm_monitor_
-{
-	bool run_monitor;
-	com_tcp * comm;
-	bool comm_status;
-	pthread_t thread;
-};
-
-typedef struct _comm_monitor_ comm_monitor;
-
-
-
 /**************************************************** global variables **********************************************************/
 
 config_t cfg_ref;
@@ -142,20 +129,15 @@ c_log * log_ref;
 pthread_t machine_handler_thread;
 pthread_t iij_gis_state_reading_thread;
 
-comm_monitor * iij_comm_monitor;
-comm_monitor * pci_comm_monitor;
-comm_monitor * quadient_comm_monitor;
-
-
 com_tcp * iij_tcp_ref;
 com_tcp * pci_tcp_ref;
 bool iij_tcp_connection_req;
 c_timer * iij_connection_try_timer;
 
 /* connection testing, communication with network_responder utility */
-//com_tcp * pci_connection;
-//com_tcp * iij_connection;
-//com_tcp * quadient_connection;
+com_tcp * pci_connection;
+com_tcp * iij_connection;
+com_tcp * quadient_connection;
 
 pthread_t pci_conn_therad;
 pthread_t iij_conn_thread;
@@ -319,19 +301,11 @@ int64_t companion_generation_delay;
 
 /**************************************************** functions declarations *****************************************************/
 
-comm_monitor * comm_monitor_new(bool);
-bool comm_monitor_status(comm_monitor *);
-uint8_t comm_monitor_set_ip_address(comm_monitor *, char *);
-uint8_t comm_monitor_set_tcp_port(comm_monitor *, int );
-int comm_monitor_get_tcp_port(comm_monitor *);
-char * comm_monitor_get_ip_address(comm_monitor *);
-void comm_monitor_finalize(comm_monitor *);
-void * comm_monitor_testing_thread(void *);
-
 uint8_t controler_iij_try_connect();
 uint8_t controler_pci_try_connect();
 
 
+void * controler_connection_testing_thread(void * param);
 
 void controler_default_config();
 uint8_t controler_load_config();
@@ -435,11 +409,9 @@ int8_t controler_init()
 
 		iij_tcp_ref = com_tcp_new();
 		//pci_tcp_ref = com_tcp_new();
-		
-		/* Pozor!!! Průběžná kontrola připojení sítě je vypnutá. */
-		iij_comm_monitor = comm_monitor_new(false);
-		pci_comm_monitor = comm_monitor_new(false);
-		quadient_comm_monitor = comm_monitor_new(false);
+		iij_connection = com_tcp_new();
+		pci_connection = com_tcp_new();
+		quadient_connection = com_tcp_new();
 
 		ti_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
 		ta_freq = c_freq_new(MACHINE_CYCLE_TIMING, unit_ms);
@@ -478,19 +450,17 @@ int8_t controler_init()
 
 		/* run machine_handler thread */
 		machine_handler_run = true;
-		
-		
-		if(pthread_create(&(pci_comm_monitor->thread), 0, comm_monitor_testing_thread, pci_comm_monitor) == 0)
+		if(pthread_create(&(pci_conn_therad), 0, controler_connection_testing_thread, pci_connection) == 0)
 			c_log_add_record_with_cmd(log_ref, "Vlákno pro sledování připojení k počítači PCI vytvořeno.");
 		else
 			c_log_add_record_with_cmd(log_ref, "Vlákno pro sledování připojení k počítači PCI se nepodařilo vytvořit!");
 
-		if(pthread_create(&(iij_comm_monitor->thread), 0, comm_monitor_testing_thread, iij_comm_monitor) == 0)
+		if(pthread_create(&(iij_conn_thread), 0, controler_connection_testing_thread, iij_connection) == 0)
 			c_log_add_record_with_cmd(log_ref, "Vlákno pro sledování připojení k počítači IIJ vytvořeno.");
 		else
 			c_log_add_record_with_cmd(log_ref, "Vlákno pro sledování připojení k počítači IIJ se nepodařilo vytvořit!");
 
-		if(pthread_create(&(quadient_comm_monitor->thread), 0, comm_monitor_testing_thread, quadient_comm_monitor) == 0)
+		if(pthread_create(&(quadient_conn_thread), 0, controler_connection_testing_thread, quadient_connection) == 0)
 			c_log_add_record_with_cmd(log_ref, "Vlákno pro sledování připojení k počítači Qudient vytvořeno.");
 		else
 			c_log_add_record_with_cmd(log_ref, "Vlákno pro sledování připojení k počítači Quadient se nepodařilo vytvořit!");
@@ -609,19 +579,19 @@ void controler_set_interface_language(int lang)
 	lang_index = lang;
 }
 
-bool controler_iij_network_connected()
+uint8_t controler_iij_network_connected()
 {
-	return comm_monitor_status(iij_comm_monitor);// 	com_tcp_is_connected(iij_connection);
+	return com_tcp_is_connected(iij_connection);
 }
 
-bool controler_pci_network_connected()
+uint8_t controler_pci_network_connected()
 {
-	return 	comm_monitor_status(pci_comm_monitor);	//com_tcp_is_connected(pci_connection);
+	return com_tcp_is_connected(pci_connection);
 }
 
-bool controler_quadient_network_connected()
+uint8_t controler_quadient_network_connected()
 {
-	return 	comm_monitor_status(quadient_comm_monitor);	//com_tcp_is_connected(quadient_connection);
+	return com_tcp_is_connected(quadient_connection);
 }
 
 void controler_sheet_source_confirmation()
@@ -1482,25 +1452,25 @@ uint8_t controler_iij_set_tcp_port(int port)
 
 char * controler_quadient_network_get_ip_address()
 {
-	return 	comm_monitor_get_ip_address(quadient_comm_monitor);	//com_tcp_get_ip_addr(quadient_connection);
+	return com_tcp_get_ip_addr(quadient_connection);
 }
 
 char * controler_iij_network_get_ip_address()
 {
-	return 	comm_monitor_get_ip_address(iij_comm_monitor);	//com_tcp_get_ip_addr(iij_connection);
+	return com_tcp_get_ip_addr(iij_connection);
 }
 
 char * controler_pci_network_get_ip_address()
 {
-	return 	comm_monitor_get_ip_address(pci_comm_monitor);	//com_tcp_get_ip_addr(pci_connection);
+	return com_tcp_get_ip_addr(pci_connection);
 }
 
 
 uint8_t controler_quadient_network_set_ip_address(char * ip_address)
 {
-	if(comm_monitor_status(quadient_comm_monitor) == false)
+	if(controler_quadient_network_connected() != STATUS_CLIENT_CONNECTED)
 	{
-		uint8_t res = comm_monitor_set_ip_address(quadient_comm_monitor, ip_address);
+		uint8_t res = com_tcp_set_ip_addr(quadient_connection, ip_address);
 
 		if(res == STATUS_SUCCESS)
 		{
@@ -1529,9 +1499,9 @@ uint8_t controler_quadient_network_set_ip_address(char * ip_address)
 
 uint8_t controler_iij_network_set_ip_address(char * ip_address)
 {
-	if(comm_monitor_status(iij_comm_monitor) == false)
+	if(controler_iij_network_connected() != STATUS_CLIENT_CONNECTED)
 	{
-		uint8_t res = comm_monitor_set_ip_address(iij_comm_monitor, ip_address);
+		uint8_t res = com_tcp_set_ip_addr(iij_connection, ip_address);
 
 		if(res == STATUS_SUCCESS)
 		{
@@ -1560,9 +1530,9 @@ uint8_t controler_iij_network_set_ip_address(char * ip_address)
 
 uint8_t controler_pci_network_set_ip_address(char * ip_address)
 {
-	if(comm_monitor_status(pci_comm_monitor) == false)
+	if(controler_pci_network_connected() != STATUS_CLIENT_CONNECTED)
 	{
-		uint8_t res = comm_monitor_set_ip_address(pci_comm_monitor, ip_address); //com_tcp_set_ip_addr(pci_connection, ip_address);
+		uint8_t res = com_tcp_set_ip_addr(pci_connection, ip_address);
 
 		if(res == STATUS_SUCCESS)
 		{
@@ -4699,7 +4669,7 @@ void controler_safety_system_in()
 	/* network connection checking */
 	if(c_timer_delay(network_connection_timer, 500) > 0)
 	{
-		if(controler_quadient_network_connected() == true)
+		if(controler_quadient_network_connected() == STATUS_CLIENT_CONNECTED)
 		{
 			if(error_code == MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING)
 
@@ -4713,7 +4683,7 @@ void controler_safety_system_in()
 				controler_set_machine_error(MACHINE_ERR_QUADIENT_COMPUTER_NOT_RESPONDING);
 		}
 
-		if(controler_pci_network_connected() == true)
+		if(controler_pci_network_connected() == STATUS_CLIENT_CONNECTED)
 		{
 			if(error_code == MACHINE_ERR_PCI_COMPUTER_NOT_RESPONDING)
 				machine_error_reset_req = true;
@@ -4729,7 +4699,7 @@ void controler_safety_system_in()
 			}
 		}
 
-		if(controler_iij_network_connected() == true)
+		if(controler_iij_network_connected() == STATUS_CLIENT_CONNECTED)
 		{
 			if(error_code == MACHINE_ERR_IIJ_COMPUTER_NOT_RESPONDING)
 				machine_error_reset_req = true;
@@ -5676,42 +5646,42 @@ uint8_t controler_load_config()
 
 
 	if(config_setting_lookup_string(settings, CFG_NETWORK_QUADIENT_PC_IP_ADDRESS, &setting_val_str) == CONFIG_TRUE)
-		comm_monitor_set_ip_address(quadient_comm_monitor, (char*) setting_val_str);
+		com_tcp_set_ip_addr(quadient_connection, (char*) setting_val_str);
 	else
 		return 9;
 
 	if(config_setting_lookup_int(settings, CFG_NETWORK_QUADIENT_PC_TCP_PORT, &setting_val_int) == CONFIG_TRUE)
-		comm_monitor_set_tcp_port(quadient_comm_monitor, setting_val_int);
+		com_tcp_set_tcp_port(quadient_connection, setting_val_int);
 	else
 		return 10;
 
 	if(config_setting_lookup_string(settings, CFG_NETWORK_PCI_PC_IP_ADDRESS, &setting_val_str) == CONFIG_TRUE)
-		comm_monitor_set_ip_address(pci_comm_monitor, (char*) setting_val_str);
+		com_tcp_set_ip_addr(pci_connection, (char*) setting_val_str);
 	else
 		return 9;
 
 	if(config_setting_lookup_int(settings, CFG_NETWORK_PCI_PC_TCP_PORT, &setting_val_int) == CONFIG_TRUE)
-		comm_monitor_set_tcp_port(pci_comm_monitor, setting_val_int);
+		com_tcp_set_tcp_port(pci_connection, setting_val_int);
 	else
 		return 10;
 
 	if(config_setting_lookup_string(settings, CFG_NETWORK_IIJ_PC_IP_ADDRESS, &setting_val_str) == CONFIG_TRUE)
-		comm_monitor_set_ip_address(iij_comm_monitor, (char*) setting_val_str);
+		com_tcp_set_ip_addr(iij_connection, (char*) setting_val_str);
 	else
 		return 9;
 
 	if(config_setting_lookup_int(settings, CFG_NETWORK_IIJ_PC_TCP_PORT, &setting_val_int) == CONFIG_TRUE)
-		comm_monitor_set_tcp_port(iij_comm_monitor, setting_val_int);
+		com_tcp_set_tcp_port(iij_connection, setting_val_int);
 	else
 		return 10;
 
 	if(config_setting_lookup_string(settings, CFG_NETWORK_QUADIENT_PC_IP_ADDRESS, &setting_val_str) == CONFIG_TRUE)
-		comm_monitor_set_ip_address(quadient_comm_monitor, (char*) setting_val_str);
+		com_tcp_set_ip_addr(quadient_connection, (char*) setting_val_str);
 	else
 		return 9;
 
 	if(config_setting_lookup_int(settings, CFG_NETWORK_QUADIENT_PC_TCP_PORT, &setting_val_int) == CONFIG_TRUE)
-		comm_monitor_set_tcp_port(quadient_comm_monitor, setting_val_int);
+		com_tcp_set_tcp_port(quadient_connection, setting_val_int);
 	else
 		return 10;
 
@@ -6127,27 +6097,27 @@ void controler_default_config()
 	settings = config_setting_add(network, CFG_NETWORK_GIS_TCP_PORT, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, DEFAULT_TCP_PORT_GIS);
 
-	comm_monitor_set_tcp_port(quadient_comm_monitor, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
+	com_tcp_set_tcp_port(quadient_connection, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
 	settings = config_setting_add(network, CFG_NETWORK_QUADIENT_PC_TCP_PORT, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
 
-	comm_monitor_set_ip_address(quadient_comm_monitor, DEFAULT_IP_ADDRESS_QUADIENT);
+	com_tcp_set_ip_addr(quadient_connection, DEFAULT_IP_ADDRESS_QUADIENT);
 	settings = config_setting_add(network, CFG_NETWORK_QUADIENT_PC_IP_ADDRESS, CONFIG_TYPE_STRING);
 	config_setting_set_string(settings, DEFAULT_IP_ADDRESS_QUADIENT);
 
-	comm_monitor_set_tcp_port(pci_comm_monitor, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
+	com_tcp_set_tcp_port(pci_connection, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
 	settings = config_setting_add(network, CFG_NETWORK_PCI_PC_TCP_PORT, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
 
-	comm_monitor_set_ip_address(pci_comm_monitor, DEFAULT_IP_ADDRESS_PCI);
+	com_tcp_set_ip_addr(pci_connection, DEFAULT_IP_ADDRESS_PCI);
 	settings = config_setting_add(network, CFG_NETWORK_PCI_PC_IP_ADDRESS, CONFIG_TYPE_STRING);
 	config_setting_set_string(settings, DEFAULT_IP_ADDRESS_PCI);
 
-	comm_monitor_set_tcp_port(iij_comm_monitor, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
+	com_tcp_set_tcp_port(iij_connection, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
 	settings = config_setting_add(network, CFG_NETWORK_IIJ_PC_TCP_PORT, CONFIG_TYPE_INT);
 	config_setting_set_int(settings, DEFAULT_NETWORK_RESPONDER_TCP_PORT);
 
-	comm_monitor_set_ip_address(iij_comm_monitor, DEFAULT_IP_ADDRESS_GIS);
+	com_tcp_set_ip_addr(iij_connection, DEFAULT_IP_ADDRESS_GIS);
 	settings = config_setting_add(network, CFG_NETWORK_IIJ_PC_IP_ADDRESS, CONFIG_TYPE_STRING);
 	config_setting_set_string(settings, DEFAULT_IP_ADDRESS_GIS);
 
@@ -6403,77 +6373,26 @@ const char * controler_get_printed_job_name()
 	return (const char*) c_string_get_char_array(printed_job_name);
 }
 
-
-comm_monitor * comm_monitor_new(bool run_monitor)
+void * controler_connection_testing_thread(void * param)
 {
-	comm_monitor * this = malloc(sizeof(comm_monitor));
-	
-	this->run_monitor = run_monitor;
-	this->comm_status = false;
-	
-	this->comm = com_tcp_new();
+	com_tcp * this = (com_tcp*) param;
 
-	
-	return this;
-}
-
-bool comm_monitor_status(comm_monitor * this)
-{
-	return this->comm_status || this->run_monitor == false;
-}
-
-uint8_t comm_monitor_set_ip_address(comm_monitor * this, char * ip_address)
-{
-	return com_tcp_set_ip_addr(this->comm, ip_address);
-}
-
-uint8_t comm_monitor_set_tcp_port(comm_monitor * this, int tcp_port)
-{
-	return com_tcp_set_tcp_port(this->comm, tcp_port);
-}
-
-int comm_monitor_get_tcp_port(comm_monitor * this)
-{
-	return com_tcp_get_tcp_port(this->comm);
-}
-
-char * comm_monitor_get_ip_address(comm_monitor * this)
-{
-	return com_tcp_get_ip_addr(this->comm);
-}
-
-void comm_monitor_finalize(comm_monitor * this)
-{
-	free(this);
-}
-
-
-void * comm_monitor_testing_thread(void * param)
-{
-	comm_monitor * this = (comm_monitor*) param;
-
-	while(this->run_monitor)
+	while(true)
 	{
-		if(com_tcp_is_connected(this->comm) == STATUS_CLIENT_CONNECTED)
+		if(com_tcp_is_connected(this) == STATUS_CLIENT_CONNECTED)
 		{
-			char * recv = com_tcp_transaction(this->comm, "ping", 255);
-			
-			/*
-			if(strcmp(recv, "ok") != 0)
-				this->comm_status = false;
-			*/
-	
-			com_tcp_disconnect(this->comm);
+			char * recv = com_tcp_transaction(this, "ping", 255);
+
+			if(recv == NULL)
+				com_tcp_disconnect(this);
+			else
+		//		printf("%s - %s\n", com_tcp_get_ip_addr(this), recv);
 
 			sleep(1);
 		}
 		else
 		{
-			if(com_tcp_connect(this->comm) == STATUS_CLIENT_CONNECTED)
-				this->comm_status = true;
-			else
-				this->comm_status = false;
-				
+			com_tcp_connect(this);
 			sleep(5);
 		}
 	}
